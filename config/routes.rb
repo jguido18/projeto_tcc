@@ -1,14 +1,19 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  # Patient login — /login, /register
+  devise_for :users,
+             path: "",
+             path_names: { sign_in: "login", sign_out: "logout", sign_up: "register" }
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # Staff login — /staff/login (attendants, doctors, admins)
+  # Uses custom controllers to enforce attendant/doctor/admin check before signing in
+  devise_scope :user do
+    get  "staff/login",  to: "staff/sessions#new",    as: :new_staff_session
+    post "staff/login",  to: "staff/sessions#create",  as: :staff_session
+    delete "staff/logout", to: "staff/sessions#destroy", as: :destroy_staff_session
+  end
+
+  # Health check
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
-  # root "posts#index"
+  root to: "home#index"
 end

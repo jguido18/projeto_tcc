@@ -1,0 +1,28 @@
+<% content_for :title, "Identificação — TriagemAI" %>
+
+<div class="triage-identification">
+  <div class="identification-card">
+    <div class="identification-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </div>
+
+    <h1>Identificação</h1>
+    <p>Por favor, identifique-se para iniciar a triagem.</p>
+
+    <%= form_with url: triage_start_path, method: :post, data: { turbo: false } do |f| %>
+      <div class="field">
+        <%= f.label :chief_complaint, "O que está sentindo?" %>
+        <%= f.text_area :chief_complaint,
+              placeholder: "Descreva brevemente o que está sentindo...",
+              required: true,
+              rows: 3,
+              autofocus: true %>
+      </div>
+
+      <%= f.submit "Iniciar Triagem", class: "btn-primary" %>
+    <% end %>
+  </div>
+</div>

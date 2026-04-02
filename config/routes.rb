@@ -12,6 +12,15 @@ Rails.application.routes.draw do
     delete "staff/logout", to: "staff/sessions#destroy", as: :destroy_staff_session
   end
 
+  # Patient triage flow
+  resource :triage, only: [] do
+    get  :identification
+    post :start
+    get  :chat
+    post :message
+    get  :queue
+  end
+
   # Health check
   get "up" => "rails/health#show", as: :rails_health_check
 

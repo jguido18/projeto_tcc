@@ -1,0 +1,109 @@
+<% content_for :title, "Sua Fila — TriagemAI" %>
+
+<div class="triage-queue"
+     data-controller="triage-queue"
+     data-triage-queue-session-id-value="<%= @triage_session.id %>"
+     data-triage-queue-status-value="<%= @triage_session.status %>">
+
+  <% if @triage_session.called? || @triage_session.queue_entry&.called? %>
+    <%# ——— CALL SCREEN ——— %>
+    <div class="call-screen" data-triage-queue-target="callScreen">
+      <div class="call-ticket">
+        <p class="call-label">ATENÇÃO</p>
+        <h1 class="call-ticket-number"><%= @queue_entry&.ticket_number %></h1>
+        <div class="call-arrow">→</div>
+        <h2 class="call-message">DIRIJA-SE AO CONSULTÓRIO</h2>
+        <p class="call-sub">O médico está aguardando você.</p>
+      </div>
+
+      <div class="call-board">
+        <div class="board-header">
+          Chamada Geral
+          <span class="calling-now">● CHAMANDO AGORA</span>
+        </div>
+        <div class="board-row board-row--highlighted">
+          <span class="urgency-badge urgency-badge--<%= @queue_entry&.urgency_level %>">
+            <%= @queue_entry&.urgency_label %>
+          </span>
+          <strong><%= current_user.name %></strong>
+        </div>
+      </div>
+    </div>
+
+  <% else %>
+    <%# ——— WAITING SCREEN ——— %>
+    <div class="queue-screen" data-triage-queue-target="queueScreen">
+      <div class="queue-patient-panel">
+        <p class="queue-label">SUA SENHA</p>
+
+        <% if @queue_entry %>
+          <h1 class="queue-ticket" data-triage-queue-target="ticketNumber">
+            <%= @queue_entry.ticket_number %>
+          </h1>
+
+          <div class="urgency-circle urgency-circle--<%= @queue_entry.urgency_level %>"
+               data-triage-queue-target="urgencyCircle">
+          </div>
+
+          <p class="urgency-name urgency-name--<%= @queue_entry.urgency_level %>"
+             data-triage-queue-target="urgencyLabel">
+            <%= @queue_entry.urgency_label %>
+          </p>
+
+          <p class="queue-position-label">Sua posição na fila</p>
+          <h2 class="queue-position" data-triage-queue-target="position">
+            <%= @queue_entry.queue_position %>º
+          </h2>
+
+        <% else %>
+          <div class="queue-awaiting" data-triage-queue-target="awaitingValidation">
+            <div class="spinner"></div>
+            <p class="queue-status-msg">Aguardando validação da enfermagem</p>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="queue-board">
+        <div class="board-header">
+          Chamada Geral
+          <div class="board-legend">
+            <span class="legend-dot legend-dot--red"></span> Emergência
+            <span class="legend-dot legend-dot--orange"></span> Muito Urgente
+            <span class="legend-dot legend-dot--yellow"></span> Urgente
+            <span class="legend-dot legend-dot--green"></span> Pouco Urgente
+            <span class="legend-dot legend-dot--blue"></span> Não Urgente
+          </div>
+        </div>
+
+        <table class="board-table">
+          <thead>
+            <tr>
+              <th>Prioridade</th>
+              <th>Nome</th>
+              <th>Espera Estimada</th>
+            </tr>
+          </thead>
+          <tbody data-triage-queue-target="boardBody">
+            <% waiting = QueueEntry.where(establishment: current_user.establishment, status: :waiting)
+                                   .order(:urgency_weight, :queued_at) %>
+            <% if waiting.any? %>
+              <% waiting.each do |entry| %>
+                <tr>
+                  <td>
+                    <span class="urgency-badge urgency-badge--<%= entry.urgency_level %>">
+                      <%= entry.urgency_label %>
+                    </span>
+                  </td>
+                  <td><%= entry.user.name.split.first %> ***</td>
+                  <td>~<%= (entry.queue_position * 20) %> min</td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr><td colspan="3" class="board-empty">Fila vazia</td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+</div>

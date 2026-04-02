@@ -1,0 +1,330 @@
+pt-BR:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # NOTA: date, time, number, e activerecord.errors.messages básicos
+  # são fornecidos automaticamente pela gem rails-i18n.
+  # Apenas adicionamos aqui o que a gem NÃO cobre.
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  # Ausente no rails-i18n pt-BR — usado pelo partial devise/shared/_error_messages
+  errors:
+    messages:
+      not_saved:
+        one: "1 erro impediu que este %{resource} fosse salvo:"
+        other: "%{count} erros impediram que este %{resource} fosse salvo:"
+
+  # ─── ActiveRecord — erros + nomes de models + atributos ─────────────────────
+  activerecord:
+    errors:
+      messages:
+        required: "deve existir"
+    models:
+    models:
+      establishment:
+        one: "Estabelecimento"
+        other: "Estabelecimentos"
+      user:
+        one: "Usuário"
+        other: "Usuários"
+      triage_session:
+        one: "Sessão de Triagem"
+        other: "Sessões de Triagem"
+      chat_message:
+        one: "Mensagem"
+        other: "Mensagens"
+      ai_classification:
+        one: "Classificação da IA"
+        other: "Classificações da IA"
+      triage_validation:
+        one: "Validação de Triagem"
+        other: "Validações de Triagem"
+      queue_entry:
+        one: "Posição na Fila"
+        other: "Posições na Fila"
+      notification:
+        one: "Notificação"
+        other: "Notificações"
+
+    attributes:
+      establishment:
+        name: "Nome"
+        kind: "Tipo"
+        cnpj: "CNPJ"
+        phone: "Telefone"
+        address: "Endereço"
+        system_prompt: "Prompt do Sistema (IA)"
+        urgency_protocol: "Protocolo de Urgência"
+        active: "Ativo"
+        settings: "Configurações"
+
+      user:
+        name: "Nome completo"
+        email: "E-mail"
+        password: "Senha"
+        password_confirmation: "Confirmação de senha"
+        cpf: "CPF"
+        birth_date: "Data de nascimento"
+        phone: "Telefone"
+        job_title: "Cargo"
+        attendant: "Atendente"
+        doctor: "Médico"
+        admin: "Administrador"
+        active: "Ativo"
+        establishment: "Estabelecimento"
+
+      triage_session:
+        status: "Status"
+        chief_complaint: "Queixa principal"
+        started_at: "Iniciado em"
+        finished_at: "Finalizado em"
+        user: "Paciente"
+        establishment: "Estabelecimento"
+
+      chat_message:
+        sender: "Remetente"
+        content: "Conteúdo"
+        sequence: "Sequência"
+        sent_at: "Enviado em"
+        triage_session: "Sessão de triagem"
+
+      ai_classification:
+        urgency_level: "Nível de urgência"
+        manchester_code: "Código Manchester"
+        summary: "Resumo clínico"
+        identified_symptoms: "Sintomas identificados"
+        ai_suggestion: "Sugestão da IA"
+        clinical_reasoning: "Raciocínio clínico"
+        specialty_suggestion: "Especialidade sugerida"
+        confidence_score: "Confiança (%)"
+        ai_model: "Modelo de IA"
+        generated_at: "Gerado em"
+        triage_session: "Sessão de triagem"
+
+      triage_validation:
+        decision: "Decisão"
+        final_urgency_level: "Nível de urgência final"
+        notes: "Observações"
+        validated_at: "Validado em"
+        ai_classification: "Classificação da IA"
+        user: "Validado por"
+
+      queue_entry:
+        ticket_number: "Senha"
+        urgency_level: "Nível de urgência"
+        urgency_weight: "Peso de urgência"
+        status: "Status"
+        queued_at: "Entrou na fila em"
+        called_at: "Chamado em"
+        service_started_at: "Atendimento iniciado em"
+        service_finished_at: "Atendimento finalizado em"
+        triage_session: "Sessão de triagem"
+        user: "Paciente"
+        establishment: "Estabelecimento"
+
+      notification:
+        kind: "Tipo"
+        title: "Título"
+        body: "Mensagem"
+        read: "Lida"
+        read_at: "Lida em"
+        channel: "Canal"
+        user: "Usuário"
+        triage_session: "Sessão de triagem"
+
+  # ─── Enums do domínio ─────────────────────────────────────────────────────────
+  # Uso: t("enums.triage_session.status.in_triage")
+  enums:
+    establishment:
+      kind:
+        hospital: "Hospital"
+        clinic: "Clínica"
+        office: "Secretaria"
+        commerce: "Comércio"
+      urgency_protocol:
+        manchester: "Protocolo Manchester"
+
+    triage_session:
+      status:
+        in_triage: "Em triagem"
+        awaiting_validation: "Aguardando validação"
+        validated: "Validado"
+        in_queue: "Na fila"
+        in_attendance: "Em atendimento"
+        completed: "Concluído"
+        cancelled: "Cancelado"
+
+    ai_classification:
+      urgency_level:
+        red: "Emergência"
+        orange: "Muito Urgente"
+        yellow: "Urgente"
+        green: "Pouco Urgente"
+        blue: "Não Urgente"
+
+    triage_validation:
+      decision:
+        confirmed: "Confirmada"
+        adjusted: "Ajustada"
+        rejected: "Rejeitada"
+      final_urgency_level:
+        red: "Emergência"
+        orange: "Muito Urgente"
+        yellow: "Urgente"
+        green: "Pouco Urgente"
+        blue: "Não Urgente"
+
+    queue_entry:
+      status:
+        waiting: "Aguardando"
+        called: "Chamado"
+        in_attendance: "Em atendimento"
+        left: "Desistiu"
+        completed: "Concluído"
+      urgency_level:
+        red: "Emergência"
+        orange: "Muito Urgente"
+        yellow: "Urgente"
+        green: "Pouco Urgente"
+        blue: "Não Urgente"
+
+    notification:
+      kind:
+        called_for_attendance: "Chamado para atendimento"
+        position_updated: "Posição atualizada"
+        triage_validated: "Triagem validada"
+        cancellation: "Cancelamento"
+      channel:
+        websocket: "Tempo real"
+        push: "Notificação push"
+        sms: "SMS"
+
+    user:
+      job_title:
+        nurse: "Enfermeira(o)"
+        receptionist: "Recepcionista"
+        doctor: "Médico(a)"
+        manager: "Gestor(a)"
+
+  # ─── Textos da interface ───────────────────────────────────────────────────────
+  # Uso nas views: t("app.triage.chat.input_placeholder")
+  app:
+    name: "TriagemAI"
+    tagline: "Triagem inteligente com IA"
+
+    nav:
+      patient: "Paciente (App)"
+      queue_tv: "Fila (TV)"
+      nursing: "Enfermagem"
+      doctor: "Médico"
+      logout: "Sair"
+
+    triage:
+      identification:
+        title: "Identificação"
+        subtitle: "Por favor, identifique-se para iniciar a triagem."
+        chief_complaint_label: "O que está sentindo?"
+        chief_complaint_placeholder: "Descreva brevemente o que está sentindo..."
+        submit: "Iniciar Triagem"
+      chat:
+        title: "Assistente de Triagem"
+        status_in_triage: "Em triagem"
+        status_awaiting: "Aguardando validação..."
+        input_placeholder: "Digite sua resposta..."
+        finish_button: "Finalizar Triagem"
+      queue:
+        your_ticket: "SUA SENHA"
+        urgency_label: "Urgência"
+        position_label: "Sua posição na fila"
+        estimated_wait: "Tempo estimado"
+        awaiting_validation: "Aguardando validação da enfermagem"
+        general_call: "Chamada Geral"
+        queue_empty: "Fila vazia"
+        columns:
+          priority: "Prioridade"
+          name: "Nome"
+          estimated_wait: "Espera Estimada"
+      call:
+        attention: "ATENÇÃO"
+        go_to_office: "DIRIJA-SE AO CONSULTÓRIO"
+        doctor_waiting: "O médico está aguardando você."
+        calling_now: "● CHAMANDO AGORA"
+
+    nursing:
+      title: "Estação de Enfermagem"
+      subtitle: "Validação e gerenciamento de fila inteligente"
+      awaiting_validation: "Aguardando Validação"
+      priority_queue: "Fila Prioritária (Validada)"
+      queue_empty: "Fila vazia"
+      no_pending: "Nenhum paciente pendente de validação."
+      total_waiting: "Total em Espera"
+      validate_button: "Validar Triagem"
+      call_button: "Chamar Paciente"
+      arrived_at: "Chegada"
+      buttons:
+        manage_queue: "Gerenciar Fila"
+        reports: "Relatórios"
+        history: "Histórico"
+      validation_modal:
+        title: "Validar Classificação de Risco"
+        subtitle: "Confira a análise da IA e ajuste se necessário."
+        ai_analysis: "ANÁLISE DA IA"
+        suggested_classification: "Classificação Sugerida"
+        clinical_summary: "Resumo Clínico"
+        clinical_reasoning: "Raciocínio"
+        nursing_evaluation: "AVALIAÇÃO DA ENFERMAGEM"
+        confirm_or_adjust: "Confirmar ou Alterar Prioridade"
+        notes_label: "Observações / Motivo da Mudança"
+        notes_placeholder: "Ex: Paciente apresenta palidez não detectada pela IA..."
+        notes_hint: "Obrigatório ao ajustar ou rejeitar a classificação."
+        cancel: "Cancelar"
+        confirm: "Confirmar Validação"
+
+    doctor:
+      title: "Pacientes Chamados"
+      subtitle: "Aguardando atendimento médico"
+      chief_complaint: "QUEIXA PRINCIPAL"
+      ai_suggestion: "SUGESTÃO IA"
+      ai_reasoning: "RACIOCÍNIO CLÍNICO (IA)"
+      triage_summary: "Resumo da Triagem"
+      triage_transcript: "Transcrição da Triagem"
+      full_history: "Histórico completo"
+      finish_button: "Finalizar Atendimento"
+
+    reports:
+      title: "Relatórios"
+      total_patients: "Total de Pacientes"
+      total_attended: "Pacientes Atendidos"
+      waiting_in_queue: "Aguardando na Fila"
+      distribution_by_severity: "Distribuição por Gravidade"
+      recent_attendances: "Últimos Atendimentos"
+      columns:
+        patient: "Paciente"
+        classification: "Classificação"
+        specialist: "Especialista"
+        status: "Status"
+        datetime: "Data/Hora"
+
+    history:
+      title: "Histórico"
+      search_placeholder: "Nome ou ID..."
+      filter_label: "Filtrar por gravidade"
+      all_priorities: "Todas as Prioridades"
+      clear_filters: "Limpar Filtros"
+      status_finished: "Finalizado"
+      columns:
+        datetime: "Data/Hora"
+        patient: "Paciente"
+        final_priority: "Prioridade (Final)"
+        symptom_summary: "Resumo Sintomas"
+        ia_vs_nursing: "IA vs Enf"
+        status: "Status"
+
+    flash:
+      unauthorized_staff: "Acesso não autorizado. Esta área é exclusiva para atendentes e médicos."
+      unauthorized_patient: "Acesso restrito a pacientes."
+      unauthorized_admin: "Acesso restrito a administradores."
+      session_not_found: "Sessão de triagem não encontrada."
+      triage_already_active: "Você já possui uma triagem em andamento."
+      validation_success: "Triagem validada com sucesso."
+      validation_error: "Erro ao validar triagem. Verifique os campos."
+      patient_called: "Paciente chamado com sucesso."
+      attendance_finished: "Atendimento finalizado."

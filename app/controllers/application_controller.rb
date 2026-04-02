@@ -5,6 +5,7 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
+  before_action :set_locale
   before_action :configure_permitted_parameters, if: :devise_controller?
 
   helper_method :staff_signed_in?, :patient_signed_in?
@@ -18,6 +19,10 @@ class ApplicationController < ActionController::Base
   end
 
   protected
+
+  def set_locale
+    I18n.locale = :"pt-BR"
+  end
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [ :name, :establishment_id, :cpf, :birth_date, :phone ])

@@ -1,0 +1,38 @@
+<% content_for :title, "Triagem — TriagemAI" %>
+
+<div class="triage-chat"
+     data-controller="triage-chat"
+     data-triage-chat-session-id-value="<%= @triage_session.id %>"
+     data-triage-chat-message-url-value="<%= triage_message_path %>">
+
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <strong>Assistente de Triagem</strong>
+      <span>Paciente: <%= current_user.name %></span>
+    </div>
+    <span class="chat-status" data-triage-chat-target="status">Em triagem</span>
+  </div>
+
+  <div class="chat-messages" data-triage-chat-target="messages" id="chat-messages">
+    <% @triage_session.chat_messages.each do |msg| %>
+      <div class="message message--<%= msg.sender %>">
+        <div class="message-bubble"><%= msg.content %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="chat-input" data-triage-chat-target="inputArea">
+    <%= form_with url: triage_message_path, method: :post,
+          data: { action: "submit->triage-chat#sendMessage", turbo: false } do |f| %>
+      <%= f.text_field :content,
+            placeholder: "Digite sua resposta...",
+            autocomplete: "off",
+            data: { triage_chat_target: "input" } %>
+      <button type="submit" data-triage-chat-target="submitBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    <% end %>
+  </div>
+</div>

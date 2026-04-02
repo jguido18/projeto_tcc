@@ -1,0 +1,115 @@
+pt-BR:
+  helpers:
+    links:
+      back: "Voltar"
+
+  errors:
+    messages:
+      already_confirmed: "já foi confirmado. Por favor, tente fazer login."
+      confirmation_period_expired: "precisa ser confirmado em %{period}. Por favor, solicite um novo."
+      expired: "expirou. Por favor, solicite um novo."
+      not_found: "não encontrado"
+      not_locked: "não estava bloqueado"
+      not_saved:
+        one: "1 erro impediu que este %{resource} fosse salvo:"
+        other: "%{count} erros impediram que este %{resource} fosse salvo:"
+
+  devise:
+    confirmations:
+      confirmed: "Sua conta foi confirmada com sucesso."
+      send_instructions: "Você receberá um e-mail com instruções para confirmar sua conta em alguns minutos."
+      send_paranoid_instructions: "Se o seu e-mail existir em nossa base de dados, você receberá um e-mail com instruções em alguns minutos."
+      new:
+        title: "Reenviar instruções de confirmação"
+        submit: "Reenviar instruções de confirmação"
+
+    failure:
+      already_authenticated: "Você já está autenticado."
+      inactive: "Sua conta ainda não foi ativada."
+      invalid: "%{authentication_keys} ou senha inválidos."
+      locked: "Sua conta está bloqueada."
+      last_attempt: "Você tem mais uma tentativa antes de sua conta ser bloqueada."
+      not_found_in_database: "%{authentication_keys} ou senha inválidos."
+      timeout: "Sua sessão expirou. Por favor, faça login novamente."
+      unauthenticated: "Você precisa fazer login para continuar."
+      unconfirmed: "Você precisa confirmar seu e-mail antes de continuar."
+
+    mailer:
+      confirmation_instructions:
+        subject: "Instruções de confirmação de conta"
+      reset_password_instructions:
+        subject: "Instruções para redefinição de senha"
+      unlock_instructions:
+        subject: "Instruções para desbloquear conta"
+      email_changed:
+        subject: "E-mail alterado"
+      password_change:
+        subject: "Senha alterada"
+
+    omniauth_callbacks:
+      failure: "Não foi possível autenticar com %{kind} porque \"%{reason}\"."
+      success: "Autenticado com sucesso pela conta %{kind}."
+
+    passwords:
+      no_token: "Você não pode acessar esta página sem vir de um e-mail de redefinição de senha."
+      send_instructions: "Você receberá um e-mail com instruções para redefinir sua senha em alguns minutos."
+      send_paranoid_instructions: "Se o seu e-mail existir em nossa base, você receberá um link de recuperação em alguns minutos."
+      updated: "Sua senha foi alterada com sucesso. Você está logado."
+      updated_not_active: "Sua senha foi alterada com sucesso."
+      new:
+        title: "Esqueceu sua senha?"
+        submit: "Enviar instruções para redefinição de senha"
+      edit:
+        title: "Redefinir senha"
+        new_password: "Nova senha"
+        confirm_password: "Confirmar nova senha"
+        submit: "Alterar minha senha"
+
+    registrations:
+      destroyed: "Sua conta foi cancelada. Esperamos vê-lo novamente em breve."
+      signed_up: "Bem-vindo! Sua conta foi criada com sucesso."
+      signed_up_but_inactive: "Sua conta foi criada, mas não foi possível fazer login pois ela ainda não está ativa."
+      signed_up_but_locked: "Sua conta foi criada, mas não foi possível fazer login pois ela está bloqueada."
+      signed_up_but_unconfirmed: "Uma mensagem com um link de confirmação foi enviada para seu e-mail. Por favor, siga o link para ativar sua conta."
+      update_needs_confirmation: "Sua conta foi atualizada, mas precisamos verificar seu novo e-mail. Por favor, verifique sua caixa de entrada."
+      updated: "Sua conta foi atualizada com sucesso."
+      updated_but_not_signed_in: "Sua conta foi atualizada, mas como sua senha foi alterada, você precisa fazer login novamente."
+      new:
+        title: "Criar conta"
+        submit: "Cadastrar"
+        password_hint: "caracteres mínimos"
+      edit:
+        title: "Editar %{resource}"
+        submit: "Atualizar"
+        password_hint: "deixe em branco se não quiser alterar"
+        current_password_hint: "precisamos da sua senha atual para confirmar as alterações"
+        awaiting_confirmation: "Aguardando confirmação do novo e-mail: %{email}"
+        cancel_account_title: "Cancelar minha conta"
+        cancel_account_hint: "Insatisfeito?"
+        cancel_account_button: "Cancelar minha conta"
+        cancel_account_confirm: "Tem certeza que deseja cancelar sua conta?"
+
+    sessions:
+      signed_in: "Login realizado com sucesso."
+      signed_out: "Logout realizado com sucesso."
+      already_signed_out: "Logout realizado com sucesso."
+      new:
+        title: "Entrar"
+        submit: "Entrar"
+
+    shared:
+      links:
+        sign_in: "Entrar"
+        sign_up: "Criar conta"
+        forgot_password: "Esqueceu sua senha?"
+        resend_confirmation: "Não recebeu as instruções de confirmação?"
+        resend_unlock: "Não recebeu as instruções de desbloqueio?"
+        sign_in_with: "Entrar com %{provider}"
+
+    unlocks:
+      send_instructions: "Você receberá um e-mail com instruções para desbloquear sua conta em alguns minutos."
+      send_paranoid_instructions: "Se sua conta existir, você receberá um e-mail com instruções para desbloqueá-la."
+      unlocked: "Sua conta foi desbloqueada. Por favor, faça login para continuar."
+      new:
+        title: "Reenviar instruções de desbloqueio"
+        submit: "Reenviar instruções de desbloqueio"

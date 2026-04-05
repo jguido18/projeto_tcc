@@ -1,0 +1,72 @@
+<div class="tv-screen"
+     data-controller="tv"
+     data-tv-establishment-id-value="<%= @establishment.id %>">
+
+  <%# ── Cabeçalho ── %>
+  <header class="tv-header">
+    <div class="tv-header__brand">
+      <span class="tv-header__icon">⚕</span>
+      <span class="tv-header__name"><%= t("app.name") %> — <%= @establishment.name %></span>
+    </div>
+    <div class="tv-header__clock" data-tv-target="clock"></div>
+  </header>
+
+  <%# ── Destaque: última chamada ── %>
+  <div class="tv-spotlight" data-tv-target="spotlight" style="display:none;">
+    <div class="tv-spotlight__label"><%= t("app.tv.calling_now") %></div>
+    <div class="tv-spotlight__ticket" data-tv-target="spotlightTicket"></div>
+    <div class="tv-spotlight__name" data-tv-target="spotlightName"></div>
+    <div class="tv-spotlight__urgency" data-tv-target="spotlightUrgency"></div>
+    <div class="tv-spotlight__instruction"><%= t("app.tv.go_to_office") %></div>
+  </div>
+
+  <%# ── Lista da fila ── %>
+  <main class="tv-main">
+    <div class="tv-queue-header">
+      <span class="tv-queue-header__label"><%= t("app.tv.queue_label") %></span>
+      <span class="tv-queue-header__count">
+        <%= t("app.tv.total") %>: <strong data-tv-target="totalCount"><%= @called_entries.count %></strong>
+      </span>
+    </div>
+
+    <div class="tv-table-wrap">
+      <table class="tv-table" data-tv-target="queueTable">
+        <thead>
+          <tr>
+            <th><%= t("app.tv.columns.ticket") %></th>
+            <th><%= t("app.tv.columns.name") %></th>
+            <th><%= t("app.tv.columns.urgency") %></th>
+            <th><%= t("app.tv.columns.called_at") %></th>
+          </tr>
+        </thead>
+        <tbody data-tv-target="queueBody">
+          <% if @called_entries.empty? %>
+            <tr class="tv-table__empty-row" data-tv-empty>
+              <td colspan="4"><%= t("app.tv.no_calls") %></td>
+            </tr>
+          <% else %>
+            <% @called_entries.each_with_index do |entry, idx| %>
+              <tr class="tv-row tv-row--<%= entry.urgency_level %> <%= "tv-row--first" if idx == 0 %>">
+                <td class="tv-row__ticket"><%= entry.ticket_number %></td>
+                <td class="tv-row__name"><%= entry.triage_session.user.name %></td>
+                <td>
+                  <span class="urgency-badge urgency-bg--<%= entry.urgency_level %>">
+                    <%= entry.urgency_label %>
+                  </span>
+                </td>
+                <td class="tv-row__time"><%= l(entry.called_at, format: :short) %></td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <%# ── Rodapé ── %>
+  <footer class="tv-footer">
+    <span><%= t("app.tagline") %></span>
+    <span class="tv-footer__url"><%= t("app.tv.footer_hint") %></span>
+  </footer>
+
+</div>

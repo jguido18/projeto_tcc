@@ -1,0 +1,43 @@
+<% content_for :title, t("devise.sessions.staff.title") %>
+
+<div class="auth-page">
+  <div class="auth-card auth-card--staff">
+
+    <div class="auth-card__header">
+      <div class="auth-card__icon auth-card__icon--staff">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h1 class="auth-card__title"><%= t("devise.sessions.staff.title") %></h1>
+      <p class="auth-card__subtitle"><%= t("devise.sessions.staff.subtitle") %></p>
+    </div>
+
+    <%= form_for(resource, as: resource_name, url: staff_session_path,
+          html: { class: "auth-form" }) do |f| %>
+
+      <div class="auth-field">
+        <%= f.label :email, t("activerecord.attributes.user.email"), class: "auth-label" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email",
+              class: "auth-input", placeholder: "seu@email.com" %>
+      </div>
+
+      <div class="auth-field">
+        <%= f.label :password, t("activerecord.attributes.user.password"), class: "auth-label" %>
+        <%= f.password_field :password, autocomplete: "current-password",
+              class: "auth-input", placeholder: "••••••••" %>
+      </div>
+
+      <div class="auth-actions">
+        <%= f.submit t("devise.sessions.staff.submit"), class: "btn btn--staff btn--full btn--lg" %>
+      </div>
+
+    <% end %>
+
+    <div class="auth-card__footer">
+      <%= link_to "← #{t("app.home.back")}", root_path, class: "auth-link auth-link--muted" %>
+    </div>
+
+  </div>
+</div>

@@ -76,8 +76,12 @@ pt-BR:
       updated_but_not_signed_in: "Sua conta foi atualizada, mas como sua senha foi alterada, você precisa fazer login novamente."
       new:
         title: "Criar conta"
-        submit: "Cadastrar"
+        subtitle: "Preencha seus dados para se cadastrar"
+        submit: "Criar minha conta"
         password_hint: "caracteres mínimos"
+        personal_data: "Dados pessoais"
+        access_data: "Dados de acesso"
+        name_placeholder: "Nome completo"
       edit:
         title: "Editar %{resource}"
         submit: "Atualizar"
@@ -94,8 +98,14 @@ pt-BR:
       signed_out: "Logout realizado com sucesso."
       already_signed_out: "Logout realizado com sucesso."
       new:
-        title: "Entrar"
+        title: "Acesso do Paciente"
+        subtitle: "Entre com seu e-mail e senha"
         submit: "Entrar"
+        remember_me: "Manter conectado"
+      staff:
+        title: "Acesso da Equipe"
+        subtitle: "Área exclusiva para atendentes e médicos"
+        submit: "Entrar na área restrita"
 
     shared:
       links:

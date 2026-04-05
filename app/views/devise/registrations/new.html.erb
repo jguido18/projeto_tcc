@@ -1,29 +1,92 @@
-<h2><%= t("devise.registrations.new.title") %></h2>
+<% content_for :title, t("devise.registrations.new.title") %>
 
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+<div class="auth-page">
+  <div class="auth-card auth-card--wide">
 
-  <div class="field">
-    <p><%= f.label :email %></p>
-    <p><%= f.email_field :email, autofocus: true, autocomplete: "email" %></p>
-  </div>
+    <div class="auth-card__header">
+      <div class="auth-card__icon auth-card__icon--patient">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="19" y1="8" x2="19" y2="14"/>
+          <line x1="22" y1="11" x2="16" y2="11"/>
+        </svg>
+      </div>
+      <h1 class="auth-card__title"><%= t("devise.registrations.new.title") %></h1>
+      <p class="auth-card__subtitle"><%= t("devise.registrations.new.subtitle") %></p>
+    </div>
 
-  <div class="field">
-    <p><%= f.label :password %></p>
-    <% if @minimum_password_length %>
-      <p><em>(<%= @minimum_password_length %> <%= t("devise.registrations.new.password_hint") %>)</em></p>
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name),
+          html: { class: "auth-form" }) do |f| %>
+
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <%# ── Dados pessoais ── %>
+      <div class="auth-section-label"><%= t("devise.registrations.new.personal_data") %></div>
+
+      <div class="auth-field">
+        <%= f.label :name, t("activerecord.attributes.user.name"), class: "auth-label" %>
+        <%= f.text_field :name, autofocus: true, autocomplete: "name",
+              class: "auth-input",
+              placeholder: t("devise.registrations.new.name_placeholder") %>
+      </div>
+
+      <div class="auth-row">
+        <div class="auth-field">
+          <%= f.label :cpf, t("activerecord.attributes.user.cpf"), class: "auth-label" %>
+          <%= f.text_field :cpf, autocomplete: "off",
+                class: "auth-input", placeholder: "000.000.000-00" %>
+        </div>
+        <div class="auth-field">
+          <%= f.label :birth_date, t("activerecord.attributes.user.birth_date"), class: "auth-label" %>
+          <%= f.date_field :birth_date, class: "auth-input" %>
+        </div>
+      </div>
+
+      <div class="auth-field">
+        <%= f.label :phone, t("activerecord.attributes.user.phone"), class: "auth-label" %>
+        <%= f.telephone_field :phone, autocomplete: "tel",
+              class: "auth-input", placeholder: "(11) 99999-9999" %>
+      </div>
+
+      <%# ── Acesso ── %>
+      <div class="auth-section-label auth-section-label--mt"><%= t("devise.registrations.new.access_data") %></div>
+
+      <div class="auth-field">
+        <%= f.label :email, t("activerecord.attributes.user.email"), class: "auth-label" %>
+        <%= f.email_field :email, autocomplete: "email",
+              class: "auth-input", placeholder: "seu@email.com" %>
+      </div>
+
+      <div class="auth-row">
+        <div class="auth-field">
+          <%= f.label :password, t("activerecord.attributes.user.password"), class: "auth-label" %>
+          <% if @minimum_password_length %>
+            <span class="auth-hint">(<%= @minimum_password_length %> <%= t("devise.registrations.new.password_hint") %>)</span>
+          <% end %>
+          <%= f.password_field :password, autocomplete: "new-password",
+                class: "auth-input", placeholder: "••••••••" %>
+        </div>
+        <div class="auth-field">
+          <%= f.label :password_confirmation, t("activerecord.attributes.user.password_confirmation"), class: "auth-label" %>
+          <%= f.password_field :password_confirmation, autocomplete: "new-password",
+                class: "auth-input", placeholder: "••••••••" %>
+        </div>
+      </div>
+
+      <div class="auth-actions">
+        <%= f.submit t("devise.registrations.new.submit"), class: "btn btn--primary btn--full btn--lg" %>
+      </div>
+
     <% end %>
-    <p><%= f.password_field :password, autocomplete: "new-password" %></p>
-  </div>
 
-  <div class="field">
-    <p><%= f.label :password_confirmation %></p>
-    <p><%= f.password_field :password_confirmation, autocomplete: "new-password" %></p>
-  </div>
+    <div class="auth-links">
+      <%= link_to t("devise.shared.links.sign_in"), new_user_session_path, class: "auth-link" %>
+    </div>
 
-  <div class="actions">
-    <%= f.submit t("devise.registrations.new.submit") %>
-  </div>
-<% end %>
+    <div class="auth-card__footer">
+      <%= link_to "← #{t("app.home.back")}", root_path, class: "auth-link auth-link--muted" %>
+    </div>
 
-<%= render "devise/shared/links" %>
+  </div>
+</div>

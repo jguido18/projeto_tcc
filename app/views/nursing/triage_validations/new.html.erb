@@ -1,0 +1,120 @@
+<% content_for :title, t("app.nursing.validation_modal.title") %>
+
+<div class="validation-page">
+
+  <%# ── AI Analysis panel ── %>
+  <section class="validation-ai-panel">
+    <div class="validation-ai-panel__header">
+      <span class="validation-ai-panel__label"><%= t("app.nursing.validation_modal.ai_analysis") %></span>
+      <div class="urgency-badge urgency-bg--<%= @ai_classification.urgency_level %>">
+        <%= @ai_classification.urgency_label %>
+      </div>
+    </div>
+
+    <div class="validation-ai-panel__body">
+      <div class="validation-section">
+        <div class="validation-section__title"><%= t("app.nursing.validation_modal.suggested_classification") %></div>
+        <div class="validation-section__content">
+          <span class="urgency-chip urgency-chip--<%= @ai_classification.urgency_level %>">
+            <%= @ai_classification.urgency_label %>
+          </span>
+          <% if @ai_classification.manchester_code.present? %>
+            <span class="validation-manchester"><%= @ai_classification.manchester_code %></span>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="validation-section">
+        <div class="validation-section__title"><%= t("app.nursing.validation_modal.clinical_summary") %></div>
+        <div class="validation-section__content"><%= @ai_classification.summary %></div>
+      </div>
+
+      <% if @ai_classification.clinical_reasoning.present? %>
+        <div class="validation-section">
+          <div class="validation-section__title"><%= t("app.nursing.validation_modal.clinical_reasoning") %></div>
+          <div class="validation-section__content"><%= @ai_classification.clinical_reasoning %></div>
+        </div>
+      <% end %>
+
+      <% if @ai_classification.identified_symptoms.present? %>
+        <div class="validation-section">
+          <div class="validation-section__title"><%= t("activerecord.attributes.ai_classification.identified_symptoms") %></div>
+          <div class="validation-section__content validation-section__content--symptoms">
+            <% Array(@ai_classification.identified_symptoms).each do |symptom| %>
+              <span class="symptom-tag"><%= symptom %></span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @ai_classification.specialty_suggestion.present? %>
+        <div class="validation-section">
+          <div class="validation-section__title"><%= t("activerecord.attributes.ai_classification.specialty_suggestion") %></div>
+          <div class="validation-section__content"><%= @ai_classification.specialty_suggestion %></div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <%# ── Nursing evaluation form ── %>
+  <section class="validation-form-panel">
+    <div class="validation-form-panel__header">
+      <span class="validation-form-panel__label"><%= t("app.nursing.validation_modal.nursing_evaluation") %></span>
+    </div>
+
+    <%= form_with model: @validation, url: nursing_triage_validations_path, local: false,
+                  data: { controller: "validation-form" } do |f| %>
+
+      <%= f.hidden_field :triage_session_id, value: @triage_session.id %>
+
+      <% if @validation.errors.any? %>
+        <div class="validation-errors">
+          <ul>
+            <% @validation.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <%# Priority selector ── displayed as colored radio cards %>
+      <div class="validation-field">
+        <label class="validation-label"><%= t("app.nursing.validation_modal.confirm_or_adjust") %></label>
+
+        <div class="urgency-selector">
+          <% AiClassification::URGENCY_LEVELS.each do |level| %>
+            <label class="urgency-option urgency-option--<%= level %> <%= "urgency-option--selected" if @validation.final_urgency_level == level %>">
+              <%= f.radio_button :final_urgency_level, level,
+                    data: { action: "change->validation-form#onUrgencyChange" } %>
+              <span class="urgency-option__label"><%= AiClassification::URGENCY_LABELS[level] %></span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Decision (auto-derived in JS, but also sent as hidden for server fallback) %>
+      <%= f.hidden_field :decision, value: "confirmed",
+            data: { "validation-form-target": "decision" } %>
+
+      <%# Notes ── required only when adjusted/rejected %>
+      <div class="validation-field">
+        <label class="validation-label" for="triage_validation_notes">
+          <%= t("app.nursing.validation_modal.notes_label") %>
+        </label>
+        <%= f.text_area :notes, rows: 4,
+              placeholder: t("app.nursing.validation_modal.notes_placeholder"),
+              class: "validation-textarea",
+              id: "triage_validation_notes" %>
+        <p class="validation-hint"><%= t("app.nursing.validation_modal.notes_hint") %></p>
+      </div>
+
+      <div class="validation-actions">
+        <%= link_to t("app.nursing.validation_modal.cancel"), nursing_root_path,
+              class: "btn btn--secondary" %>
+        <%= f.submit t("app.nursing.validation_modal.confirm"), class: "btn btn--primary" %>
+      </div>
+
+    <% end %>
+  </section>
+
+</div>

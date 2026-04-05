@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || t("app.nursing.title") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="nursing-layout">
+    <header class="nursing-header">
+      <div class="nursing-header__brand">
+        <span class="nursing-header__logo">⚕</span>
+        <div>
+          <div class="nursing-header__title"><%= t("app.name") %> — <%= t("app.nursing.title") %></div>
+          <div class="nursing-header__subtitle"><%= t("app.nursing.subtitle") %></div>
+        </div>
+      </div>
+
+      <div class="nursing-header__user">
+        <span class="nursing-header__name"><%= current_user.name %></span>
+        <span class="nursing-header__role"><%= t("enums.user.job_title.#{current_user.job_title}") if current_user.job_title.present? %></span>
+        <%= link_to t("app.nav.logout"), destroy_user_session_path,
+              data: { turbo_method: :delete },
+              class: "nursing-header__logout" %>
+      </div>
+    </header>
+
+    <% if notice.present? %>
+      <div class="flash flash--notice"><%= notice %></div>
+    <% end %>
+    <% if alert.present? %>
+      <div class="flash flash--alert"><%= alert %></div>
+    <% end %>
+
+    <main class="nursing-main">
+      <%= yield %>
+    </main>
+  </body>
+</html>

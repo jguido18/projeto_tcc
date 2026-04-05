@@ -1,0 +1,435 @@
+/* ─── TV layout ──────────────────────────────────────────────────────── */
+
+.tv-layout,
+.tv-screen {
+  min-height: 100vh;
+  background: #0d1117;
+  color: #e2e8f0;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Cabeçalho ──────────────────────────────────────────────────────── */
+
+.tv-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #161b22;
+  border-bottom: 2px solid #21262d;
+  padding: 1rem 2rem;
+}
+
+.tv-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.tv-header__icon { font-size: 2rem; }
+
+.tv-header__name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #58a6ff;
+}
+
+.tv-header__clock {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #58a6ff;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Destaque de chamada (spotlight) ───────────────────────────────── */
+
+.tv-spotlight {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  animation: spotlight-appear 0.4s ease;
+}
+
+.tv-spotlight--visible { display: flex !important; }
+
+/* Cor de fundo do spotlight conforme urgência */
+.tv-spotlight--red    { background: rgba(229, 62, 62,  0.15); border-bottom: 3px solid #e53e3e; }
+.tv-spotlight--orange { background: rgba(221, 107, 32, 0.15); border-bottom: 3px solid #dd6b20; }
+.tv-spotlight--yellow { background: rgba(214, 158, 46, 0.12); border-bottom: 3px solid #d69e2e; }
+.tv-spotlight--green  { background: rgba(56, 161, 105, 0.15); border-bottom: 3px solid #38a169; }
+.tv-spotlight--blue   { background: rgba(49, 130, 206, 0.15); border-bottom: 3px solid #3182ce; }
+
+.tv-spotlight__label {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #f6e05e;
+  margin-bottom: 0.5rem;
+  animation: blink 0.8s step-start infinite;
+}
+
+.tv-spotlight__ticket {
+  font-size: 5rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.tv-spotlight__name {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-top: 0.5rem;
+}
+
+.tv-spotlight__urgency {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.4rem 1.5rem;
+  border-radius: 999px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tv-spotlight__instruction {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f6e05e;
+  margin-top: 1rem;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Corpo da fila ──────────────────────────────────────────────────── */
+
+.tv-main {
+  flex: 1;
+  padding: 1.5rem 2rem;
+}
+
+.tv-queue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.tv-queue-header__label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #8b949e;
+}
+
+.tv-queue-header__count {
+  font-size: 1rem;
+  color: #8b949e;
+}
+
+.tv-queue-header__count strong {
+  color: #58a6ff;
+  font-size: 1.2rem;
+}
+
+.tv-table-wrap {
+  overflow-x: auto;
+}
+
+.tv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.15rem;
+}
+
+.tv-table thead tr {
+  background: #161b22;
+  border-bottom: 2px solid #21262d;
+}
+
+.tv-table thead th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #8b949e;
+}
+
+.tv-row {
+  border-bottom: 1px solid #21262d;
+  transition: background 0.2s;
+}
+
+.tv-row:hover { background: #161b22; }
+
+/* Primeira linha (mais urgente) em destaque */
+.tv-row--first {
+  background: #161b22;
+  font-size: 1.25rem;
+}
+
+.tv-row--first td { padding-top: 1rem; padding-bottom: 1rem; }
+
+.tv-row td {
+  padding: 0.9rem 1rem;
+  vertical-align: middle;
+}
+
+/* Borda esquerda por urgência */
+.tv-row--red    { border-left: 5px solid #e53e3e; }
+.tv-row--orange { border-left: 5px solid #dd6b20; }
+.tv-row--yellow { border-left: 5px solid #d69e2e; }
+.tv-row--green  { border-left: 5px solid #38a169; }
+.tv-row--blue   { border-left: 5px solid #3182ce; }
+
+.tv-row__ticket {
+  font-family: monospace;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.06em;
+}
+
+.tv-row__name {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.tv-row__time {
+  color: #8b949e;
+  font-size: 0.95rem;
+}
+
+.tv-table__empty-row td {
+  text-align: center;
+  padding: 3rem;
+  color: #8b949e;
+  font-size: 1.1rem;
+}
+
+/* ─── Rodapé ─────────────────────────────────────────────────────────── */
+
+.tv-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #161b22;
+  border-top: 1px solid #21262d;
+  padding: 0.75rem 2rem;
+  font-size: 0.85rem;
+  color: #8b949e;
+}
+
+.tv-footer__url {
+  font-style: italic;
+}
+
+/* ─── Animações ──────────────────────────────────────────────────────── */
+
+@keyframes spotlight-appear {
+  from { opacity: 0; transform: scaleY(0.92); }
+  to   { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ─── Reports page ───────────────────────────────────────────────────── */
+
+.reports-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.reports-header__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reports-header__subtitle {
+  color: #718096;
+  font-size: 0.9rem;
+  margin: 0.2rem 0 0;
+}
+
+/* ── Stat cards ── */
+
+.reports-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.reports-stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  border-top: 4px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.reports-stat-card--blue   { border-top-color: #3182ce; }
+.reports-stat-card--green  { border-top-color: #38a169; }
+.reports-stat-card--yellow { border-top-color: #d69e2e; }
+.reports-stat-card--orange { border-top-color: #dd6b20; }
+.reports-stat-card--purple { border-top-color: #805ad5; }
+
+.reports-stat-card__value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #2d3748;
+}
+
+.reports-stat-card__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.reports-stat-card__sub {
+  font-size: 0.75rem;
+  color: #a0aec0;
+}
+
+/* ── Reports section ── */
+
+.reports-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.reports-section__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* ── Urgency distribution bars ── */
+
+.urgency-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.urgency-dist-bar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.urgency-dist-bar__count {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.urgency-dist-bar__track {
+  background: #edf2f7;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.urgency-dist-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+  min-width: 2px;
+}
+
+.urgency-dist-bar__pct {
+  font-size: 0.75rem;
+  color: #a0aec0;
+  margin-top: 0.15rem;
+  text-align: right;
+}
+
+/* ── Reports table ── */
+
+.reports-table-wrap { overflow-x: auto; }
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.reports-table thead th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #718096;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.reports-table tbody tr {
+  border-bottom: 1px solid #f0f4f8;
+  transition: background 0.1s;
+}
+
+.reports-table tbody tr:hover { background: #f7fafc; }
+
+.reports-table td {
+  padding: 0.65rem 0.75rem;
+  color: #2d3748;
+  vertical-align: middle;
+}
+
+.reports-table__datetime { font-size: 0.8rem; color: #718096; }
+.reports-table__patient  { font-weight: 600; }
+
+/* ── Badges de resultado ── */
+
+.reports-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.reports-badge--confirmed     { background: #c6f6d5; color: #276749; }
+.reports-badge--adjusted      { background: #fefcbf; color: #744210; }
+.reports-badge--completed     { background: #bee3f8; color: #2b6cb0; }
+.reports-badge--no-validation { background: #edf2f7; color: #a0aec0; }
+
+.reports-empty {
+  color: #a0aec0;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.reports-footer {
+  padding-top: 0.5rem;
+}

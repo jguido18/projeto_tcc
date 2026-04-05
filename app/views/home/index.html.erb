@@ -1,3 +1,55 @@
-<%= link_to "Fazer Login", user_session_path%>
+<% content_for :title, t("app.name") %>
 
-<%= link_to "Sair", destroy_user_session_path, data: { turbo_method: :delete } %>
+<div class="home-page">
+
+  <div class="home-hero">
+    <div class="home-hero__badge"><%= t("app.tagline") %></div>
+    <h1 class="home-hero__title">
+      Triagem<strong>AI</strong>
+    </h1>
+    <p class="home-hero__subtitle">
+      <%= t("app.home.subtitle") %>
+    </p>
+  </div>
+
+  <div class="home-cards">
+
+    <%# ── Card Paciente ── %>
+    <div class="home-card home-card--patient">
+      <div class="home-card__icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <h2 class="home-card__title"><%= t("app.home.patient_title") %></h2>
+      <p class="home-card__desc"><%= t("app.home.patient_desc") %></p>
+      <div class="home-card__actions">
+        <%= link_to t("app.home.patient_login"), new_user_session_path,
+              class: "btn btn--primary btn--full" %>
+        <%= link_to t("app.home.patient_register"), new_user_registration_path,
+              class: "btn btn--outline btn--full" %>
+      </div>
+    </div>
+
+    <%# ── Card Equipe ── %>
+    <div class="home-card home-card--staff">
+      <div class="home-card__icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <h2 class="home-card__title"><%= t("app.home.staff_title") %></h2>
+      <p class="home-card__desc"><%= t("app.home.staff_desc") %></p>
+      <div class="home-card__actions">
+        <%= link_to t("app.home.staff_login"), new_staff_session_path,
+              class: "btn btn--staff btn--full" %>
+      </div>
+    </div>
+
+  </div>
+
+</div>

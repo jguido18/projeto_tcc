@@ -1,0 +1,449 @@
+/* ─── Doctor layout ──────────────────────────────────────────────────── */
+
+.doctor-layout {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f0f4f8;
+  min-height: 100vh;
+  color: #1a202c;
+}
+
+.doctor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1a202c;
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.doctor-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.doctor-header__logo { font-size: 1.75rem; }
+
+.doctor-header__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.doctor-header__subtitle {
+  font-size: 0.75rem;
+  color: #a0aec0;
+}
+
+.doctor-header__nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.doctor-nav__link {
+  color: #a0aec0;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.15s;
+}
+
+.doctor-nav__link:hover { color: #fff; }
+
+.doctor-header__user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.doctor-header__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.doctor-header__logout {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 6px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.doctor-header__logout:hover { background: rgba(255,255,255,0.22); }
+
+.doctor-main {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ─── Panel (lista de chamados) ──────────────────────────────────────── */
+
+.doctor-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.doctor-panel__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.doctor-panel__subtitle {
+  color: #718096;
+  font-size: 0.9rem;
+  margin: 0.2rem 0 0;
+}
+
+.doctor-stat {
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+}
+
+.doctor-stat__value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #2b6cb0;
+  line-height: 1;
+}
+
+.doctor-stat__label {
+  display: block;
+  font-size: 0.75rem;
+  color: #718096;
+  margin-top: 0.2rem;
+}
+
+.doctor-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #a0aec0;
+}
+
+.doctor-empty__icon {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+  color: #48bb78;
+}
+
+.doctor-empty__text {
+  font-size: 1.1rem;
+}
+
+/* ─── Patient cards (painel) ─────────────────────────────────────────── */
+
+.doctor-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+}
+
+.doctor-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.1rem;
+  border-left: 5px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  transition: box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.doctor-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+
+.doctor-card--red    { border-left-color: #e53e3e; }
+.doctor-card--orange { border-left-color: #dd6b20; }
+.doctor-card--yellow { border-left-color: #d69e2e; }
+.doctor-card--green  { border-left-color: #38a169; }
+.doctor-card--blue   { border-left-color: #3182ce; }
+
+.doctor-card__top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.doctor-card__order {
+  font-weight: 800;
+  font-size: 1rem;
+  color: #4a5568;
+  min-width: 1.75rem;
+}
+
+.doctor-card__ticket {
+  margin-left: auto;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #718096;
+  font-weight: 600;
+}
+
+.doctor-card__called-at {
+  font-size: 0.75rem;
+  color: #a0aec0;
+  width: 100%;
+}
+
+.doctor-card__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.doctor-card__complaint {
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.doctor-card__summary {
+  font-size: 0.8rem;
+  color: #718096;
+  font-style: italic;
+}
+
+.doctor-card__action {
+  display: block;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  background: #2b6cb0;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: auto;
+  transition: background 0.15s;
+}
+
+.doctor-card__action:hover { background: #2c5282; }
+
+/* ─── Attendance detail page ─────────────────────────────────────────── */
+
+.attendance-hero {
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+.attendance-hero--red    { background: linear-gradient(135deg, #c53030, #e53e3e); }
+.attendance-hero--orange { background: linear-gradient(135deg, #c05621, #dd6b20); }
+.attendance-hero--yellow { background: linear-gradient(135deg, #b7791f, #d69e2e); color: #2d3748; }
+.attendance-hero--green  { background: linear-gradient(135deg, #276749, #38a169); }
+.attendance-hero--blue   { background: linear-gradient(135deg, #2b6cb0, #3182ce); }
+
+.attendance-hero__left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.attendance-hero__ticket {
+  font-family: monospace;
+  font-size: 1.5rem;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+.attendance-hero__name {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.attendance-hero__complaint {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin-top: 0.2rem;
+}
+
+.attendance-hero__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.attendance-adjusted-badge {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 999px;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ─── Two-column body ────────────────────────────────────────────────── */
+
+.attendance-body {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .attendance-body { grid-template-columns: 1fr; }
+}
+
+.attendance-sidebar,
+.attendance-transcript {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.attendance-section__title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #718096;
+  margin-bottom: 0.3rem;
+}
+
+.attendance-section__content {
+  font-size: 0.9rem;
+  color: #2d3748;
+  line-height: 1.55;
+}
+
+.attendance-section__content--symptoms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.attendance-section--nursing {
+  background: #fffff0;
+  border: 1px solid #ecc94b;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.attendance-manchester {
+  font-family: monospace;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+}
+
+/* ─── Chat transcript ────────────────────────────────────────────────── */
+
+.transcript-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.transcript-msg {
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  max-width: 85%;
+}
+
+.transcript-msg--user {
+  background: #ebf8ff;
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+
+.transcript-msg--ai {
+  background: #f0fff4;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+
+.transcript-msg__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.transcript-msg__sender {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #4a5568;
+}
+
+.transcript-msg__time {
+  font-size: 0.7rem;
+  color: #a0aec0;
+  white-space: nowrap;
+}
+
+.transcript-msg__content {
+  font-size: 0.875rem;
+  color: #2d3748;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* ─── Actions ────────────────────────────────────────────────────────── */
+
+.attendance-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 0.5rem;
+}
+
+.btn--finish {
+  background: #e53e3e;
+  color: #fff;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn--finish:hover { background: #c53030; }
+
+/* ─── Shared urgency chips (também usados aqui) ──────────────────────── */
+
+.urgency-chip {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.urgency-chip--red    { background: #e53e3e; }
+.urgency-chip--orange { background: #dd6b20; }
+.urgency-chip--yellow { background: #d69e2e; color: #744210; }
+.urgency-chip--green  { background: #38a169; }
+.urgency-chip--blue   { background: #3182ce; }

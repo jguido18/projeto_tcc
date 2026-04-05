@@ -2,7 +2,8 @@ Rails.application.routes.draw do
   # Patient login — /login, /register
   devise_for :users,
              path: "",
-             path_names: { sign_in: "login", sign_out: "logout", sign_up: "register" }
+             path_names: { sign_in: "login", sign_out: "logout", sign_up: "register" },
+             controllers: { registrations: "registrations" }
 
   # Staff login — /staff/login (attendants, doctors, admins)
   # Uses custom controllers to enforce attendant/doctor/admin check before signing in
@@ -19,6 +20,32 @@ Rails.application.routes.draw do
     get  :chat
     post :message
     get  :queue
+  end
+
+  # Nursing flow — staff only
+  namespace :nursing do
+    root to: "panel#index"
+    resources :triage_validations, only: [ :new, :create ]
+    resources :queue_entries, only: [] do
+      member do
+        patch :call
+        patch :finish
+      end
+    end
+    get :reports, to: "reports#index"
+  end
+
+  # TV pública de fila — sem autenticação
+  get "tv/:establishment_id", to: "tv#show", as: :queue_tv
+
+  # Doctor flow — doctors only
+  namespace :doctor do
+    root to: "panel#index"
+    resources :attendances, only: [ :show ] do
+      member do
+        patch :finish
+      end
+    end
   end
 
   # Health check

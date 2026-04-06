@@ -1,4 +1,4 @@
-<% content_for :title, "Identificação — TriagemAI" %>
+<% content_for :title, "Início da Triagem — TriagemAI" %>
 
 <div class="triage-identification">
   <div class="identification-card">
@@ -9,14 +9,14 @@
       </svg>
     </div>
 
-    <h1>Identificação</h1>
-    <p>Por favor, identifique-se para iniciar a triagem.</p>
+    <h1>Início da Triagem</h1>
+    <p>Descreva sua necessidade para iniciar o atendimento.</p>
 
     <%= form_with url: triage_start_path, method: :post, data: { turbo: false } do |f| %>
       <div class="field">
-        <%= f.label :chief_complaint, "O que está sentindo?" %>
-        <%= f.text_area :chief_complaint,
-              placeholder: "Descreva brevemente o que está sentindo...",
+          <%= f.label :initial_demand, "Qual é a sua necessidade inicial?" %>
+          <%= f.text_area :initial_demand,
+            placeholder: "Descreva brevemente o motivo do atendimento...",
               required: true,
               rows: 3,
               autofocus: true %>

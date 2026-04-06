@@ -2,7 +2,6 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable, :trackable
 
-  belongs_to :establishment
   has_many :triage_sessions, dependent: :restrict_with_error
   has_many :queue_entries, dependent: :restrict_with_error
   has_many :notifications, dependent: :destroy

@@ -9,18 +9,18 @@
             <v-avatar color="primary" size="72" class="mb-4">
               <v-icon size="36" color="white">mdi-account</v-icon>
             </v-avatar>
-            <h1 class="text-h5 font-weight-bold text-grey-darken-3">Identificação</h1>
+            <h1 class="text-h5 font-weight-bold text-grey-darken-3">Início da Triagem</h1>
             <p class="text-body-2 text-medium-emphasis mt-1">
-              Por favor, identifique-se para iniciar a triagem.
+              Descreva a sua necessidade inicial para iniciar o atendimento.
             </p>
           </div>
 
           <!-- Formulário -->
           <v-form ref="form" @submit.prevent="submit">
             <v-textarea
-              v-model="chiefComplaint"
-              label="O que está sentindo?"
-              placeholder="Descreva brevemente o que está sentindo..."
+              v-model="initialDemand"
+              label="Qual é a sua necessidade inicial?"
+              placeholder="Descreva brevemente o motivo do atendimento..."
               rows="3"
               variant="outlined"
               rounded="lg"
@@ -69,7 +69,7 @@ const store  = useTriageStore()
 const router = useRouter()
 
 const form           = ref(null)
-const chiefComplaint = ref("")
+const initialDemand  = ref("")
 const loading        = ref(false)
 const error          = ref("")
 
@@ -83,7 +83,7 @@ async function submit() {
   error.value   = ""
 
   try {
-    await store.startTriage(chiefComplaint.value.trim())
+    await store.startTriage(initialDemand.value.trim())
     router.push("/app/chat")
   } catch (e) {
     error.value = e.message || "Erro ao iniciar triagem."

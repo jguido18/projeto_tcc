@@ -1,4 +1,33 @@
 #!/usr/bin/env ruby
+
+# Ensure subprocesses spawned by Rails (e.g., Vite auto-build) can use a modern Node.
+preferred_paths = []
+
+asdf_shims = File.expand_path("~/.asdf/shims")
+preferred_paths << asdf_shims if Dir.exist?(asdf_shims)
+
+nvm_versions_dir = File.expand_path("~/.nvm/versions/node")
+if Dir.exist?(nvm_versions_dir)
+	nvm_bins = Dir.children(nvm_versions_dir)
+		.select { |name| name.start_with?("v") }
+		.map { |name| File.join(nvm_versions_dir, name, "bin") }
+		.select { |path| File.exist?(File.join(path, "node")) }
+		.sort
+		.reverse
+
+	modern_nvm = nvm_bins.find do |bin_path|
+		version = File.basename(File.dirname(bin_path)).delete_prefix("v").split(".").first.to_i
+		version >= 20
+	end
+
+	preferred_paths << modern_nvm if modern_nvm
+end
+
+unless preferred_paths.empty?
+	current_path = ENV.fetch("PATH", "")
+	ENV["PATH"] = (preferred_paths + [current_path]).join(":")
+end
+
 APP_PATH = File.expand_path("../config/application", __dir__)
 require_relative "../config/boot"
 require "rails/commands"

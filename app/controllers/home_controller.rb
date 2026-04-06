@@ -7,11 +7,15 @@ class HomeController < ApplicationController
 
     # Staff vai para seu painel
     if user_signed_in? && current_user.attendant?
-      redirect_to nursing_root_path and return
+      redirect_to validation_root_path and return
     end
 
     if user_signed_in? && current_user.doctor?
-      redirect_to doctor_root_path and return
+      redirect_to attendance_root_path and return
+    end
+
+    if user_signed_in? && current_user.admin?
+      redirect_to edit_admin_triage_setting_path and return
     end
   end
 end

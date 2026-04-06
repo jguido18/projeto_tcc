@@ -21,7 +21,7 @@ class Api::BaseController < ApplicationController
   # Sobrescreve require_patient! para retornar JSON
   def require_api_patient!
     unless user_signed_in? && current_user.patient?
-      render json: { error: "Acesso restrito a pacientes." }, status: :forbidden
+      render json: { error: "Acesso restrito a solicitantes." }, status: :forbidden
     end
   end
 end

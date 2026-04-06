@@ -53,24 +53,32 @@ class TriageService
 
   # Generates the AI classification and transitions session to awaiting_validation.
   def finalize_triage
-    classification_data = @ai.classify
+    # Idempotent: if already classified, only ensures state transition and broadcasts.
+    classification = @session.ai_classification
 
-    AiClassification.create!(
-      triage_session: @session,
-      urgency_level: classification_data["urgency_level"],
-      manchester_code: classification_data["manchester_code"],
-      summary: classification_data["summary"],
-      identified_symptoms: classification_data["identified_symptoms"] || [],
-      ai_suggestion: classification_data["ai_suggestion"],
-      clinical_reasoning: classification_data["clinical_reasoning"],
-      specialty_suggestion: classification_data["specialty_suggestion"],
-      confidence_score: classification_data["confidence_score"],
-      ai_model: AiService::MODEL,
-      generated_at: Time.current
-    )
+    if classification.nil?
+      classification_data = @ai.classify
 
-    @session.update!(status: :awaiting_validation, finished_at: Time.current)
+      classification = AiClassification.create!(
+        triage_session: @session,
+        urgency_level: classification_data["urgency_level"],
+        protocol_reference: classification_data["protocol_reference"] || classification_data["manchester_code"],
+        summary: classification_data["summary"],
+        identified_symptoms: classification_data["identified_symptoms"] || [],
+        ai_suggestion: classification_data["ai_suggestion"],
+        classification_reasoning: classification_data["classification_reasoning"] || classification_data["clinical_reasoning"],
+        routing_suggestion: classification_data["routing_suggestion"] || classification_data["specialty_suggestion"],
+        confidence_score: classification_data["confidence_score"],
+        ai_model: @ai.model_identifier,
+        generated_at: Time.current
+      )
+    end
 
-    TriageChannel.broadcast_status(@session, :awaiting_validation)
+    if @session.in_triage?
+      @session.update!(status: :awaiting_validation, finished_at: Time.current)
+      TriageChannel.broadcast_status(@session, :awaiting_validation)
+    end
+
+    classification
   end
 end

@@ -1,13 +1,13 @@
 <div class="tv-screen"
-     data-controller="tv"
-     data-tv-establishment-id-value="<%= @establishment.id %>">
+  data-controller="tv">
 
   <%# ── Cabeçalho ── %>
   <header class="tv-header">
-    <div class="tv-header__brand">
-      <span class="tv-header__icon">⚕</span>
-      <span class="tv-header__name"><%= t("app.name") %> — <%= @establishment.name %></span>
-    </div>
+    <%= link_to root_path, class: "tv-header__brand app-header__logo-link" do %>
+      <span class="app-header__logo-icon">+</span>
+      <span class="app-header__logo-text">Triagem<strong>AI</strong></span>
+      <span class="tv-header__name">— Painel de Chamadas</span>
+    <% end %>
     <div class="tv-header__clock" data-tv-target="clock"></div>
   </header>
 
@@ -46,11 +46,11 @@
             </tr>
           <% else %>
             <% @called_entries.each_with_index do |entry, idx| %>
-              <tr class="tv-row tv-row--<%= entry.urgency_level %> <%= "tv-row--first" if idx == 0 %>">
+              <tr class="tv-row <%= "tv-row--first" if idx == 0 %>" style="border-left: 5px solid <%= urgency_color(entry.urgency_level) %>;">
                 <td class="tv-row__ticket"><%= entry.ticket_number %></td>
                 <td class="tv-row__name"><%= entry.triage_session.user.name %></td>
                 <td>
-                  <span class="urgency-badge urgency-bg--<%= entry.urgency_level %>">
+                  <span class="urgency-badge" style="<%= urgency_badge_style(entry.urgency_level) %>">
                     <%= entry.urgency_label %>
                   </span>
                 </td>

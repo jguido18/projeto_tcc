@@ -14,17 +14,18 @@ class TriageController < ApplicationController
       redirect_to triage_queue_path and return
     end
 
+    demand = params[:initial_demand].presence || params[:chief_complaint].presence
+
     @triage_session = TriageSession.create!(
       user: current_user,
-      establishment: current_user.establishment,
       status: :in_triage,
-      chief_complaint: params[:chief_complaint],
+      initial_demand: demand,
       started_at: Time.current
     )
 
     # Send opening AI message
     service = TriageService.new(@triage_session)
-    service.process_message(params[:chief_complaint])
+    service.process_message(demand)
 
     redirect_to triage_chat_path
   end

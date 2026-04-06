@@ -25,7 +25,7 @@ class ApplicationController < ActionController::Base
   end
 
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:sign_up, keys: [ :name, :establishment_id, :cpf, :birth_date, :phone ])
+    devise_parameter_sanitizer.permit(:sign_up, keys: [ :name, :cpf, :birth_date, :phone ])
     devise_parameter_sanitizer.permit(:account_update, keys: [ :name, :phone ])
   end
 
@@ -38,7 +38,7 @@ class ApplicationController < ActionController::Base
 
   def require_patient!
     unless patient_signed_in?
-      flash[:alert] = "Acesso restrito a pacientes."
+      flash[:alert] = "Acesso restrito a solicitantes."
       redirect_to root_path
     end
   end
@@ -54,10 +54,12 @@ class ApplicationController < ActionController::Base
   def after_sign_in_path_for(resource)
     if resource.patient?
       patient_app_path
+    elsif resource.admin?
+      edit_admin_triage_setting_path
     elsif resource.attendant?
-      nursing_root_path
+      validation_root_path
     elsif resource.doctor?
-      doctor_root_path
+      attendance_root_path
     else
       root_path
     end

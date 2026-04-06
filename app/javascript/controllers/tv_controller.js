@@ -9,11 +9,9 @@ export default class extends Controller {
     "spotlightTicket", "spotlightName", "spotlightUrgency",
     "queueBody", "totalCount"
   ]
-  static values = { establishmentId: Number }
-
   connect() {
     this.subscription = consumer.subscriptions.create(
-      { channel: "TvChannel", establishment_id: this.establishmentIdValue },
+      { channel: "TvChannel" },
       { received: (data) => this.handleIncoming(data) }
     )
     this.startClock()
@@ -44,8 +42,12 @@ export default class extends Controller {
     this.spotlightTicketTarget.textContent  = data.ticket_number
     this.spotlightNameTarget.textContent    = data.patient_name
     this.spotlightUrgencyTarget.textContent = data.urgency_label
-    this.spotlightUrgencyTarget.className   = `tv-spotlight__urgency urgency-bg--${data.urgency_level}`
-    this.spotlightTarget.className          = `tv-spotlight tv-spotlight--${data.urgency_level} tv-spotlight--visible`
+    const color = data.urgency_color || "#718096"
+    this.spotlightUrgencyTarget.className   = "tv-spotlight__urgency"
+    this.spotlightUrgencyTarget.style.background = color
+    this.spotlightTarget.className          = "tv-spotlight tv-spotlight--visible"
+    this.spotlightTarget.style.background = `color-mix(in srgb, ${color} 16%, transparent)`
+    this.spotlightTarget.style.borderBottom = `3px solid ${color}`
 
     this.playBeep()
 
@@ -68,10 +70,10 @@ export default class extends Controller {
     }
 
     this.queueBodyTarget.innerHTML = entries.map((e, idx) => `
-      <tr class="tv-row tv-row--${e.urgency_level} ${idx === 0 ? "tv-row--first" : ""}">
+      <tr class="tv-row ${idx === 0 ? "tv-row--first" : ""}" style="border-left: 5px solid ${e.urgency_color || "#718096"}">
         <td class="tv-row__ticket">${e.ticket_number}</td>
         <td class="tv-row__name">${e.patient_name}</td>
-        <td><span class="urgency-badge urgency-bg--${e.urgency_level}">${e.urgency_label}</span></td>
+        <td><span class="urgency-badge" style="background:${e.urgency_color || "#718096"};color:#fff;">${e.urgency_label}</span></td>
         <td class="tv-row__time">${e.called_at || "—"}</td>
       </tr>
     `).join("")

@@ -12,8 +12,8 @@
         <p class="call-label">ATENÇÃO</p>
         <h1 class="call-ticket-number"><%= @queue_entry&.ticket_number %></h1>
         <div class="call-arrow">→</div>
-        <h2 class="call-message">DIRIJA-SE AO CONSULTÓRIO</h2>
-        <p class="call-sub">O médico está aguardando você.</p>
+        <h2 class="call-message">DIRIJA-SE AO PONTO DE ATENDIMENTO</h2>
+        <p class="call-sub">A equipe está aguardando você.</p>
       </div>
 
       <div class="call-board">
@@ -58,7 +58,7 @@
         <% else %>
           <div class="queue-awaiting" data-triage-queue-target="awaitingValidation">
             <div class="spinner"></div>
-            <p class="queue-status-msg">Aguardando validação da enfermagem</p>
+            <p class="queue-status-msg">Aguardando validação da equipe</p>
           </div>
         <% end %>
       </div>
@@ -84,7 +84,7 @@
             </tr>
           </thead>
           <tbody data-triage-queue-target="boardBody">
-            <% waiting = QueueEntry.where(establishment: current_user.establishment, status: :waiting)
+            <% waiting = QueueEntry.where(status: :waiting)
                                    .order(:urgency_weight, :queued_at) %>
             <% if waiting.any? %>
               <% waiting.each do |entry| %>

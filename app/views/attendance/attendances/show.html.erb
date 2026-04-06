@@ -1,0 +1,134 @@
+<% content_for :title, "#{t('app.attendance.title')} — #{@patient.name}" %>
+
+<div class="attendance-page">
+
+  <% ai_level = @ai&.urgency_level %>
+  <% final_level = @validation&.final_urgency_level || ai_level %>
+
+  <%# ── Cabeçalho do paciente ── %>
+  <div class="attendance-hero" style="border-left: 6px solid <%= urgency_color(final_level) %>;">
+    <div class="attendance-hero__left">
+      <div class="attendance-hero__ticket"><%= @queue_entry.ticket_number %></div>
+      <div>
+        <div class="attendance-hero__name"><%= @patient.name %></div>
+        <div class="attendance-hero__complaint"><%= @session.initial_demand %></div>
+      </div>
+    </div>
+    <div class="attendance-hero__right">
+      <span class="urgency-badge" style="<%= urgency_badge_style(final_level) %>">
+        <%= urgency_label(final_level) %>
+      </span>
+      <% if @validation %>
+        <% if @validation.final_urgency_level != ai_level %>
+          <span class="attendance-adjusted-badge">
+            ↳ <%= urgency_label(@validation.final_urgency_level) %>
+            (<%= t("enums.triage_validation.decision.adjusted") %>)
+          </span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="attendance-body">
+
+    <%# ── Coluna esquerda: dados da IA ── %>
+    <aside class="attendance-sidebar">
+
+      <div class="attendance-section">
+        <div class="attendance-section__title"><%= t("app.attendance.initial_demand") %></div>
+        <div class="attendance-section__content"><%= @session.initial_demand %></div>
+      </div>
+
+      <% if @ai %>
+        <div class="attendance-section">
+          <div class="attendance-section__title"><%= t("app.attendance.ai_suggestion") %></div>
+          <div class="attendance-section__content">
+            <span class="urgency-chip" style="<%= urgency_badge_style(@ai.urgency_level) %>">
+              <%= @ai.urgency_label %>
+            </span>
+            <% if @ai.protocol_reference.present? %>
+              <span class="attendance-manchester"><%= @ai.protocol_reference %></span>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="attendance-section">
+          <div class="attendance-section__title"><%= t("app.attendance.triage_summary") %></div>
+          <div class="attendance-section__content"><%= @ai.summary %></div>
+        </div>
+
+        <% if @ai.classification_reasoning.present? %>
+          <div class="attendance-section">
+            <div class="attendance-section__title"><%= t("app.attendance.classification_reasoning") %></div>
+            <div class="attendance-section__content"><%= @ai.classification_reasoning %></div>
+          </div>
+        <% end %>
+
+        <% if @ai.identified_symptoms.present? %>
+          <div class="attendance-section">
+            <div class="attendance-section__title">
+              <%= t("activerecord.attributes.ai_classification.identified_symptoms") %>
+            </div>
+            <div class="attendance-section__content attendance-section__content--symptoms">
+              <% Array(@ai.identified_symptoms).each do |symptom| %>
+                <span class="symptom-tag"><%= symptom %></span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @ai.routing_suggestion.present? %>
+          <div class="attendance-section">
+            <div class="attendance-section__title">
+              <%= t("activerecord.attributes.ai_classification.routing_suggestion") %>
+            </div>
+            <div class="attendance-section__content"><%= @ai.routing_suggestion %></div>
+          </div>
+        <% end %>
+      <% end %>
+
+      <% if @validation&.notes.present? %>
+        <div class="attendance-section attendance-section--nursing">
+          <div class="attendance-section__title">
+            <%= t("activerecord.attributes.triage_validation.notes") %> (equipe)
+          </div>
+          <div class="attendance-section__content"><%= @validation.notes %></div>
+        </div>
+      <% end %>
+
+    </aside>
+
+    <%# ── Coluna direita: transcrição do chat ── %>
+    <main class="attendance-transcript">
+      <div class="attendance-section__title"><%= t("app.attendance.triage_transcript") %></div>
+
+      <div class="transcript-messages">
+        <% @messages.each do |msg| %>
+          <div class="transcript-msg transcript-msg--<%= msg.sender %>">
+            <div class="transcript-msg__header">
+              <span class="transcript-msg__sender">
+                <%= msg.ai? ? t("app.triage.chat.title") : @patient.name %>
+              </span>
+              <span class="transcript-msg__time">
+                <%= l(msg.sent_at, format: :short) %>
+              </span>
+            </div>
+            <div class="transcript-msg__content"><%= msg.content %></div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# ── Ações ── %>
+      <div class="attendance-actions">
+          <%= link_to t("app.attendance.back_to_panel"), attendance_root_path, class: "btn btn--secondary" %>
+
+          <%= button_to t("app.attendance.finish_button"),
+            finish_attendance_attendance_path(@queue_entry),
+              method: :patch,
+              class: "btn btn--finish",
+            data: { turbo_confirm: t("app.attendance.finish_confirm") } %>
+      </div>
+    </main>
+
+  </div>
+</div>

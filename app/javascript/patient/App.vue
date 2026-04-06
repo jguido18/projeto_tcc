@@ -11,6 +11,27 @@
 
       <template #append>
         <div class="nav-right">
+          <v-btn
+            v-if="hasActiveSession"
+            variant="text"
+            color="primary"
+            size="small"
+            prepend-icon="mdi-format-list-numbered"
+            @click="goQueue"
+          >
+            Ver fila
+          </v-btn>
+          <v-btn
+            v-if="hasActiveSession"
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="mdi-restart"
+            :loading="store.sending"
+            @click="startAnotherTriage"
+          >
+            Outra triagem
+          </v-btn>
           <span v-if="userName" class="nav-user">{{ userName }}</span>
           <v-btn
             variant="text"
@@ -39,14 +60,40 @@
     <v-main>
       <router-view />
     </v-main>
+
+    <v-dialog v-model="restartDialog" max-width="480">
+      <v-card rounded="lg">
+        <v-card-title class="text-h6">Iniciar outra triagem?</v-card-title>
+        <v-card-text>
+          Esta ação encerra a triagem atual e remove você da fila atual.
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn variant="text" @click="restartDialog = false">Cancelar</v-btn>
+          <v-btn
+            color="secondary"
+            variant="flat"
+            :loading="store.sending"
+            @click="confirmRestartTriage"
+          >
+            Confirmar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
+import { useRouter } from "vue-router"
 import { apiFetch } from "./composables/useApi"
+import { useTriageStore } from "./stores/triage"
 
 const userName = ref("")
+const router = useRouter()
+const store = useTriageStore()
+const hasActiveSession = computed(() => !!store.session)
+const restartDialog = ref(false)
 
 const snackbar = ref({ show: false, message: "", color: "error" })
 
@@ -73,10 +120,31 @@ function logout() {
   form.submit()
 }
 
+async function goQueue() {
+  if (!store.loaded) await store.fetchStatus()
+  if (store.session) router.push("/app/queue")
+}
+
+async function startAnotherTriage() {
+  restartDialog.value = true
+}
+
+async function confirmRestartTriage() {
+  try {
+    await store.restartTriage()
+    restartDialog.value = false
+    router.push("/app")
+    snackbar.value = { show: true, message: "Voce pode iniciar uma nova triagem.", color: "success" }
+  } catch (e) {
+    snackbar.value = { show: true, message: e.message || "Nao foi possivel reiniciar a triagem.", color: "error" }
+  }
+}
+
 onMounted(async () => {
   try {
     const data = await apiFetch("/api/session")
     if (data.logged_in) userName.value = data.name
+    await store.fetchStatus()
   } catch {
     // silencioso — sessão pode estar expirada
   }

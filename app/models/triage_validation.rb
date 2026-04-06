@@ -8,20 +8,13 @@ class TriageValidation < ApplicationRecord
     rejected:  "rejected"
   }
 
-  enum :final_urgency_level, {
-    red:    "red",
-    orange: "orange",
-    yellow: "yellow",
-    green:  "green",
-    blue:   "blue"
-  }
-
   validates :decision, presence: true
   validates :final_urgency_level, presence: true
   validates :validated_at, presence: true
   validates :notes, presence: true, if: -> { adjusted? || rejected? }
 
   validate :validator_must_be_staff
+  validate :final_urgency_level_must_exist_in_settings
 
   delegate :triage_session, to: :ai_classification
 
@@ -31,5 +24,12 @@ class TriageValidation < ApplicationRecord
     unless user&.staff?
       errors.add(:user, "must be an attendant or doctor to validate")
     end
+  end
+
+  def final_urgency_level_must_exist_in_settings
+    return if final_urgency_level.blank?
+    return if TriageSetting.current.urgency_keys.include?(final_urgency_level)
+
+    errors.add(:final_urgency_level, "não está configurado no painel da IA")
   end
 end

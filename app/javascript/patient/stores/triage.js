@@ -10,18 +10,20 @@ export const useTriageStore = defineStore("triage", () => {
 
   // ── Urgência ──────────────────────────────────────────────────────
 
-  const URGENCY_COLORS = {
-    red:    "#E53E3E",
-    orange: "#DD6B20",
-    yellow: "#D69E2E",
-    green:  "#38A169",
-    blue:   "#3182CE",
-  }
+  const DEFAULT_URGENCY_COLOR = "#A0AEC0"
+
+  const urgencyMap = computed(() => {
+    const levels = session.value?.urgency_levels || []
+    return levels.reduce((acc, level) => {
+      acc[level.key] = level
+      return acc
+    }, {})
+  })
 
   const urgencyColor = computed(() => {
     const level = session.value?.urgency_level ||
                   session.value?.queue_entry?.urgency_level
-    return URGENCY_COLORS[level] || "#A0AEC0"
+    return urgencyMap.value[level]?.color || DEFAULT_URGENCY_COLOR
   })
 
   // ── Actions ───────────────────────────────────────────────────────
@@ -40,10 +42,10 @@ export const useTriageStore = defineStore("triage", () => {
     messages.value = data.messages
   }
 
-  async function startTriage(chiefComplaint) {
+  async function startTriage(initialDemand) {
     const data = await apiFetch("/api/triage/start", {
       method: "POST",
-      body: JSON.stringify({ chief_complaint: chiefComplaint }),
+      body: JSON.stringify({ initial_demand: initialDemand }),
     })
     session.value = data
     await fetchMessages()
@@ -80,6 +82,37 @@ export const useTriageStore = defineStore("triage", () => {
     }
   }
 
+  async function finishTriage() {
+    if (sending.value) return
+    sending.value = true
+    try {
+      const data = await apiFetch("/api/triage/finish", {
+        method: "POST",
+      })
+
+      if (data.session) session.value = data.session
+      return data
+    } finally {
+      sending.value = false
+    }
+  }
+
+  async function restartTriage() {
+    if (sending.value) return
+    sending.value = true
+    try {
+      await apiFetch("/api/triage/restart", {
+        method: "POST",
+      })
+
+      session.value = null
+      messages.value = []
+      loaded.value = true
+    } finally {
+      sending.value = false
+    }
+  }
+
   function applyRealtimeMessage(msg) {
     // Evita duplicata
     if (messages.value.find((m) => m.id === msg.id)) return
@@ -100,8 +133,9 @@ export const useTriageStore = defineStore("triage", () => {
 
   return {
     session, messages, loaded, sending,
-    urgencyColor,
+    urgencyColor, urgencyMap,
     fetchStatus, fetchMessages, startTriage, sendMessage,
+    finishTriage, restartTriage,
     applyRealtimeMessage, applyStatusChange, applyQueueEntry,
   }
 })

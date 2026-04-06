@@ -30,6 +30,18 @@
                 </v-icon>
                 {{ isAwaitingValidation ? "Aguardando validação" : "Em triagem" }}
               </v-chip>
+
+              <v-btn
+                v-if="!isAwaitingValidation"
+                color="warning"
+                variant="flat"
+                size="small"
+                :loading="store.sending"
+                :disabled="store.sending"
+                @click="finishTriage"
+              >
+                Finalizar triagem
+              </v-btn>
             </div>
           </v-card-title>
 
@@ -144,7 +156,7 @@ const isAwaitingValidation = computed(() =>
 )
 
 const statusLabel = computed(() =>
-  isAwaitingValidation.value ? "Aguardando validação da enfermagem" : "Em triagem"
+  isAwaitingValidation.value ? "Aguardando validação da equipe" : "Em triagem"
 )
 
 onMounted(async () => {
@@ -174,6 +186,14 @@ async function sendMessage() {
   if (!text || store.sending || isAwaitingValidation.value) return
   inputText.value = ""
   await store.sendMessage(text)
+}
+
+async function finishTriage() {
+  if (store.sending || isAwaitingValidation.value) return
+  const data = await store.finishTriage()
+  if (data?.finished) {
+    await store.fetchMessages()
+  }
 }
 </script>
 

@@ -5,8 +5,8 @@ Rails.application.routes.draw do
              path_names: { sign_in: "login", sign_out: "logout", sign_up: "register" },
              controllers: { registrations: "registrations" }
 
-  # Staff login — /staff/login (attendants, doctors, admins)
-  # Uses custom controllers to enforce attendant/doctor/admin check before signing in
+  # Staff login — /staff/login (attendants and admins)
+  # Uses custom controller to enforce attendant/admin permission before signing in
   devise_scope :user do
     get  "staff/login",  to: "staff/sessions#new",    as: :new_staff_session
     post "staff/login",  to: "staff/sessions#create",  as: :staff_session
@@ -20,6 +20,8 @@ Rails.application.routes.draw do
     get  "triage/status",    to: "triage#status"
     get  "triage/messages",  to: "triage#messages"
     post "triage/message",   to: "triage#send_message"
+    post "triage/finish",    to: "triage#finish"
+    post "triage/restart",   to: "triage#restart"
   end
 
   # Shell Vue — serve o SPA para o paciente (todas as rotas /app/*)
@@ -31,8 +33,8 @@ Rails.application.routes.draw do
   get  "/triage/chat",           to: redirect("/app/chat")
   get  "/triage/queue",          to: redirect("/app/queue")
 
-  # Nursing flow — staff only
-  namespace :nursing do
+  # Validation flow — staff only
+  namespace :validation do
     root to: "panel#index"
     resources :triage_validations, only: [ :new, :create ]
     resources :queue_entries, only: [] do
@@ -44,11 +46,16 @@ Rails.application.routes.draw do
     get :reports, to: "reports#index"
   end
 
-  # TV pública de fila — sem autenticação
-  get "tv/:establishment_id", to: "tv#show", as: :queue_tv
 
-  # Doctor flow — doctors only
-  namespace :doctor do
+  namespace :admin do
+    resource :triage_setting, only: [ :edit, :update ]
+  end
+
+  # TV pública de fila — sem autenticação
+  get "tv", to: "tv#show", as: :queue_tv
+
+  # Attendance flow — staff only
+  namespace :attendance do
     root to: "panel#index"
     resources :attendances, only: [ :show ] do
       member do

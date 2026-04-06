@@ -4,7 +4,7 @@ class Staff::SessionsController < Devise::SessionsController
     user = User.find_by(email: params.dig(:user, :email)&.downcase)
 
     if user && !user.staff?
-      flash[:alert] = "Acesso não autorizado. Esta área é exclusiva para atendentes e médicos."
+      flash[:alert] = "Acesso não autorizado. Esta área é exclusiva para a equipe interna."
       redirect_to new_staff_session_path and return
     end
 
@@ -14,10 +14,12 @@ class Staff::SessionsController < Devise::SessionsController
   protected
 
   def after_sign_in_path_for(resource)
-    if resource.doctor?
-      doctor_root_path
+    if resource.admin? && !resource.attendant? && !resource.doctor?
+      edit_admin_triage_setting_path
+    elsif resource.doctor?
+      attendance_root_path
     else
-      staff_root_path
+      validation_root_path
     end
   end
 

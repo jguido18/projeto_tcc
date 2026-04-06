@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || t("app.attendance.title") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="doctor-layout">
+    <header class="doctor-header">
+      <%= link_to attendance_root_path, class: "doctor-header__brand app-header__logo-link" do %>
+        <span class="app-header__logo-icon">+</span>
+        <span class="app-header__logo-text">Triagem<strong>AI</strong></span>
+      <% end %>
+
+      <nav class="doctor-header__nav">
+        <%= link_to t("app.attendance.title"), attendance_root_path, class: "doctor-nav__link" %>
+        <% if current_user.admin? %>
+          <%= link_to "Configuração IA", edit_admin_triage_setting_path, class: "doctor-nav__link" %>
+        <% end %>
+      </nav>
+
+      <div class="doctor-header__user">
+        <span class="doctor-header__name"><%= current_user.name %></span>
+        <%= link_to t("app.nav.logout"), destroy_user_session_path,
+              data: { turbo_method: :delete },
+              class: "doctor-header__logout" %>
+      </div>
+    </header>
+
+    <% if notice.present? %>
+      <div class="flash flash--notice"><%= notice %></div>
+    <% end %>
+    <% if alert.present? %>
+      <div class="flash flash--alert"><%= alert %></div>
+    <% end %>
+
+    <main class="doctor-main">
+      <%= yield %>
+    </main>
+  </body>
+</html>

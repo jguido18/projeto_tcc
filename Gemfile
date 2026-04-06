@@ -19,6 +19,7 @@ gem "jbuilder"
 gem "vite_rails"
 gem "devise"
 gem "anthropic"
+gem "ruby-openai"
 gem "rails-i18n", "~> 8.0" # Community pt-BR translations for Rails internals
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]

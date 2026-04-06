@@ -1,0 +1,146 @@
+<% content_for :title, t("app.validation.reports_title") %>
+
+<div class="reports-page">
+
+  <div class="reports-header">
+    <h1 class="reports-header__title"><%= t("app.reports.title") %></h1>
+    <p class="reports-header__subtitle">
+      <%= t("app.reports.subtitle", date: l(Date.today, format: :long)) %>
+    </p>
+  </div>
+
+  <%# ── Cards de métricas ── %>
+  <div class="reports-stats">
+
+    <div class="reports-stat-card reports-stat-card--blue">
+      <div class="reports-stat-card__value"><%= @total_today %></div>
+      <div class="reports-stat-card__label"><%= t("app.reports.total_patients") %></div>
+      <div class="reports-stat-card__sub"><%= t("app.reports.today") %></div>
+    </div>
+
+    <div class="reports-stat-card reports-stat-card--green">
+      <div class="reports-stat-card__value"><%= @attended_today %></div>
+      <div class="reports-stat-card__label"><%= t("app.reports.total_attended") %></div>
+      <div class="reports-stat-card__sub"><%= t("app.reports.today") %></div>
+    </div>
+
+    <div class="reports-stat-card reports-stat-card--yellow">
+      <div class="reports-stat-card__value"><%= @waiting_now %></div>
+      <div class="reports-stat-card__label"><%= t("app.reports.waiting_in_queue") %></div>
+      <div class="reports-stat-card__sub"><%= t("app.reports.right_now") %></div>
+    </div>
+
+    <div class="reports-stat-card reports-stat-card--orange">
+      <div class="reports-stat-card__value"><%= @called_now %></div>
+      <div class="reports-stat-card__label"><%= t("app.reports.called_now") %></div>
+      <div class="reports-stat-card__sub"><%= t("app.reports.right_now") %></div>
+    </div>
+
+    <% if @ai_accuracy_pct %>
+      <div class="reports-stat-card reports-stat-card--purple">
+        <div class="reports-stat-card__value"><%= @ai_accuracy_pct %>%</div>
+        <div class="reports-stat-card__label"><%= t("app.reports.ai_accuracy") %></div>
+        <div class="reports-stat-card__sub"><%= t("app.reports.ai_accuracy_hint") %></div>
+      </div>
+    <% end %>
+
+  </div>
+
+  <%# ── Distribuição por urgência ── %>
+  <div class="reports-section">
+    <h2 class="reports-section__title"><%= t("app.reports.distribution_by_severity") %></h2>
+    <div class="urgency-distribution">
+      <% TriageSetting.current.urgency_levels.each do |level| %>
+        <% key = level["key"] %>
+        <% count = @urgency_counts[key] || 0 %>
+        <% label = level["label"] %>
+        <% color = level["color"] %>
+        <div class="urgency-dist-bar">
+          <div class="urgency-dist-bar__header">
+            <span class="urgency-badge" style="<%= urgency_badge_style(key) %>"><%= label %></span>
+            <span class="urgency-dist-bar__count"><%= count %></span>
+          </div>
+          <div class="urgency-dist-bar__track">
+            <% total = @urgency_counts.values.sum %>
+            <% pct   = total > 0 ? (count.to_f / total * 100).round(1) : 0 %>
+            <div class="urgency-dist-bar__fill"
+                 style="background: <%= color %>; width: <%= pct %>%;"></div>
+          </div>
+          <div class="urgency-dist-bar__pct"><%= pct %>%</div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Últimos atendimentos ── %>
+  <div class="reports-section">
+    <h2 class="reports-section__title"><%= t("app.reports.recent_attendances") %></h2>
+
+    <% if @recent.empty? %>
+      <p class="reports-empty"><%= t("app.reports.no_records") %></p>
+    <% else %>
+      <div class="reports-table-wrap">
+        <table class="reports-table">
+          <thead>
+            <tr>
+              <th><%= t("app.reports.columns.datetime") %></th>
+              <th><%= t("app.reports.columns.patient") %></th>
+              <th><%= t("app.reports.columns.classification") %></th>
+              <th><%= t("app.reports.columns.ia_vs_nursing") %></th>
+              <th><%= t("app.reports.columns.status") %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent.each do |session| %>
+              <% ai         = session.ai_classification %>
+              <% validation = ai&.triage_validation %>
+              <% final_level = validation&.final_urgency_level || ai&.urgency_level %>
+              <% adjusted = validation && validation.final_urgency_level != ai&.urgency_level %>
+
+              <tr>
+                <td class="reports-table__datetime">
+                  <%= l(session.finished_at, format: :short) if session.finished_at %>
+                </td>
+                <td class="reports-table__patient"><%= session.user.name %></td>
+                <td>
+                  <% if final_level.present? %>
+                    <span class="urgency-badge" style="<%= urgency_badge_style(final_level) %>">
+                      <%= urgency_label(final_level) %>
+                    </span>
+                  <% else %>
+                    —
+                  <% end %>
+                </td>
+                <td>
+                  <% if validation %>
+                    <% if adjusted %>
+                      <span class="reports-badge reports-badge--adjusted">
+                        <%= t("app.reports.ai_adjusted") %>
+                      </span>
+                    <% else %>
+                      <span class="reports-badge reports-badge--confirmed">
+                        <%= t("app.reports.ai_confirmed") %>
+                      </span>
+                    <% end %>
+                  <% else %>
+                    <span class="reports-badge reports-badge--no-validation">—</span>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="reports-badge reports-badge--completed">
+                    <%= t("enums.triage_session.status.completed") %>
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="reports-footer">
+    <%= link_to "← #{t("app.validation.title")}", validation_root_path, class: "btn btn--secondary" %>
+  </div>
+
+</div>

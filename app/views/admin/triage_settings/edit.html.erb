@@ -1,0 +1,105 @@
+<% content_for :title, "Configuração da IA de Triagem" %>
+
+<div class="triage-settings-page" data-controller="triage-settings-form">
+  <div class="triage-settings-header">
+    <h1>Configuração da IA de Triagem</h1>
+    <p>Defina o prompt principal e personalize os níveis de urgência usados na classificação.</p>
+  </div>
+
+  <%= form_with model: @triage_setting, url: admin_triage_setting_path, method: :patch, class: "triage-settings-form" do |f| %>
+    <% if @triage_setting.errors.any? %>
+      <div class="validation-errors">
+        <ul>
+          <% @triage_setting.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <section class="triage-settings-card">
+      <h2>Contexto e Prompt</h2>
+
+      <div class="validation-field">
+        <%= f.label :purpose, "Propósito da IA", class: "validation-label" %>
+        <%= f.text_area :purpose, rows: 3, class: "validation-textarea", placeholder: "Ex: Triagem clínica geral para pronto atendimento" %>
+      </div>
+
+      <div class="validation-field">
+        <%= f.label :system_prompt, "Prompt do sistema", class: "validation-label" %>
+        <%= f.text_area :system_prompt, rows: 12, class: "validation-textarea", placeholder: "Descreva como a IA deve conduzir a triagem..." %>
+      </div>
+    </section>
+
+    <section class="triage-settings-card">
+      <div class="triage-settings-levels-header">
+        <h2>Níveis de urgência</h2>
+        <button type="button" class="btn btn--secondary" data-action="triage-settings-form#addLevel">Adicionar nível</button>
+      </div>
+
+      <p class="triage-settings-help">Você pode definir qualquer quantidade de níveis, cor e prioridade numérica (1 = mais urgente, 10 = menos urgente).</p>
+
+      <div data-triage-settings-form-target="levelsContainer">
+        <% @triage_setting.urgency_levels.each_with_index do |level, idx| %>
+          <div class="urgency-level-row" data-triage-settings-form-target="levelRow">
+            <div class="urgency-level-row__grid">
+              <div class="validation-field">
+                <label class="validation-label" for="triage_setting_urgency_levels_<%= idx %>_label">Nome</label>
+                <input id="triage_setting_urgency_levels_<%= idx %>_label" type="text" name="triage_setting[urgency_levels][<%= idx %>][label]" value="<%= level["label"] %>" class="validation-textarea" />
+              </div>
+
+              <div class="validation-field">
+                <label class="validation-label" for="triage_setting_urgency_levels_<%= idx %>_key">Chave técnica</label>
+                <input id="triage_setting_urgency_levels_<%= idx %>_key" type="text" name="triage_setting[urgency_levels][<%= idx %>][key]" value="<%= level["key"] %>" class="validation-textarea" />
+              </div>
+
+              <div class="validation-field">
+                <label class="validation-label" for="triage_setting_urgency_levels_<%= idx %>_weight">Prioridade (1-10)</label>
+                <input id="triage_setting_urgency_levels_<%= idx %>_weight" type="number" min="1" max="10" step="1" name="triage_setting[urgency_levels][<%= idx %>][weight]" value="<%= level["weight"] %>" class="validation-textarea" />
+              </div>
+
+              <div class="validation-field">
+                <label class="validation-label" for="triage_setting_urgency_levels_<%= idx %>_color">Cor</label>
+                <input id="triage_setting_urgency_levels_<%= idx %>_color" type="color" name="triage_setting[urgency_levels][<%= idx %>][color]" value="<%= level["color"] %>" class="urgency-color-input" />
+              </div>
+            </div>
+
+            <button type="button" class="btn btn--danger" data-action="triage-settings-form#removeLevel">Remover</button>
+          </div>
+        <% end %>
+      </div>
+    </section>
+
+    <div class="validation-actions">
+      <%= f.submit "Salvar configuração", class: "btn btn--primary" %>
+    </div>
+  <% end %>
+
+  <template data-triage-settings-form-target="levelTemplate">
+    <div class="urgency-level-row" data-triage-settings-form-target="levelRow">
+      <div class="urgency-level-row__grid">
+        <div class="validation-field">
+          <label class="validation-label">Nome</label>
+          <input type="text" name="triage_setting[urgency_levels][__INDEX__][label]" class="validation-textarea" placeholder="Ex: Muito crítico" />
+        </div>
+
+        <div class="validation-field">
+          <label class="validation-label">Chave técnica</label>
+          <input type="text" name="triage_setting[urgency_levels][__INDEX__][key]" class="validation-textarea" placeholder="ex: muito_critico" />
+        </div>
+
+        <div class="validation-field">
+          <label class="validation-label">Prioridade (1-10)</label>
+          <input type="number" min="1" max="10" step="1" name="triage_setting[urgency_levels][__INDEX__][weight]" value="__WEIGHT__" class="validation-textarea" />
+        </div>
+
+        <div class="validation-field">
+          <label class="validation-label">Cor</label>
+          <input type="color" name="triage_setting[urgency_levels][__INDEX__][color]" value="#718096" class="urgency-color-input" />
+        </div>
+      </div>
+
+      <button type="button" class="btn btn--danger" data-action="triage-settings-form#removeLevel">Remover</button>
+    </div>
+  </template>
+</div>

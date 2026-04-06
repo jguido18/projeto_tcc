@@ -12,9 +12,8 @@ class QueueEntryService
     entry = QueueEntry.create!(
       triage_session: @session,
       user: @session.user,
-      establishment: @session.establishment,
       urgency_level: urgency,
-      urgency_weight: AiClassification::URGENCY_WEIGHTS[urgency],
+      urgency_weight: TriageSetting.current.urgency_weight_for(urgency),
       ticket_number: generate_ticket,
       status: :waiting,
       queued_at: Time.current

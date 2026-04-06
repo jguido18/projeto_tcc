@@ -1,127 +1,93 @@
 <template>
-  <v-container class="fill-height py-6" fluid>
-    <v-row justify="center" align="start">
-
-      <!-- Coluna esquerda: painel do paciente -->
+  <v-container class="queue-page py-6" fluid>
+    <v-row justify="center" align="stretch" class="queue-page__row">
       <v-col cols="12" sm="10" md="4" lg="3">
-        <v-card rounded="xl" elevation="3" class="pa-6 text-center" style="background:#1a202c; color:#fff;">
+        <v-card rounded="xl" elevation="4" class="request-card pa-5">
+          <div class="request-card__ticket-label">SUA SENHA</div>
+          <div class="request-card__ticket-number">{{ entry?.ticket_number || "-" }}</div>
 
-          <!-- Senha -->
-          <div class="text-caption text-medium-emphasis mb-1" style="color:#a0aec0; letter-spacing:.1em; text-transform:uppercase;">
-            SUA SENHA
-          </div>
-          <div class="ticket-number mb-4">
-            {{ entry?.ticket_number || "—" }}
-          </div>
-
-          <!-- Círculo de urgência -->
-          <div class="urgency-circle-wrap mb-3">
+          <div class="request-card__urgency">
             <div
-              class="urgency-circle"
-              :style="{ borderColor: store.urgencyColor, boxShadow: `0 0 24px ${store.urgencyColor}55` }"
+              class="request-card__urgency-ring"
+              :style="{ borderColor: store.urgencyColor, boxShadow: `0 0 0 8px ${store.urgencyColor}22` }"
             >
-              <v-icon size="28" :color="store.urgencyColor">
-                {{ urgencyIcon }}
-              </v-icon>
+              <v-icon size="24" :color="store.urgencyColor">{{ urgencyIcon }}</v-icon>
+            </div>
+            <div class="request-card__urgency-text" :style="{ color: store.urgencyColor }">
+              {{ session?.urgency_label || session?.ai_summary && "Classificando..." || "Aguardando" }}
             </div>
           </div>
 
-          <!-- Label de urgência -->
-          <div class="urgency-label mb-1" :style="{ color: store.urgencyColor }">
-            {{ session?.urgency_label || session?.ai_summary && "Classificando..." || "Aguardando" }}
+          <div class="request-card__stats">
+            <div class="request-card__stat">
+              <div class="request-card__stat-label">Posição</div>
+              <div class="request-card__stat-value">
+                {{ entry?.queue_position && entry?.status === "waiting" ? `${entry.queue_position}º` : "-" }}
+              </div>
+            </div>
+            <div class="request-card__stat">
+              <div class="request-card__stat-label">Espera</div>
+              <div class="request-card__stat-value">{{ estimatedWait ? `~${estimatedWait} min` : "-" }}</div>
+            </div>
           </div>
 
-          <!-- Tempo estimado -->
-          <div v-if="estimatedWait" class="text-caption mb-4" style="color:#a0aec0;">
-            Tempo estimado: ~{{ estimatedWait }} min
-          </div>
-
-          <v-divider color="grey-darken-3" class="mb-4" />
-
-          <!-- Status da triagem -->
-          <v-chip
-            :color="statusChipColor"
-            variant="tonal"
-            size="small"
-            class="mb-3"
-          >
+          <v-chip :color="statusChipColor" variant="tonal" size="small" class="request-card__status">
             <v-icon start size="12">{{ statusChipIcon }}</v-icon>
             {{ statusChipLabel }}
           </v-chip>
 
-          <!-- Posição na fila -->
-          <div v-if="entry?.queue_position && entry?.status === 'waiting'" class="queue-position mt-4">
-            <div class="text-caption" style="color:#a0aec0;">Sua posição na fila</div>
-            <div class="position-number">{{ entry.queue_position }}º</div>
+          <div v-if="entry?.status === 'called'" class="request-card__called">
+            <v-icon color="success" size="26">mdi-bell-ring</v-icon>
+            <div class="request-card__called-title">DIRIJA-SE AO PONTO DE ATENDIMENTO</div>
+            <div class="request-card__called-subtitle">A equipe está aguardando você.</div>
           </div>
-
-          <!-- Chamado agora! -->
-          <div v-if="entry?.status === 'called'" class="called-alert mt-4">
-            <v-icon color="success" size="32" class="mb-2">mdi-bell-ring</v-icon>
-            <div class="text-h6 font-weight-bold text-success">DIRIJA-SE AO CONSULTÓRIO</div>
-            <div class="text-caption mt-1" style="color:#a0aec0;">O médico está aguardando você.</div>
-          </div>
-
         </v-card>
       </v-col>
 
-      <!-- Coluna direita: fila geral -->
-      <v-col cols="12" sm="10" md="6" lg="5">
-        <v-card rounded="xl" elevation="3" style="background:#1e2736; color:#fff; overflow:hidden;">
-
-          <!-- Header da fila -->
-          <div class="queue-board-header px-4 py-3">
-            <div class="d-flex align-center justify-space-between">
-              <span class="text-subtitle-1 font-weight-bold">Chamada Geral</span>
-              <div class="d-flex gap-2 flex-wrap">
-                <v-chip
-                  v-for="(color, level) in URGENCY_COLORS"
-                  :key="level"
-                  :color="color"
-                  size="x-small"
-                  variant="flat"
-                  class="text-white"
-                >
-                  {{ URGENCY_LABELS[level] }}
-                </v-chip>
-              </div>
+      <v-col cols="12" sm="10" md="7" lg="6">
+        <v-card rounded="xl" elevation="4" class="board-card">
+          <div class="board-card__header">
+            <div>
+              <div class="board-card__title">Fila de Atendimento</div>
+              <div class="board-card__subtitle">Acompanhamento em tempo real</div>
+            </div>
+            <div class="board-card__legend">
+              <v-chip
+                v-for="level in urgencyLevels"
+                :key="level.key"
+                :color="level.color"
+                size="x-small"
+                variant="flat"
+                class="text-white"
+              >
+                {{ level.label }}
+              </v-chip>
             </div>
           </div>
 
-          <!-- Cabeçalho da tabela -->
-          <div class="queue-table-head px-4 py-2">
-            <div class="queue-col queue-col--priority">PRIORIDADE</div>
-            <div class="queue-col queue-col--name">NOME</div>
-            <div class="queue-col queue-col--wait">ESPERA ESTIMADA</div>
+          <div class="board-table-head">
+            <div class="board-col board-col--priority">PRIORIDADE</div>
+            <div class="board-col board-col--name">NOME</div>
+            <div class="board-col board-col--wait">ESPERA ESTIMADA</div>
           </div>
 
-          <!-- Linhas da fila -->
-          <div v-if="queueRows.length === 0" class="text-center py-8 text-medium-emphasis">
-            Fila vazia
-          </div>
+          <div v-if="queueRows.length === 0" class="board-empty">Fila vazia</div>
 
           <div
-            v-for="(row, i) in queueRows"
+            v-for="row in queueRows"
             :key="row.id"
-            class="queue-row px-4 py-3"
-            :class="{ 'queue-row--mine': row.isMine, 'queue-row--first': i === 0 }"
+            class="board-row"
+            :class="{ 'board-row--mine': row.isMine }"
           >
-            <div class="queue-col queue-col--priority">
-              <span
-                class="urgency-dot"
-                :style="{ background: URGENCY_COLORS[row.urgency_level] }"
-              ></span>
-              <span :style="{ color: URGENCY_COLORS[row.urgency_level] }">
-                {{ URGENCY_LABELS[row.urgency_level] }}
-              </span>
+            <div class="board-col board-col--priority">
+              <span class="urgency-dot" :style="{ background: urgencyColor(row.urgency_level) }"></span>
+              <span :style="{ color: urgencyColor(row.urgency_level) }">{{ urgencyLabel(row.urgency_level) }}</span>
             </div>
-            <div class="queue-col queue-col--name">{{ row.masked_name }}</div>
-            <div class="queue-col queue-col--wait">~{{ row.estimated_wait }} min</div>
+            <div class="board-col board-col--name">{{ row.masked_name }}</div>
+            <div class="board-col board-col--wait">~{{ row.estimated_wait }} min</div>
           </div>
-
         </v-card>
       </v-col>
-
     </v-row>
   </v-container>
 </template>
@@ -139,29 +105,31 @@ const entry   = computed(() => store.session?.queue_entry)
 
 let unsubscribe = null
 
-// Constantes de urgência
-const URGENCY_COLORS = {
-  red:    "#E53E3E",
-  orange: "#DD6B20",
-  yellow: "#D69E2E",
-  green:  "#38A169",
-  blue:   "#3182CE",
+const urgencyLevels = computed(() => {
+  const levels = store.session?.urgency_levels || []
+  return [...levels].sort((a, b) => Number(a.weight) - Number(b.weight))
+})
+
+function urgencyColor(level) {
+  return store.urgencyMap[level]?.color || "#A0AEC0"
 }
 
-const URGENCY_LABELS = {
-  red:    "Emergência",
-  orange: "Muito Urgente",
-  yellow: "Urgente",
-  green:  "Pouco Urgente",
-  blue:   "Não Urgente",
+function urgencyLabel(level) {
+  return store.urgencyMap[level]?.label || "Sem classificação"
 }
 
 // Tempo estimado por nível de urgência (em minutos)
-const WAIT_TIMES = { red: 0, orange: 10, yellow: 30, green: 60, blue: 120 }
+const WAIT_TIMES = computed(() => {
+  const levels = urgencyLevels.value
+  return levels.reduce((acc, level) => {
+    acc[level.key] = Math.max((Number(level.weight) - 1) * 20, 0)
+    return acc
+  }, {})
+})
 
 const estimatedWait = computed(() => {
   const level = entry.value?.urgency_level || session.value?.urgency_level
-  return WAIT_TIMES[level] ?? null
+  return WAIT_TIMES.value[level] ?? null
 })
 
 const urgencyIcon = computed(() => {
@@ -192,7 +160,7 @@ const statusChipIcon = computed(() => {
 
 const statusChipLabel = computed(() => {
   const s = session.value?.status
-  if (s === "awaiting_validation") return "Aguardando validação da enfermagem"
+  if (s === "awaiting_validation") return "Aguardando validação da equipe"
   if (s === "in_queue") return "Na fila de espera"
   if (entry.value?.status === "called") return "● CHAMANDO AGORA"
   if (s === "in_attendance") return "Em atendimento"
@@ -213,8 +181,8 @@ async function loadQueue() {
     queueRows.value = [{
       id:             e.id,
       urgency_level:  e.urgency_level,
-      masked_name:    maskName(data.name || "Paciente"),
-      estimated_wait: WAIT_TIMES[e.urgency_level] ?? "?",
+      masked_name:    maskName(data.name || "Solicitante"),
+      estimated_wait: WAIT_TIMES.value[e.urgency_level] ?? "?",
       isMine:         true,
     }]
   } catch {
@@ -239,94 +207,239 @@ onUnmounted(() => unsubscribe?.())
 </script>
 
 <style scoped>
-.ticket-number {
-  font-size: 2.5rem;
-  font-weight: 900;
-  letter-spacing: .12em;
+.queue-page {
+  background:
+    radial-gradient(1200px 350px at 15% -15%, rgba(49, 130, 206, 0.16), transparent 55%),
+    radial-gradient(900px 320px at 90% 0%, rgba(66, 153, 225, 0.14), transparent 60%),
+    #eef3f9;
+  min-height: calc(100vh - 56px);
+}
+
+.queue-page__row {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.request-card {
+  background: linear-gradient(165deg, #10213e 0%, #18345f 100%);
   color: #fff;
-  font-family: monospace;
+  height: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.urgency-circle-wrap {
-  display: flex;
-  justify-content: center;
-}
-
-.urgency-circle {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  border: 3px solid #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.05);
-  transition: border-color 0.4s, box-shadow 0.4s;
-}
-
-.urgency-label {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: .02em;
-}
-
-.queue-position { }
-.position-number {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: #fff;
-}
-
-.called-alert {
-  background: rgba(56,161,105,.15);
-  border: 1px solid #38A169;
-  border-radius: 12px;
-  padding: 1rem;
-}
-
-/* Fila geral */
-.queue-board-header {
-  background: #1e2736;
-  border-bottom: 1px solid #2d3748;
-}
-
-.queue-table-head {
-  display: flex;
-  background: #161d2b;
-  border-bottom: 1px solid #2d3748;
-  font-size: .72rem;
-  font-weight: 700;
+.request-card__ticket-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: .08em;
-  color: #718096;
+  color: #c8daee;
 }
 
-.queue-row {
+.request-card__ticket-number {
+  margin-top: 0.15rem;
+  font-size: 2.1rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.request-card__urgency {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.request-card__urgency-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  border: 3px solid;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #2d3748;
-  font-size: .9rem;
-  transition: background .15s;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.queue-row--mine { background: rgba(49,130,206,.1); }
-.queue-row--first { font-size: 1rem; }
+.request-card__urgency-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
 
-.queue-col {
+.request-card__stats {
+  margin-top: 1.1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.request-card__stat {
+  padding: 0.7rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.request-card__stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #c8daee;
+}
+
+.request-card__stat-value {
+  margin-top: 0.18rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.request-card__status {
+  margin-top: 0.95rem;
+}
+
+.request-card__called {
+  margin-top: 0.9rem;
+  border-radius: 12px;
+  padding: 0.9rem;
+  background: rgba(56, 161, 105, 0.18);
+  border: 1px solid rgba(56, 161, 105, 0.55);
+  text-align: center;
+}
+
+.request-card__called-title {
+  margin-top: 0.4rem;
+  font-weight: 800;
+  color: #81e6b5;
+  font-size: 1rem;
+}
+
+.request-card__called-subtitle {
+  margin-top: 0.2rem;
+  color: #e6fffa;
+  font-size: 0.82rem;
+}
+
+.board-card {
+  overflow: hidden;
+  border: 1px solid #d9e3f0;
+  background: #fff;
+}
+
+.board-card__header {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid #e7eef8;
+  background: linear-gradient(180deg, #f8fbff 0%, #f0f6ff 100%);
+}
+
+.board-card__title {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #1f3658;
+}
+
+.board-card__subtitle {
+  margin-top: 0.1rem;
+  font-size: 0.8rem;
+  color: #6b7f99;
+}
+
+.board-card__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
+.board-table-head,
+.board-row {
+  display: flex;
+}
+
+.board-table-head {
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid #e7eef8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7f99;
+  background: #f8fbff;
+}
+
+.board-row {
+  padding: 0.85rem 1rem;
+  align-items: center;
+  border-bottom: 1px solid #edf2f9;
+  color: #35506f;
+  font-size: 0.92rem;
+}
+
+.board-row--mine {
+  background: linear-gradient(90deg, rgba(49, 130, 206, 0.11) 0%, rgba(49, 130, 206, 0.04) 100%);
+}
+
+.board-col {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.45rem;
 }
 
-.queue-col--priority { flex: 1.2; }
-.queue-col--name     { flex: 2; color: #e2e8f0; }
-.queue-col--wait     { flex: 1.2; color: #a0aec0; font-size: .82rem; }
+.board-col--priority {
+  flex: 1.2;
+  font-weight: 700;
+}
+
+.board-col--name {
+  flex: 2;
+  color: #2d4a6b;
+  font-weight: 600;
+}
+
+.board-col--wait {
+  flex: 1.2;
+  color: #6b7f99;
+}
+
+.board-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #6b7f99;
+}
 
 .urgency-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
   display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
   flex-shrink: 0;
+}
+
+@media (max-width: 960px) {
+  .request-card__ticket-number {
+    font-size: 1.8rem;
+  }
+
+  .board-card__header {
+    flex-direction: column;
+  }
+
+  .board-card__legend {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .board-table-head,
+  .board-row {
+    font-size: 0.82rem;
+  }
+
+  .board-col--wait {
+    justify-content: flex-end;
+  }
 }
 </style>

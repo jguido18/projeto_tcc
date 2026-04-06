@@ -98,13 +98,13 @@ pt-BR:
       signed_out: "Logout realizado com sucesso."
       already_signed_out: "Logout realizado com sucesso."
       new:
-        title: "Acesso do Paciente"
+        title: "Acesso do Solicitante"
         subtitle: "Entre com seu e-mail e senha"
         submit: "Entrar"
         remember_me: "Manter conectado"
       staff:
         title: "Acesso da Equipe"
-        subtitle: "Área exclusiva para atendentes e médicos"
+        subtitle: "Área exclusiva para validação e atendimento"
         submit: "Entrar na área restrita"
 
     shared:

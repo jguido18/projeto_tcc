@@ -107,6 +107,8 @@ Cada estabelecimento possui seu próprio **prompt de IA personalizado** e base d
 - Ruby 3.3.8
 - PostgreSQL 14+
 - Bundler
+- Node.js 20.19+ (recomendado 20.20.1)
+- npm 10+
 
 ### Instalação
 
@@ -117,6 +119,7 @@ cd projeto_tcc
 
 # Instalar dependências
 bundle install
+npm install
 
 # Criar e migrar banco de dados
 rails db:create
@@ -124,6 +127,9 @@ rails db:migrate
 
 # (Opcional) Dados iniciais
 rails db:seed
+
+# Build de assets frontend (Vite)
+bin/vite build --clear --mode=development
 
 # Iniciar servidor
 bin/dev

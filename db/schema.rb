@@ -10,20 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_02_000010) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_05_000012) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "ai_classifications", force: :cascade do |t|
     t.string "ai_model", null: false
     t.text "ai_suggestion"
-    t.text "clinical_reasoning"
+    t.text "classification_reasoning"
     t.decimal "confidence_score", precision: 5, scale: 2
     t.datetime "created_at", null: false
     t.datetime "generated_at", null: false
     t.jsonb "identified_symptoms", default: [], null: false
-    t.string "manchester_code"
-    t.string "specialty_suggestion"
+    t.string "protocol_reference"
+    t.string "routing_suggestion"
     t.text "summary", null: false
     t.bigint "triage_session_id", null: false
     t.datetime "updated_at", null: false
@@ -45,23 +45,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_000010) do
     t.index ["triage_session_id"], name: "index_chat_messages_on_triage_session_id"
   end
 
-  create_table "establishments", force: :cascade do |t|
-    t.boolean "active", default: true, null: false
-    t.string "address"
-    t.string "cnpj"
-    t.datetime "created_at", null: false
-    t.string "kind", null: false
-    t.string "name", null: false
-    t.string "phone"
-    t.jsonb "settings"
-    t.text "system_prompt", null: false
-    t.datetime "updated_at", null: false
-    t.string "urgency_protocol", default: "manchester", null: false
-    t.index ["active"], name: "index_establishments_on_active"
-    t.index ["cnpj"], name: "index_establishments_on_cnpj", unique: true, where: "(cnpj IS NOT NULL)"
-    t.index ["kind"], name: "index_establishments_on_kind"
-  end
-
   create_table "notifications", force: :cascade do |t|
     t.text "body", null: false
     t.string "channel", default: "websocket", null: false
@@ -81,7 +64,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_000010) do
   create_table "queue_entries", force: :cascade do |t|
     t.datetime "called_at"
     t.datetime "created_at", null: false
-    t.bigint "establishment_id", null: false
     t.datetime "queued_at", null: false
     t.datetime "service_finished_at"
     t.datetime "service_started_at"
@@ -92,8 +74,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_000010) do
     t.string "urgency_level", null: false
     t.integer "urgency_weight", null: false
     t.bigint "user_id", null: false
-    t.index ["establishment_id", "status"], name: "index_queue_entries_on_establishment_id_and_status"
-    t.index ["establishment_id"], name: "index_queue_entries_on_establishment_id"
     t.index ["ticket_number"], name: "index_queue_entries_on_ticket_number", unique: true
     t.index ["triage_session_id"], name: "index_queue_entries_on_triage_session_id", unique: true
     t.index ["urgency_weight", "queued_at"], name: "index_queue_entries_on_urgency_weight_and_queued_at"
@@ -102,19 +82,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_000010) do
 
   create_table "triage_sessions", force: :cascade do |t|
     t.jsonb "ai_metadata"
-    t.text "chief_complaint"
     t.datetime "created_at", null: false
-    t.bigint "establishment_id", null: false
     t.datetime "finished_at"
+    t.text "initial_demand"
     t.datetime "started_at", null: false
     t.string "status", default: "in_triage", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.index ["establishment_id", "status"], name: "index_triage_sessions_on_establishment_id_and_status"
-    t.index ["establishment_id"], name: "index_triage_sessions_on_establishment_id"
     t.index ["status"], name: "index_triage_sessions_on_status"
     t.index ["user_id", "status"], name: "index_triage_sessions_on_user_id_and_status"
     t.index ["user_id"], name: "index_triage_sessions_on_user_id"
+  end
+
+  create_table "triage_settings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "purpose"
+    t.text "system_prompt", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "urgency_levels", default: [], null: false
+    t.index ["created_at"], name: "index_triage_settings_on_created_at"
   end
 
   create_table "triage_validations", force: :cascade do |t|
@@ -143,7 +129,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_000010) do
     t.boolean "doctor", default: false, null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
-    t.bigint "establishment_id", null: false
     t.string "job_title"
     t.datetime "last_sign_in_at"
     t.string "last_sign_in_ip"
@@ -159,7 +144,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_000010) do
     t.index ["cpf"], name: "index_users_on_cpf", unique: true, where: "(cpf IS NOT NULL)"
     t.index ["doctor"], name: "index_users_on_doctor"
     t.index ["email"], name: "index_users_on_email", unique: true
-    t.index ["establishment_id"], name: "index_users_on_establishment_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
@@ -167,12 +151,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_02_000010) do
   add_foreign_key "chat_messages", "triage_sessions", on_delete: :cascade
   add_foreign_key "notifications", "triage_sessions", on_delete: :nullify
   add_foreign_key "notifications", "users", on_delete: :cascade
-  add_foreign_key "queue_entries", "establishments", on_delete: :restrict
   add_foreign_key "queue_entries", "triage_sessions", on_delete: :restrict
   add_foreign_key "queue_entries", "users", on_delete: :restrict
-  add_foreign_key "triage_sessions", "establishments", on_delete: :restrict
   add_foreign_key "triage_sessions", "users", on_delete: :restrict
   add_foreign_key "triage_validations", "ai_classifications", on_delete: :restrict
   add_foreign_key "triage_validations", "users", on_delete: :restrict
-  add_foreign_key "users", "establishments", on_delete: :restrict
 end

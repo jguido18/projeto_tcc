@@ -1,5 +1,5 @@
 class Api::TriageController < Api::BaseController
-  before_action :set_session, only: %i[status messages send_message]
+  before_action :set_session, only: %i[status messages send_message finish restart]
 
   # GET /api/triage/status
   # Retorna o estado atual da triagem do paciente logado.
@@ -19,20 +19,21 @@ class Api::TriageController < Api::BaseController
       return
     end
 
-    unless params[:chief_complaint].present?
-      render json: { error: "Informe sua queixa principal." }, status: :unprocessable_entity
+    demand = params[:initial_demand].presence || params[:chief_complaint].presence
+
+    unless demand.present?
+      render json: { error: "Informe o motivo inicial do atendimento." }, status: :unprocessable_entity
       return
     end
 
     @triage_session = TriageSession.create!(
       user: current_user,
-      establishment: current_user.establishment,
       status: :in_triage,
-      chief_complaint: params[:chief_complaint],
+      initial_demand: demand,
       started_at: Time.current
     )
 
-    TriageService.new(@triage_session).process_message(params[:chief_complaint])
+    TriageService.new(@triage_session).process_message(demand)
 
     render json: session_json(@triage_session), status: :created
   end
@@ -73,6 +74,50 @@ class Api::TriageController < Api::BaseController
     }
   end
 
+  # POST /api/triage/finish
+  # Permite ao solicitante encerrar a etapa de perguntas e enviar para validação.
+  def finish
+    unless @triage_session.in_triage?
+      render json: { error: "Triagem não está ativa." }, status: :unprocessable_entity
+      return
+    end
+
+    begin
+      TriageService.new(@triage_session).finalize_triage
+    rescue StandardError => e
+      Rails.logger.error("[Api::TriageController#finish] Failed: #{e.class} - #{e.message}")
+      render json: { error: "Não foi possível finalizar a triagem agora." }, status: :unprocessable_entity
+      return
+    end
+
+    render json: {
+      finished: true,
+      session: session_json(@triage_session.reload)
+    }
+  end
+
+  # POST /api/triage/restart
+  # Encerra a sessão ativa para permitir uma nova triagem.
+  def restart
+    if @triage_session.nil?
+      render json: { ok: true, status: "none" }
+      return
+    end
+
+    ActiveRecord::Base.transaction do
+      if (entry = @triage_session.queue_entry).present? && !entry.completed?
+        entry.update!(status: :left, service_finished_at: Time.current)
+      end
+
+      @triage_session.update!(status: :cancelled, finished_at: Time.current)
+    end
+
+    ValidationPanelChannel.broadcast_update
+    TvChannel.broadcast_update
+
+    render json: { ok: true, status: "none" }
+  end
+
   private
 
   def set_session
@@ -89,12 +134,14 @@ class Api::TriageController < Api::BaseController
     {
       id:              session.id,
       status:          session.status,
-      chief_complaint: session.chief_complaint,
+      name:            current_user.name,
+      initial_demand:  session.initial_demand,
       started_at:      session.started_at.iso8601,
       queue_entry:     entry ? queue_entry_json(entry) : nil,
       ai_summary:      ai&.summary,
       urgency_level:   ai&.urgency_level || entry&.urgency_level,
-      urgency_label:   AiClassification::URGENCY_LABELS[ai&.urgency_level || entry&.urgency_level]
+      urgency_label:   TriageSetting.current.urgency_label_for(ai&.urgency_level || entry&.urgency_level),
+      urgency_levels:  TriageSetting.current.urgency_levels
     }
   end
 

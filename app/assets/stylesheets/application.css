@@ -51,13 +51,35 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
+  position: relative;
   background: linear-gradient(135deg, #4299e1, #3182ce);
-  color: #fff;
-  font-weight: 900;
-  font-size: 1rem;
+  font-size: 0;
+  line-height: 0;
+  overflow: hidden;
   border-radius: 7px;
+}
+
+.app-header__logo-icon::before,
+.app-header__logo-icon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #fff;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+}
+
+.app-header__logo-icon::before {
+  width: 12px;
+  height: 2.5px;
+}
+
+.app-header__logo-icon::after {
+  width: 2.5px;
+  height: 12px;
 }
 
 .app-header__logo-text {

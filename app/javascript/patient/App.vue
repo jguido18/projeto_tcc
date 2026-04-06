@@ -16,9 +16,8 @@
             variant="text"
             color="error"
             size="small"
-            href="/logout"
-            data-turbo-method="delete"
             prepend-icon="mdi-logout"
+            @click="logout"
           >
             Sair
           </v-btn>
@@ -50,6 +49,29 @@ import { apiFetch } from "./composables/useApi"
 const userName = ref("")
 
 const snackbar = ref({ show: false, message: "", color: "error" })
+
+// O Devise exige DELETE /logout — submete um form programaticamente
+function logout() {
+  const form = document.createElement("form")
+  form.method = "post"
+  form.action = "/logout"
+
+  const methodInput = document.createElement("input")
+  methodInput.type  = "hidden"
+  methodInput.name  = "_method"
+  methodInput.value = "delete"
+
+  const csrfInput = document.createElement("input")
+  csrfInput.type  = "hidden"
+  csrfInput.name  = "authenticity_token"
+  csrfInput.value = document.getElementById("patient-app")?.dataset?.csrf ||
+                    document.querySelector('meta[name="csrf-token"]')?.content || ""
+
+  form.appendChild(methodInput)
+  form.appendChild(csrfInput)
+  document.body.appendChild(form)
+  form.submit()
+}
 
 onMounted(async () => {
   try {

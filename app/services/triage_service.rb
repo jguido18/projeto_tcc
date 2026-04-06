@@ -19,7 +19,16 @@ class TriageService
     )
 
     # Call AI
-    ai_result = @ai.call(content)
+    begin
+      ai_result = @ai.call(content)
+    rescue StandardError => e
+      Rails.logger.error("[TriageService] AI call failed: #{e.class} - #{e.message}")
+      ai_result = {
+        content: "Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente em instantes.",
+        raw_response: { error: e.message },
+        finished: false
+      }
+    end
     next_seq += 1
 
     # Persist AI reply

@@ -47,7 +47,10 @@ class AiService
   private
 
   def client
-    @client ||= Anthropic::Client.new(api_key: ENV.fetch("ANTHROPIC_API_KEY"))
+    key = ENV["ANTHROPIC_API_KEY"] ||
+          Rails.application.credentials.anthropic_api_key
+    raise "ANTHROPIC_API_KEY não configurada. Defina via ENV ou Rails credentials." if key.blank?
+    @client ||= Anthropic::Client.new(api_key: key)
   end
 
   def system_prompt

@@ -9,11 +9,10 @@
     <%# Vuetify precisa de Material Design Icons %>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css" rel="stylesheet">
     <%= vite_client_tag %>
-    <%= vite_stylesheet_tag "patient_app" %>
     <%= vite_javascript_tag "patient_app" %>
   </head>
   <body>
-    <%# Ponto de montagem do Vue %>
-    <div id="patient-app"></div>
+    <%# Ponto de montagem do Vue — csrf-token disponível para o apiFetch %>
+    <div id="patient-app" data-csrf="<%= form_authenticity_token %>"></div>
   </body>
 </html>

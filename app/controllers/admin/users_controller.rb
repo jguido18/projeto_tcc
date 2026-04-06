@@ -2,7 +2,9 @@ class Admin::UsersController < Admin::BaseController
   before_action :set_user, only: [ :edit, :update, :destroy ]
 
   def index
-    @staff = User.where("colaborador = true OR specialist = true").order(:name)
+    collection = User.where("colaborador = true OR specialist = true").order(:name)
+    @pagy  = Pagy::Offset.new(count: collection.count, page: params[:page], limit: 10, request: request)
+    @staff = @pagy.records(collection)
   end
 
   def new

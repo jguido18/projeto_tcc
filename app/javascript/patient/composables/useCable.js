@@ -51,8 +51,12 @@ export function useTriageChannel(sessionId) {
 
 /**
  * Assina o QueueChannel para receber atualizações de posição na fila.
+ * @param {number} sessionId - ID da sessão de triagem
+ * @param {Function} [onQueueUpdate] - Callback chamado em eventos que mudam a lista
+ *   geral da fila (queued, position_update, called), para que a view possa
+ *   recarregar o painel de espera.
  */
-export function useQueueChannel(sessionId) {
+export function useQueueChannel(sessionId, { onQueueUpdate } = {}) {
   const store  = useTriageStore()
   const router = useRouter()
 
@@ -70,18 +74,21 @@ export function useQueueChannel(sessionId) {
               status:         "waiting",
             })
             router.push("/app/queue")
+            onQueueUpdate?.()
             break
 
           case "position_update":
             if (store.session?.queue_entry) {
               store.session.queue_entry.queue_position = data.position
             }
+            onQueueUpdate?.()
             break
 
           case "called":
             if (store.session?.queue_entry) {
               store.session.queue_entry.status = "called"
             }
+            onQueueUpdate?.()
             break
         }
       },

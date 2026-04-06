@@ -1,10 +1,9 @@
 <template>
-  <v-container class="fill-height py-4" fluid>
-    <v-row justify="center" style="height:100%; width:100%;">
-      <v-col cols="12" sm="10" md="7" lg="6" style="display:flex; flex-direction:column; height:100%;">
+  <div class="chat-page">
+    <div class="chat-col">
 
         <!-- Card do chat -->
-        <v-card rounded="xl" elevation="3" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
+        <v-card rounded="xl" elevation="3" class="chat-card">
 
           <!-- Header -->
           <v-card-title class="chat-header px-4 py-3">
@@ -51,7 +50,6 @@
           <div
             ref="chatEl"
             class="chat-messages pa-4"
-            style="flex:1; overflow-y:auto;"
           >
             <div
               v-for="msg in store.messages"
@@ -135,9 +133,8 @@
           </div>
         </v-card>
 
-      </v-col>
-    </v-row>
-  </v-container>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -198,6 +195,41 @@ async function finishTriage() {
 </script>
 
 <style scoped>
+/* ── Layout externo ── */
+.chat-page {
+  height: calc(100vh - 56px);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.chat-col {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ── Card ── */
+.chat-card {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ── Área de mensagens com scroll ── */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
 .chat-header {
   background: #fff;
 }

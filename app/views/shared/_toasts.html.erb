@@ -1,0 +1,22 @@
+<% if notice.present? || alert.present? %>
+  <div class="toast-container">
+    <% if notice.present? %>
+      <div class="flash flash--notice"
+           data-controller="toast"
+           data-toast-delay-value="4000">
+        <span class="flash__icon">✓</span>
+        <span style="flex:1"><%= notice %></span>
+        <button class="flash__close" data-action="click->toast#dismiss" aria-label="Fechar">✕</button>
+      </div>
+    <% end %>
+    <% if alert.present? %>
+      <div class="flash flash--alert"
+           data-controller="toast"
+           data-toast-delay-value="5000">
+        <span class="flash__icon">⚠</span>
+        <span style="flex:1"><%= alert %></span>
+        <button class="flash__close" data-action="click->toast#dismiss" aria-label="Fechar">✕</button>
+      </div>
+    <% end %>
+  </div>
+<% end %>

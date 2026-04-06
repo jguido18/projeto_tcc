@@ -4,8 +4,20 @@ html, body, #patient-app {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow: hidden;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   background-color: #F7FAFC;
+}
+
+/* Garante que o v-main do Vuetify não gere scroll na página */
+.v-main {
+  overflow: hidden !important;
+}
+
+.v-main__wrap {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Scrollbar fina no chat */

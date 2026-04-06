@@ -91,22 +91,72 @@
 
 /* ─── Flash messages ─────────────────────────────────────────────────── */
 
+/* Flash/toast — mesmos estilos do application.css */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
 .flash {
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 0.75rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 260px;
+  max-width: 420px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  pointer-events: all;
+  animation: toast-in 0.25s ease forwards;
+}
+
+.flash.toast-hiding {
+  animation: toast-out 0.3s ease forwards;
 }
 
 .flash--notice {
-  background: #c6f6d5;
+  background: #f0fff4;
   color: #276749;
-  border-bottom: 2px solid #48bb78;
+  border-left: 4px solid #48bb78;
 }
 
 .flash--alert {
-  background: #fed7d7;
+  background: #fff5f5;
   color: #9b2c2c;
-  border-bottom: 2px solid #fc8181;
+  border-left: 4px solid #fc8181;
+}
+
+.flash__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  font-size: 1rem;
+  opacity: 0.5;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.flash__close:hover { opacity: 1; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toast-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(20px); }
 }
 
 /* ─── Two-column panel ───────────────────────────────────────────────── */
@@ -690,4 +740,63 @@
 .btn--sm {
   padding: 4px 12px;
   font-size: 0.8rem;
+}
+
+/* ── Paginação Pagy ── */
+.admin-table-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0 0.75rem;
+  font-size: 0.82rem;
+  color: #718096;
+}
+
+.admin-pagination {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0 0.25rem;
+}
+
+.pagy nav {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.pagy a,
+.pagy span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 0.5rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  background: #fff;
+  transition: background 0.15s, color 0.15s;
+}
+
+.pagy a:hover {
+  background: #ebf8ff;
+  color: #2b6cb0;
+  border-color: #bee3f8;
+}
+
+.pagy span[aria-current="page"] {
+  background: #3182ce;
+  color: #fff;
+  border-color: #3182ce;
+  font-weight: 700;
+}
+
+.pagy span.pagy-gap {
+  border: none;
+  background: none;
+  color: #a0aec0;
 }

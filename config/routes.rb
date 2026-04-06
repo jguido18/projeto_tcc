@@ -22,6 +22,7 @@ Rails.application.routes.draw do
     post "triage/message",   to: "triage#send_message"
     post "triage/finish",    to: "triage#finish"
     post "triage/restart",   to: "triage#restart"
+    get  "queue",            to: "queue#index"
   end
 
   # Shell Vue — serve o SPA para o paciente (todas as rotas /app/*)

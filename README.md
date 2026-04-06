@@ -1,102 +1,158 @@
-# TriagemIA — Sistema de Triagem Automatizada com IA
+# TriagemAI — Sistema de Triagem Automatizada com Inteligência Artificial
 
-> Projeto de TCC — Sistema de atendimento e triagem automatizada utilizando Inteligência Artificial, aplicável a hospitais, clínicas, secretarias e comércios em geral.
-
----
-
-## Descrição do Projeto
-
-O **TriagemIA** é uma plataforma web/mobile que permite a empresas e instituições oferecerem um atendimento inicial automatizado via IA, com classificação de prioridade, gestão de fila de espera e notificações em tempo real.
-
-Cada organização (hospital, clínica, secretaria, comércio) possui um ambiente próprio com um **prompt personalizado** treinado para o seu contexto de atendimento. A IA conduz o cliente por um roteiro de perguntas estruturadas, classifica o caso e o insere em uma fila monitorada por um responsável humano.
+> Projeto de TCC — Sistema de triagem universal com IA para hospitais, clínicas, secretarias e comércios. Desenvolvido com Ruby on Rails 8, Vue 3 e integração com modelos de linguagem (LLM).
 
 ---
 
-## Fluxo do Sistema
+## Sobre o Projeto
+
+O **TriagemAI** é uma plataforma web que digitaliza e automatiza o processo de triagem de atendimentos. Um assistente de IA conduz o solicitante por uma conversa estruturada, coleta informações relevantes e classifica o nível de urgência com base no Protocolo Manchester. Um colaborador humano valida a classificação antes de inserir o solicitante na fila de espera. O especialista então realiza o atendimento e finaliza o chamado.
+
+O sistema é totalmente configurável: o administrador define o prompt da IA, os níveis de urgência, pesos e cores diretamente pelo painel.
+
+---
+
+## Fluxo Completo do Sistema
 
 ```
-Cliente acessa o app
-        │
-        ▼
-   Seleciona perfil
-  ┌─────┴──────┐
-  │            │
-Atendente   Cliente
-  │            │
-  │            ▼
-  │     Login na conta
-  │            │
-  │            ▼
-  │     Chat com IA de atendimento
-  │     (prompt personalizado por estabelecimento)
-  │            │
-  │            ▼
-  │     IA coleta sintomas / informações
-  │     e realiza perguntas de triagem padrão
-  │            │
-  │            ▼
-  │     IA classifica urgência/prioridade
-  │     e insere o cliente na fila
-  │            │
-  ▼            ▼
-Enfermeiro/Responsável valida a classificação da IA
-        │
-        ▼
-   Cliente confirmado na fila
-        │
-        ▼
-App do cliente exibe:
- - Número de posição na fila
- - Nível de urgência
- - Notificação quando for chamado
+[Solicitante]
+     │
+     ▼
+  Login → /login
+     │
+     ▼
+  Informa demanda inicial (/app)
+     │
+     ▼
+  Chat com IA de triagem (/app/chat)
+  └── IA faz perguntas baseadas no protocolo configurado
+  └── Coleta sintomas, duração, intensidade, etc.
+     │
+     ▼
+  IA classifica urgência e finaliza triagem
+     │
+     ▼
+  Status: "Aguardando validação"
+     │
+[Colaborador] recebe no painel de validação (/validation)
+     │
+     ▼
+  Revisa análise da IA → Confirma ou ajusta classificação
+     │
+     ▼
+  Solicitante entra na fila com senha e urgência confirmada (/app/queue)
+     │
+[Especialista] vê fila de chamados (/attendance)
+     │
+     ▼
+  Chama solicitante → Solicitante recebe alerta em tempo real
+     │
+     ▼
+  Especialista realiza atendimento e finaliza
 ```
-
----
-
-## Exemplo de Uso — Triagem Hospitalar
-
-1. Paciente acessa o app e faz login
-2. É recebido pelo atendente virtual do hospital
-3. Informa seus sintomas ao chat
-4. A IA faz perguntas de triagem padrão (protocolo Manchester ou similar)
-5. Com base nas respostas, a IA classifica a urgência (ex: verde, amarelo, laranja, vermelho)
-6. O caso é enviado para validação de uma enfermeira responsável
-7. Após validação, o paciente entra na fila de espera
-8. O app exibe a posição na fila e o nível de urgência
-9. Quando for chamado, o paciente recebe uma notificação
-
----
-
-## Tipos de Estabelecimento Suportados
-
-- Hospitais e UPAs
-- Clínicas e consultórios
-- Secretarias municipais
-- Comércios com atendimento ao cliente
-
-Cada estabelecimento possui seu próprio **prompt de IA personalizado** e base de conhecimento adaptada ao seu contexto.
 
 ---
 
 ## Perfis de Usuário
 
-| Perfil | Acesso |
-|---|---|
-| **Cliente/Paciente** | Chat com IA, acompanhamento de fila, notificações |
-| **Atendente/Responsável** | Validação de classificações, gestão da fila, painel de atendimento |
-| **Administrador** | Configuração do prompt de IA, cadastro de usuários, relatórios |
+| Perfil | Rota de Login | Acesso |
+|---|---|---|
+| **Solicitante** | `/login` | Chat com IA, acompanhamento de fila, senha de atendimento |
+| **Colaborador** | `/staff/login` | Painel de validação, gestão de fila, relatórios, histórico |
+| **Especialista** | `/staff/login` | Painel de atendimento, detalhes de triagem, finalização |
+| **Admin** | `/staff/login` | Configuração da IA, cadastro de equipe, painel geral |
+
+---
+
+## Funcionalidades Implementadas
+
+### Autenticação
+- [x] Login separado para solicitantes (`/login`) e equipe (`/staff/login`)
+- [x] Cadastro de solicitantes com nome, CPF, data de nascimento e telefone
+- [x] Dois perfis de equipe na mesma tabela (`colaborador`, `specialist`, boolean flags)
+- [x] Redirecionamento automático pós-login de acordo com o perfil
+
+### Fluxo do Solicitante (Vue 3 SPA — `/app`)
+- [x] Tela de início de triagem com campo de demanda inicial
+- [x] Chat em tempo real com IA via ActionCable (WebSocket)
+- [x] Indicador de digitação ("...") enquanto a IA responde
+- [x] Botão "Finalizar Triagem" para encerrar o chat e enviar para validação
+- [x] Tela de fila com senha, urgência, posição e tempo estimado
+- [x] Painel de fila geral com todos os solicitantes aguardando (nomes anonimizados)
+- [x] Notificação em tempo real quando chamado ("Dirija-se ao ponto de atendimento")
+- [x] Possibilidade de iniciar outra triagem (cancela a atual)
+- [x] Guard de rotas: redireciona para a etapa correta conforme status da sessão
+
+### Inteligência Artificial
+- [x] Integração com OpenAI (`gpt-4o-mini`) e Anthropic (`claude-opus-4-6`)
+- [x] Seleção automática de provedor por variável de ambiente (`AI_PROVIDER`)
+- [x] Prompt do sistema configurável pelo administrador
+- [x] Classificação de urgência por nível (vermelho, laranja, amarelo, verde, azul)
+- [x] Resumo clínico, raciocínio da classificação e sugestão de encaminhamento
+- [x] Identificação de sintomas e referência ao protocolo de urgência
+
+### Painel do Colaborador — Validação (`/validation`)
+- [x] Coluna "Aguardando Validação" com cartões das triagens pendentes
+- [x] Coluna "Fila Prioritária" com solicitantes validados ordenados por urgência
+- [x] Modal de validação: revisa análise da IA e confirma ou ajusta prioridade
+- [x] Botão "Chamar Atendimento" que notifica o solicitante em tempo real
+- [x] Atualização automática do painel via ActionCable
+- [x] Relatórios do dia (triagens, atendimentos, precisão da IA)
+- [x] Histórico com filtros por gravidade e busca por nome
+
+### Painel do Especialista — Atendimento (`/attendance`)
+- [x] Lista de solicitantes chamados aguardando atendimento
+- [x] Tela de detalhes: demanda inicial, sugestão da IA, resumo, raciocínio
+- [x] Transcrição completa do chat de triagem
+- [x] Botão "Finalizar Atendimento" com confirmação
+- [x] Cabeçalho com identificação visual por nível de urgência (cor + borda)
+
+### Painel Administrativo (`/admin`)
+- [x] Configuração do sistema de triagem (prompt da IA, nome, níveis de urgência)
+- [x] Cadastro, edição e remoção de membros da equipe (colaboradores e especialistas)
+- [x] Paginação da listagem de equipe via Pagy
+
+### TV Pública de Fila (`/tv`)
+- [x] Tela de chamada sem autenticação
+- [x] Lista de solicitantes sendo chamados com urgência e horário
+- [x] Destaque animado para a chamada mais recente
+- [x] Atualização em tempo real via ActionCable
+
+### Tempo Real (ActionCable / WebSocket)
+- [x] `TriageChannel` — mensagens e mudanças de status do chat
+- [x] `QueueChannel` — posição na fila, chamada, entrada na fila
+- [x] `ValidationPanelChannel` — atualização do painel do colaborador
+- [x] `TvChannel` — chamadas na TV pública
+
+### API JSON (para o SPA Vue)
+- [x] `GET /api/session` — dados da sessão autenticada
+- [x] `POST /api/triage/start` — inicia nova triagem
+- [x] `GET /api/triage/status` — status e dados da triagem ativa
+- [x] `GET /api/triage/messages` — histórico de mensagens
+- [x] `POST /api/triage/message` — envia mensagem e recebe resposta da IA
+- [x] `POST /api/triage/finish` — finaliza triagem manualmente
+- [x] `POST /api/triage/restart` — cancela triagem ativa
+- [x] `GET /api/queue` — lista anonimizada da fila atual (para o painel Vue)
 
 ---
 
 ## Stack de Tecnologia
 
-- **Backend:** Ruby on Rails 8+ com Ruby 3.3.8
-- **Banco de Dados:** PostgreSQL
-- **IA:** Integração com API de LLM (ex: Claude / OpenAI) via prompts personalizados por estabelecimento
-- **Frontend:** ERB + Tailwind CSS / Hotwire (Turbo + Stimulus)
-- **Tempo real:** Action Cable (WebSockets) para atualização de fila e notificações
-- **Autenticação:** Devise (dois fluxos: cliente e atendente)
-- **Background Jobs:** Solid Queue (embutido no Rails 8)
+| Camada | Tecnologia |
+|---|---|
+| Backend | Ruby on Rails 8.1 + Ruby 3.3.8 |
+| Banco de dados | PostgreSQL |
+| Autenticação | Devise (único modelo `User` com flags booleanas de perfil) |
+| Frontend do solicitante | Vue 3 + Vuetify 3 + Pinia + Vue Router (SPA via Vite) |
+| Frontend da equipe | ERB + Stimulus.js + CSS customizado |
+| Assets | Vite Rails (frontend Vue) + Propshaft (assets Rails) |
+| Tempo real | ActionCable (WebSocket) + Solid Cable |
+| Background jobs | Solid Queue |
+| Cache | Solid Cache |
+| IA | Anthropic Claude (`claude-opus-4-6`) / OpenAI (`gpt-4o-mini`) |
+| Paginação | Pagy 43.x (API `Pagy::Offset`) |
+| Internacionalização | rails-i18n + locale customizado `pt-BR.yml` |
+| Deploy | Kamal + Thruster + Puma |
 
 ---
 
@@ -104,10 +160,9 @@ Cada estabelecimento possui seu próprio **prompt de IA personalizado** e base d
 
 ### Pré-requisitos
 
-- Ruby 3.3.8
+- Ruby 3.3.8 (via asdf ou rbenv)
 - PostgreSQL 14+
-- Bundler
-- Node.js 20.19+ (recomendado 20.20.1)
+- Node.js 20+
 - npm 10+
 
 ### Instalação
@@ -117,63 +172,127 @@ Cada estabelecimento possui seu próprio **prompt de IA personalizado** e base d
 git clone git@github.com:jguido18/projeto_tcc.git
 cd projeto_tcc
 
-# Instalar dependências
+# Instalar dependências Ruby e Node
 bundle install
 npm install
 
-# Criar e migrar banco de dados
-rails db:create
-rails db:migrate
+# Configurar banco de dados
+rails db:create db:migrate
 
-# (Opcional) Dados iniciais
+# Popular dados iniciais (usuário admin, configuração padrão de triagem)
 rails db:seed
 
-# Build de assets frontend (Vite)
-bin/vite build --clear --mode=development
-
-# Iniciar servidor
+# Subir o servidor (Rails + Vite em paralelo)
 bin/dev
+```
+
+### Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+# Provedor de IA (anthropic ou openai)
+AI_PROVIDER=anthropic
+
+# Chave da API Anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Chave da API OpenAI (alternativa)
+OPENAI_API_KEY=sk-...
+```
+
+### Criar usuário de teste via console
+
+```ruby
+# Admin
+User.create!(name: "Admin", email: "admin@teste.com", password: "123456",
+             password_confirmation: "123456", admin: true, active: true)
+
+# Colaborador
+User.create!(name: "Colaborador", email: "colab@teste.com", password: "123456",
+             password_confirmation: "123456", colaborador: true, job_title: "Recepcionista", active: true)
+
+# Especialista
+User.create!(name: "Especialista", email: "esp@teste.com", password: "123456",
+             password_confirmation: "123456", specialist: true, job_title: "Analista", active: true)
+
+# Solicitante
+User.create!(name: "João Silva", email: "joao@teste.com", password: "123456",
+             password_confirmation: "123456")
 ```
 
 ---
 
-## Estrutura Principal
+## Estrutura de Diretórios
 
 ```
 projeto_tcc/
 ├── app/
-│   ├── models/           # User, Estabelecimento, Atendimento, FilaEspera
-│   ├── controllers/      # Autenticação, Chat, Fila, Validação
-│   ├── views/            # Interface cliente e atendente
-│   ├── services/         # TriagemService, IAService, FilaService
-│   ├── channels/         # ActionCable para fila em tempo real
-│   └── jobs/             # NotificacaoJob, AtualizacaoFilaJob
+│   ├── channels/              # ActionCable: TriageChannel, QueueChannel, TvChannel, ValidationPanelChannel
+│   ├── controllers/
+│   │   ├── admin/             # triage_settings, users
+│   │   ├── api/               # triage (JSON para Vue SPA), queue, session
+│   │   ├── attendance/        # panel, attendances
+│   │   ├── validation/        # panel, triage_validations, queue_entries, reports
+│   │   ├── staff/             # sessions (login da equipe)
+│   │   └── application_controller.rb
+│   ├── helpers/
+│   │   └── application_helper.rb  # urgency_label, urgency_color, urgency_badge_style
+│   ├── javascript/
+│   │   └── patient/           # SPA Vue 3 do solicitante
+│   │       ├── App.vue        # Layout principal, navbar, logout
+│   │       ├── router/        # Rotas Vue com guards de navegação
+│   │       ├── stores/        # Pinia: triage store
+│   │       ├── composables/   # useCable (ActionCable), useApi (fetch)
+│   │       └── views/
+│   │           ├── TriageStart.vue   # Demanda inicial
+│   │           ├── TriageChat.vue    # Chat com IA
+│   │           └── TriageQueue.vue   # Fila e tela de chamada
+│   ├── models/
+│   │   ├── user.rb            # Devise + flags: colaborador, specialist, admin
+│   │   ├── triage_session.rb  # 7 status: in_triage → completed
+│   │   ├── ai_classification.rb
+│   │   ├── triage_validation.rb
+│   │   ├── queue_entry.rb     # ticket_number, urgency_level, queue_position (SQL)
+│   │   ├── chat_message.rb
+│   │   └── triage_setting.rb  # TriageSetting.current — config dinâmica da IA
+│   ├── services/
+│   │   ├── ai_service.rb          # Abstração OpenAI / Anthropic
+│   │   ├── triage_service.rb      # Orquestra chat + classificação
+│   │   └── queue_entry_service.rb # Gera ticket e insere na fila
+│   └── views/
+│       ├── admin/             # triage_settings, users (CRUD)
+│       ├── attendance/        # panel, show (detalhes do atendimento)
+│       ├── validation/        # panel, triage_validations, reports
+│       ├── layouts/           # application, attendance, validation
+│       └── tv/                # Tela pública de chamada
 ├── config/
 │   ├── routes.rb
-│   └── database.yml
-├── db/
-│   └── migrate/
-├── test/
-└── README.md
+│   └── locales/
+│       ├── pt-BR.yml          # Traduções da aplicação
+│       └── devise.pt-BR.yml   # Traduções do Devise
+└── db/
+    └── migrate/               # 10 migrações criando o schema completo
 ```
 
 ---
 
-## Funcionalidades Planejadas
+## Protocolo de Urgência (Manchester)
 
-- [x] Estrutura base do projeto Rails
-- [ ] Autenticação com dois perfis (cliente e atendente)
-- [ ] Cadastro de estabelecimentos com prompt de IA personalizado
-- [ ] Chat de triagem com IA
-- [ ] Classificação automática de urgência
-- [ ] Painel de validação para atendentes
-- [ ] Fila de espera em tempo real (WebSocket)
-- [ ] Notificação ao paciente quando chamado
-- [ ] Painel administrativo
+| Cor | Nível | Descrição |
+|---|---|---|
+| 🔴 Vermelho | Emergência | Risco imediato de vida |
+| 🟠 Laranja | Muito Urgente | Situação grave, atendimento rápido |
+| 🟡 Amarelo | Urgente | Condição importante, pode aguardar |
+| 🟢 Verde | Pouco Urgente | Condição não urgente |
+| 🔵 Azul | Não Urgente | Situação de rotina |
 
 ---
 
 ## Autor
 
-**José Torrezan**
+**José Torrezan RA:115385**
+**lucas Vieria RA:114602**
+**Gustavo Adorno RA:115871**
+**Enzo Gaino RA:115619**
 TCC — 2026

@@ -249,6 +249,7 @@
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  background: linear-gradient(#1a3558);
   color: #fff;
 }
 

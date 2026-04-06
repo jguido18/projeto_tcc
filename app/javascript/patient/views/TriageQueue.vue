@@ -1,95 +1,111 @@
 <template>
-  <v-container class="queue-page py-6" fluid>
-    <v-row justify="center" align="stretch" class="queue-page__row">
-      <v-col cols="12" sm="10" md="4" lg="3">
-        <v-card rounded="xl" elevation="4" class="request-card pa-5">
-          <div class="request-card__ticket-label">SUA SENHA</div>
-          <div class="request-card__ticket-number">{{ entry?.ticket_number || "-" }}</div>
+  <div class="queue-layout">
 
-          <div class="request-card__urgency">
+    <!-- ── Painel esquerdo: senha e status ── -->
+    <aside class="ticket-panel">
+      <div class="ticket-panel__inner">
+
+        <!-- bloco superior: senha, urgência, stats, chip -->
+        <div class="ticket-top">
+          <div>
+            <div class="ticket-label">SUA SENHA</div>
+            <div class="ticket-number">{{ entry?.ticket_number || "-" }}</div>
+          </div>
+
+          <div class="ticket-urgency">
             <div
-              class="request-card__urgency-ring"
+              class="ticket-urgency__ring"
               :style="{ borderColor: store.urgencyColor, boxShadow: `0 0 0 8px ${store.urgencyColor}22` }"
             >
-              <v-icon size="24" :color="store.urgencyColor">{{ urgencyIcon }}</v-icon>
+              <v-icon size="26" :color="store.urgencyColor">{{ urgencyIcon }}</v-icon>
             </div>
-            <div class="request-card__urgency-text" :style="{ color: store.urgencyColor }">
-              {{ session?.urgency_label || session?.ai_summary && "Classificando..." || "Aguardando" }}
+            <div class="ticket-urgency__text" :style="{ color: store.urgencyColor }">
+              {{ session?.urgency_label || (session?.ai_summary ? "Classificando..." : "Aguardando") }}
             </div>
           </div>
 
-          <div class="request-card__stats">
-            <div class="request-card__stat">
-              <div class="request-card__stat-label">Posição</div>
-              <div class="request-card__stat-value">
+          <div class="ticket-stats">
+            <div class="ticket-stat">
+              <div class="ticket-stat__label">POSIÇÃO</div>
+              <div class="ticket-stat__value">
                 {{ entry?.queue_position && entry?.status === "waiting" ? `${entry.queue_position}º` : "-" }}
               </div>
             </div>
-            <div class="request-card__stat">
-              <div class="request-card__stat-label">Espera</div>
-              <div class="request-card__stat-value">{{ estimatedWait ? `~${estimatedWait} min` : "-" }}</div>
+            <div class="ticket-stat">
+              <div class="ticket-stat__label">ESPERA</div>
+              <div class="ticket-stat__value">{{ estimatedWait ? `~${estimatedWait} min` : "-" }}</div>
             </div>
           </div>
 
-          <v-chip :color="statusChipColor" variant="tonal" size="small" class="request-card__status">
+          <v-chip
+            :color="statusChipColor"
+            variant="tonal"
+            size="small"
+            class="ticket-chip"
+          >
             <v-icon start size="12">{{ statusChipIcon }}</v-icon>
             {{ statusChipLabel }}
           </v-chip>
+        </div>
 
-          <div v-if="entry?.status === 'called'" class="request-card__called">
-            <v-icon color="success" size="26">mdi-bell-ring</v-icon>
-            <div class="request-card__called-title">DIRIJA-SE AO PONTO DE ATENDIMENTO</div>
-            <div class="request-card__called-subtitle">A equipe está aguardando você.</div>
-          </div>
-        </v-card>
-      </v-col>
+        <!-- notificação de chamada (âncora no rodapé do painel) -->
+        <div v-if="entry?.status === 'called'" class="ticket-called">
+          <v-icon color="#81e6b5" size="28">mdi-bell-ring</v-icon>
+          <div class="ticket-called__title">DIRIJA-SE AO PONTO DE ATENDIMENTO</div>
+          <div class="ticket-called__sub">A equipe está aguardando você.</div>
+        </div>
 
-      <v-col cols="12" sm="10" md="7" lg="6">
-        <v-card rounded="xl" elevation="4" class="board-card">
-          <div class="board-card__header">
-            <div>
-              <div class="board-card__title">Fila de Atendimento</div>
-              <div class="board-card__subtitle">Acompanhamento em tempo real</div>
-            </div>
-            <div class="board-card__legend">
-              <v-chip
-                v-for="level in urgencyLevels"
-                :key="level.key"
-                :color="level.color"
-                size="x-small"
-                variant="flat"
-                class="text-white"
-              >
-                {{ level.label }}
-              </v-chip>
-            </div>
-          </div>
+      </div>
+    </aside>
 
-          <div class="board-table-head">
-            <div class="board-col board-col--priority">PRIORIDADE</div>
-            <div class="board-col board-col--name">NOME</div>
-            <div class="board-col board-col--wait">ESPERA ESTIMADA</div>
-          </div>
+    <!-- ── Painel direito: fila geral ── -->
+    <main class="board-panel">
 
-          <div v-if="queueRows.length === 0" class="board-empty">Fila vazia</div>
-
-          <div
-            v-for="row in queueRows"
-            :key="row.id"
-            class="board-row"
-            :class="{ 'board-row--mine': row.isMine }"
+      <div class="board-panel__header">
+        <div>
+          <div class="board-panel__title">Fila de Atendimento</div>
+          <div class="board-panel__subtitle">Acompanhamento em tempo real</div>
+        </div>
+        <div class="board-panel__legend">
+          <v-chip
+            v-for="level in urgencyLevels"
+            :key="level.key"
+            :color="level.color"
+            size="x-small"
+            variant="flat"
+            class="text-white"
           >
-            <div class="board-col board-col--priority">
-              <span class="urgency-dot" :style="{ background: urgencyColor(row.urgency_level) }"></span>
-              <span :style="{ color: urgencyColor(row.urgency_level) }">{{ urgencyLabel(row.urgency_level) }}</span>
-            </div>
-            <div class="board-col board-col--name">{{ row.masked_name }}</div>
-            <div class="board-col board-col--wait">~{{ row.estimated_wait }} min</div>
+            {{ level.label }}
+          </v-chip>
+        </div>
+      </div>
+
+      <div class="board-panel__body">
+        <div class="board-table-head">
+          <div class="board-col board-col--priority">PRIORIDADE</div>
+          <div class="board-col board-col--name">NOME</div>
+          <div class="board-col board-col--wait">ESPERA ESTIMADA</div>
+        </div>
+
+        <div v-if="queueRows.length === 0" class="board-empty">Fila vazia</div>
+
+        <div
+          v-for="row in queueRows"
+          :key="row.id"
+          class="board-row"
+          :class="{ 'board-row--mine': row.isMine }"
+        >
+          <div class="board-col board-col--priority">
+            <span class="urgency-dot" :style="{ background: urgencyColor(row.urgency_level) }"></span>
+            <span :style="{ color: urgencyColor(row.urgency_level) }">{{ urgencyLabel(row.urgency_level) }}</span>
           </div>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+          <div class="board-col board-col--name">{{ row.masked_name }}</div>
+          <div class="board-col board-col--wait">~{{ row.estimated_wait }} min</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
 </template>
 
 <script setup>
@@ -118,7 +134,6 @@ function urgencyLabel(level) {
   return store.urgencyMap[level]?.label || "Sem classificação"
 }
 
-// Tempo estimado por nível de urgência (em minutos)
 const WAIT_TIMES = computed(() => {
   const levels = urgencyLevels.value
   return levels.reduce((acc, level) => {
@@ -141,11 +156,10 @@ const urgencyIcon = computed(() => {
   return icons[level] || "mdi-help-circle-outline"
 })
 
-// Status chip
 const statusChipColor = computed(() => {
   const s = session.value?.status
   if (s === "awaiting_validation") return "warning"
-  if (s === "in_queue") return "info"
+  if (s === "in_queue") return "#90CDF4"
   if (s === "in_attendance" || entry.value?.status === "called") return "success"
   return "default"
 })
@@ -167,39 +181,28 @@ const statusChipLabel = computed(() => {
   return "..."
 })
 
-// Linhas da fila geral (só mostra waiting + called da mesma session)
 const queueRows = ref([])
 
 async function loadQueue() {
   try {
-    const data = await apiFetch("/api/triage/status")
-    if (!data || data.status === "none") return
-
-    const e = data.queue_entry
-    if (!e) return
-
-    queueRows.value = [{
+    const data = await apiFetch("/api/queue")
+    queueRows.value = (data.entries || []).map((e) => ({
       id:             e.id,
       urgency_level:  e.urgency_level,
-      masked_name:    maskName(data.name || "Solicitante"),
-      estimated_wait: WAIT_TIMES.value[e.urgency_level] ?? "?",
-      isMine:         true,
-    }]
+      masked_name:    e.masked_name,
+      estimated_wait: e.estimated_wait,
+      isMine:         e.is_mine,
+    }))
   } catch {
     // silencioso
   }
-}
-
-function maskName(name) {
-  const parts = name.split(" ")
-  return parts[0] + (parts.length > 1 ? " " + parts[parts.length - 1].slice(0, 1) + "***" : "")
 }
 
 onMounted(async () => {
   await store.fetchStatus()
   await loadQueue()
   if (session.value?.id) {
-    unsubscribe = useQueueChannel(session.value.id)
+    unsubscribe = useQueueChannel(session.value.id, { onQueueUpdate: loadQueue })
   }
 })
 
@@ -207,239 +210,298 @@ onUnmounted(() => unsubscribe?.())
 </script>
 
 <style scoped>
-.queue-page {
-  background:
-    radial-gradient(1200px 350px at 15% -15%, rgba(49, 130, 206, 0.16), transparent 55%),
-    radial-gradient(900px 320px at 90% 0%, rgba(66, 153, 225, 0.14), transparent 60%),
-    #eef3f9;
-  min-height: calc(100vh - 56px);
+/* ── Layout principal ── */
+.queue-layout {
+  display: flex;
+  height: calc(100vh - var(--v-layout-top, 56px));
+  overflow: hidden;
+  position: relative;
 }
 
-.queue-page__row {
-  max-width: 1180px;
-  margin: 0 auto;
+/* ── Painel esquerdo (senha/status) ── */
+.ticket-panel {
+  width: 320px;
+  flex-shrink: 0;
+  background: linear-gradient(170deg, #0d1b35 0%, #10213e 40%, #18345f 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden; /* sem scrollbar */
+  display: flex;
+  flex-direction: column;
 }
 
-.request-card {
-  background: linear-gradient(165deg, #10213e 0%, #18345f 100%);
-  color: #fff;
-  height: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.request-card__ticket-label {
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #c8daee;
-}
-
-.request-card__ticket-number {
-  margin-top: 0.15rem;
-  font-size: 2.1rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
-
-.request-card__urgency {
-  margin-top: 1rem;
+.ticket-panel__inner {
+  padding: 1.2rem 1.2rem;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #fff;
+  min-height: 0;
+  text-align: center;
 }
 
-.request-card__urgency-ring {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
+/* ── Bloco superior: senha + urgência + stats + chip ── */
+.ticket-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.ticket-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #90b8d8;
+}
+
+.ticket-number {
+  font-size: 1.9rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  line-height: 1.1;
+}
+
+.ticket-urgency {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ticket-urgency__ring {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   border: 3px solid;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
 }
 
-.request-card__urgency-text {
-  font-size: 1.05rem;
+.ticket-urgency__text {
+  font-size: 0.95rem;
   font-weight: 700;
-}
-
-.request-card__stats {
-  margin-top: 1.1rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-}
-
-.request-card__stat {
-  padding: 0.7rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.09);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-}
-
-.request-card__stat-label {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #c8daee;
-}
-
-.request-card__stat-value {
-  margin-top: 0.18rem;
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-
-.request-card__status {
-  margin-top: 0.95rem;
-}
-
-.request-card__called {
-  margin-top: 0.9rem;
-  border-radius: 12px;
-  padding: 0.9rem;
-  background: rgba(56, 161, 105, 0.18);
-  border: 1px solid rgba(56, 161, 105, 0.55);
   text-align: center;
 }
 
-.request-card__called-title {
-  margin-top: 0.4rem;
+.ticket-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.ticket-stat {
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  text-align: left;
+}
+
+.ticket-stat__label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #90b8d8;
+}
+
+.ticket-stat__value {
+  margin-top: 0.1rem;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.ticket-chip {
+  align-self: center;
+}
+
+/* ── Notificação de chamada ── */
+.ticket-called {
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  background: rgba(56, 161, 105, 0.15);
+  border: 1px solid rgba(56, 161, 105, 0.5);
+  text-align: center;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.ticket-called__title {
+  margin-top: 0.3rem;
   font-weight: 800;
   color: #81e6b5;
-  font-size: 1rem;
+  font-size: 0.85rem;
+  line-height: 1.3;
 }
 
-.request-card__called-subtitle {
-  margin-top: 0.2rem;
-  color: #e6fffa;
-  font-size: 0.82rem;
+.ticket-called__sub {
+  margin-top: 0.15rem;
+  color: #c6f6d5;
+  font-size: 0.75rem;
 }
 
-.board-card {
-  overflow: hidden;
-  border: 1px solid #d9e3f0;
-  background: #fff;
+/* ── Painel direito (fila geral) ── */
+.board-panel {
+  flex: 1;
+  background: #f4f8fd;
+  overflow: hidden; /* sem scrollbar na página */
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.board-card__header {
+.board-panel__header {
   display: flex;
   gap: 1rem;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 0.95rem 1rem;
-  border-bottom: 1px solid #e7eef8;
-  background: linear-gradient(180deg, #f8fbff 0%, #f0f6ff 100%);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #dce8f5;
+  background: linear-gradient(180deg, #ffffff 0%, #f0f6ff 100%);
+  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
-.board-card__title {
-  font-size: 1.08rem;
+.board-panel__title {
+  font-size: 1.1rem;
   font-weight: 800;
   color: #1f3658;
 }
 
-.board-card__subtitle {
+.board-panel__subtitle {
   margin-top: 0.1rem;
   font-size: 0.8rem;
   color: #6b7f99;
 }
 
-.board-card__legend {
+.board-panel__legend {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
   justify-content: flex-end;
 }
 
+.board-panel__body {
+  flex: 1;
+  overflow-y: auto; /* scroll apenas dentro da tabela, não na página */
+  min-height: 0;
+}
+
 .board-table-head,
 .board-row {
   display: flex;
+  padding: 0 1.5rem;
 }
 
 .board-table-head {
-  padding: 0.55rem 1rem;
-  border-bottom: 1px solid #e7eef8;
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid #dce8f5;
   font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: #6b7f99;
   background: #f8fbff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .board-row {
-  padding: 0.85rem 1rem;
+  padding-top: 0.9rem;
+  padding-bottom: 0.9rem;
   align-items: center;
-  border-bottom: 1px solid #edf2f9;
+  border-bottom: 1px solid #e8eef7;
   color: #35506f;
-  font-size: 0.92rem;
+  font-size: 0.93rem;
 }
 
 .board-row--mine {
-  background: linear-gradient(90deg, rgba(49, 130, 206, 0.11) 0%, rgba(49, 130, 206, 0.04) 100%);
+  background: linear-gradient(90deg, rgba(49, 130, 206, 0.09) 0%, transparent 100%);
 }
 
 .board-col {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
 }
 
-.board-col--priority {
-  flex: 1.2;
-  font-weight: 700;
-}
-
-.board-col--name {
-  flex: 2;
-  color: #2d4a6b;
-  font-weight: 600;
-}
-
-.board-col--wait {
-  flex: 1.2;
-  color: #6b7f99;
-}
+.board-col--priority { flex: 1.2; font-weight: 700; }
+.board-col--name     { flex: 2;   color: #2d4a6b; font-weight: 600; }
+.board-col--wait     { flex: 1.2; color: #6b7f99; }
 
 .board-empty {
-  padding: 2rem 1rem;
+  padding: 3rem 1rem;
   text-align: center;
-  color: #6b7f99;
+  color: #a0aec0;
+  font-size: 0.95rem;
 }
 
 .urgency-dot {
   width: 9px;
   height: 9px;
-  border-radius: 999px;
+  border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
 }
 
-@media (max-width: 960px) {
-  .request-card__ticket-number {
-    font-size: 1.8rem;
-  }
-
-  .board-card__header {
+/* ── Responsivo: tablet ── */
+@media (max-width: 900px) {
+  .queue-layout {
     flex-direction: column;
+    height: auto;
+    overflow: visible;
   }
 
-  .board-card__legend {
+  .ticket-panel {
+    width: 100%;
+    overflow: visible;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .ticket-panel__inner {
+    justify-content: flex-start;
+    gap: 0.9rem;
+  }
+
+  .ticket-number { font-size: 1.8rem; }
+
+  .board-panel {
+    overflow: visible;
+    min-height: 50vh;
+  }
+
+  .board-panel__body {
+    overflow: visible;
+  }
+
+  .board-panel__header {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .board-panel__legend {
     justify-content: flex-start;
   }
 }
 
-@media (max-width: 640px) {
+/* ── Responsivo: mobile ── */
+@media (max-width: 480px) {
   .board-table-head,
   .board-row {
+    padding-left: 1rem;
+    padding-right: 1rem;
     font-size: 0.82rem;
-  }
-
-  .board-col--wait {
-    justify-content: flex-end;
   }
 }
 </style>

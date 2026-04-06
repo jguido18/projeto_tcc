@@ -31,12 +31,7 @@
       </div>
     </header>
 
-    <% if notice.present? %>
-      <div class="flash flash--notice"><%= notice %></div>
-    <% end %>
-    <% if alert.present? %>
-      <div class="flash flash--alert"><%= alert %></div>
-    <% end %>
+    <%= render "shared/toasts" %>
 
     <main class="specialist-main">
       <%= yield %>

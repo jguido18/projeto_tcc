@@ -220,7 +220,7 @@ pt-BR:
     home:
       subtitle: "Sistema inteligente de triagem universal com IA"
       patient_title: "Sou Solicitante"
-      patient_desc: "Realize sua triagem digital com auxílio de inteligência artificial e acompanhe sua posição na fila."
+      patient_desc: "Realize sua triagem digital com auxílio de inteligência artificial."
       patient_login: "Entrar como Solicitante"
       patient_register: "Criar conta"
       staff_title: "Sou da Equipe"

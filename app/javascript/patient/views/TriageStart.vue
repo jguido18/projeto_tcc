@@ -11,7 +11,7 @@
             </v-avatar>
             <h1 class="text-h5 font-weight-bold text-grey-darken-3">Início da Triagem</h1>
             <p class="text-body-2 text-medium-emphasis mt-1">
-              Descreva a sua necessidade inicial para iniciar o atendimento.
+              Informe sua necessidade para iniciar o atendimento.
             </p>
           </div>
 

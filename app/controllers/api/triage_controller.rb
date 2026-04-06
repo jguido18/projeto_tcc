@@ -128,8 +128,14 @@ class Api::TriageController < Api::BaseController
   end
 
   def session_json(session)
-    entry = session.queue_entry
-    ai    = session.ai_classification
+    entry      = session.queue_entry
+    ai         = session.ai_classification
+    validation = ai&.triage_validation
+
+    # Prioridade: nível validado pela equipe > nível da fila (já reflete validação) > nível da IA
+    effective_urgency = validation&.final_urgency_level ||
+                        entry&.urgency_level ||
+                        ai&.urgency_level
 
     {
       id:              session.id,
@@ -139,8 +145,8 @@ class Api::TriageController < Api::BaseController
       started_at:      session.started_at.iso8601,
       queue_entry:     entry ? queue_entry_json(entry) : nil,
       ai_summary:      ai&.summary,
-      urgency_level:   ai&.urgency_level || entry&.urgency_level,
-      urgency_label:   TriageSetting.current.urgency_label_for(ai&.urgency_level || entry&.urgency_level),
+      urgency_level:   effective_urgency,
+      urgency_label:   TriageSetting.current.urgency_label_for(effective_urgency),
       urgency_levels:  TriageSetting.current.urgency_levels
     }
   end

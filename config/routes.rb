@@ -13,14 +13,23 @@ Rails.application.routes.draw do
     delete "staff/logout", to: "staff/sessions#destroy", as: :destroy_staff_session
   end
 
-  # Patient triage flow
-  resource :triage, only: [] do
-    get  :identification
-    post :start
-    get  :chat
-    post :message
-    get  :queue
+  # API JSON para o app Vue do paciente
+  namespace :api do
+    get  "session",          to: "session#show"
+    post "triage/start",     to: "triage#start"
+    get  "triage/status",    to: "triage#status"
+    get  "triage/messages",  to: "triage#messages"
+    post "triage/message",   to: "triage#send_message"
   end
+
+  # Shell Vue — serve o SPA para o paciente (todas as rotas /app/*)
+  get "/app", to: "patient_app#index", as: :patient_app
+  get "/app/*path", to: "patient_app#index"
+
+  # Manter rotas antigas funcionando (redirecionam para o app Vue)
+  get  "/triage/identification", to: redirect("/app")
+  get  "/triage/chat",           to: redirect("/app/chat")
+  get  "/triage/queue",          to: redirect("/app/queue")
 
   # Nursing flow — staff only
   namespace :nursing do

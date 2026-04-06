@@ -1,13 +1,13 @@
 /* ─── Doctor layout ──────────────────────────────────────────────────── */
 
-.doctor-layout {
+.specialist-layout {
   font-family: system-ui, -apple-system, sans-serif;
   background: #f0f4f8;
   min-height: 100vh;
   color: #1a202c;
 }
 
-.doctor-header {
+.specialist-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -17,7 +17,7 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
-.doctor-header__brand {
+.specialist-header__brand {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -25,52 +25,52 @@
   text-decoration: none;
 }
 
-.doctor-header .app-header__logo-text {
+.specialist-header .app-header__logo-text {
   color: #f7fafc;
 }
 
-.doctor-header .app-header__logo-text strong {
+.specialist-header .app-header__logo-text strong {
   color: #90cdf4;
 }
 
-.doctor-header__logo { font-size: 1.75rem; }
+.specialist-header__logo { font-size: 1.75rem; }
 
-.doctor-header__title {
+.specialist-header__title {
   font-size: 1.1rem;
   font-weight: 700;
 }
 
-.doctor-header__subtitle {
+.specialist-header__subtitle {
   font-size: 0.75rem;
   color: #a0aec0;
 }
 
-.doctor-header__nav {
+.specialist-header__nav {
   display: flex;
   gap: 1rem;
 }
 
-.doctor-nav__link {
+.specialist-nav__link {
   color: #a0aec0;
   text-decoration: none;
   font-size: 0.9rem;
   transition: color 0.15s;
 }
 
-.doctor-nav__link:hover { color: #fff; }
+.specialist-nav__link:hover { color: #fff; }
 
-.doctor-header__user {
+.specialist-header__user {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.doctor-header__name {
+.specialist-header__name {
   font-weight: 600;
   font-size: 0.9rem;
 }
 
-.doctor-header__logout {
+.specialist-header__logout {
   background: rgba(255,255,255,0.12);
   color: #fff;
   border: 1px solid rgba(255,255,255,0.25);
@@ -81,9 +81,9 @@
   transition: background 0.2s;
 }
 
-.doctor-header__logout:hover { background: rgba(255,255,255,0.22); }
+.specialist-header__logout:hover { background: rgba(255,255,255,0.22); }
 
-.doctor-main {
+.specialist-main {
   padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -91,26 +91,26 @@
 
 /* ─── Panel (lista de chamados) ──────────────────────────────────────── */
 
-.doctor-panel__header {
+.specialist-panel__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 1.5rem;
 }
 
-.doctor-panel__title {
+.specialist-panel__title {
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
 }
 
-.doctor-panel__subtitle {
+.specialist-panel__subtitle {
   color: #718096;
   font-size: 0.9rem;
   margin: 0.2rem 0 0;
 }
 
-.doctor-stat {
+.specialist-stat {
   background: #fff;
   border-radius: 12px;
   padding: 0.75rem 1.5rem;
@@ -118,7 +118,7 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.07);
 }
 
-.doctor-stat__value {
+.specialist-stat__value {
   display: block;
   font-size: 2rem;
   font-weight: 800;
@@ -126,38 +126,38 @@
   line-height: 1;
 }
 
-.doctor-stat__label {
+.specialist-stat__label {
   display: block;
   font-size: 0.75rem;
   color: #718096;
   margin-top: 0.2rem;
 }
 
-.doctor-empty {
+.specialist-empty {
   text-align: center;
   padding: 4rem 2rem;
   color: #a0aec0;
 }
 
-.doctor-empty__icon {
+.specialist-empty__icon {
   font-size: 3rem;
   margin-bottom: 0.75rem;
   color: #48bb78;
 }
 
-.doctor-empty__text {
+.specialist-empty__text {
   font-size: 1.1rem;
 }
 
 /* ─── Patient cards (painel) ─────────────────────────────────────────── */
 
-.doctor-cards {
+.specialist-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 1rem;
 }
 
-.doctor-card {
+.specialist-card {
   background: #fff;
   border-radius: 12px;
   padding: 1.1rem;
@@ -169,29 +169,29 @@
   gap: 0.5rem;
 }
 
-.doctor-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+.specialist-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
 
-.doctor-card--red    { border-left-color: #e53e3e; }
-.doctor-card--orange { border-left-color: #dd6b20; }
-.doctor-card--yellow { border-left-color: #d69e2e; }
-.doctor-card--green  { border-left-color: #38a169; }
-.doctor-card--blue   { border-left-color: #3182ce; }
+.specialist-card--red    { border-left-color: #e53e3e; }
+.specialist-card--orange { border-left-color: #dd6b20; }
+.specialist-card--yellow { border-left-color: #d69e2e; }
+.specialist-card--green  { border-left-color: #38a169; }
+.specialist-card--blue   { border-left-color: #3182ce; }
 
-.doctor-card__top {
+.specialist-card__top {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.doctor-card__order {
+.specialist-card__order {
   font-weight: 800;
   font-size: 1rem;
   color: #4a5568;
   min-width: 1.75rem;
 }
 
-.doctor-card__ticket {
+.specialist-card__ticket {
   margin-left: auto;
   font-family: monospace;
   font-size: 0.8rem;
@@ -199,30 +199,30 @@
   font-weight: 600;
 }
 
-.doctor-card__called-at {
+.specialist-card__called-at {
   font-size: 0.75rem;
   color: #a0aec0;
   width: 100%;
 }
 
-.doctor-card__name {
+.specialist-card__name {
   font-size: 1rem;
   font-weight: 700;
   color: #2d3748;
 }
 
-.doctor-card__complaint {
+.specialist-card__complaint {
   font-size: 0.875rem;
   color: #4a5568;
 }
 
-.doctor-card__summary {
+.specialist-card__summary {
   font-size: 0.8rem;
   color: #718096;
   font-style: italic;
 }
 
-.doctor-card__action {
+.specialist-card__action {
   display: block;
   text-align: center;
   padding: 0.5rem 1rem;
@@ -236,7 +236,7 @@
   transition: background 0.15s;
 }
 
-.doctor-card__action:hover { background: #2c5282; }
+.specialist-card__action:hover { background: #2c5282; }
 
 /* ─── Attendance detail page ─────────────────────────────────────────── */
 
@@ -343,7 +343,7 @@
   gap: 0.35rem;
 }
 
-.attendance-section--nursing {
+.attendance-section--colaborador {
   background: #fffff0;
   border: 1px solid #ecc94b;
   border-radius: 8px;

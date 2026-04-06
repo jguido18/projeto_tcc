@@ -4,7 +4,7 @@ class QueueEntryService
     @validation = triage_session.ai_classification.triage_validation
   end
 
-  # Creates the QueueEntry after the attendant validates the triage.
+  # Creates the QueueEntry after the colaborador validates the triage.
   # Returns the created QueueEntry.
   def enqueue
     urgency = @validation.final_urgency_level

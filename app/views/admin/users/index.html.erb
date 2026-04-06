@@ -1,0 +1,60 @@
+<% content_for :title, "Gerenciar Equipe" %>
+
+<div class="triage-settings-page">
+  <div class="triage-settings-header">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h1>Equipe Interna</h1>
+        <p>Colaboradores (validação) e Especialistas (atendimento).</p>
+      </div>
+      <%= link_to "Novo Membro", new_admin_user_path, class: "btn btn--primary" %>
+    </div>
+  </div>
+
+  <section class="triage-settings-card">
+    <% if @staff.any? %>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th>Cargo</th>
+            <th>Perfil</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @staff.each do |user| %>
+            <tr>
+              <td><%= user.name %></td>
+              <td><%= user.email %></td>
+              <td><%= user.job_title.presence || "—" %></td>
+              <td>
+                <% if user.colaborador? %>
+                  <span class="urgency-badge" style="background:#ebf8ff;color:#2b6cb0;border:1px solid #bee3f8;">Colaborador</span>
+                <% end %>
+                <% if user.specialist? %>
+                  <span class="urgency-badge" style="background:#f0fff4;color:#276749;border:1px solid #c6f6d5;">Especialista</span>
+                <% end %>
+              </td>
+              <td>
+                <span class="status-badge <%= user.active? ? 'status-badge--active' : 'status-badge--inactive' %>">
+                  <%= user.active? ? "Ativo" : "Inativo" %>
+                </span>
+              </td>
+              <td class="admin-table__actions">
+                <%= link_to "Editar", edit_admin_user_path(user), class: "btn btn--secondary btn--sm" %>
+                <%= button_to "Remover", admin_user_path(user), method: :delete,
+                      class: "btn btn--danger btn--sm",
+                      form: { data: { turbo_confirm: "Remover #{user.name}?" } } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="admin-empty">Nenhum membro da equipe cadastrado ainda.</p>
+    <% end %>
+  </section>
+</div>

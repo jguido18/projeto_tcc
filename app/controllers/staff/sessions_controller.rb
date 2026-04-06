@@ -14,9 +14,9 @@ class Staff::SessionsController < Devise::SessionsController
   protected
 
   def after_sign_in_path_for(resource)
-    if resource.admin? && !resource.attendant? && !resource.doctor?
+    if resource.admin? && !resource.colaborador? && !resource.specialist?
       edit_admin_triage_setting_path
-    elsif resource.doctor?
+    elsif resource.specialist?
       attendance_root_path
     else
       validation_root_path

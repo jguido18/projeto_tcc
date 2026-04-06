@@ -19,8 +19,8 @@ class Validation::TriageValidationsController < Validation::BaseController
     @validation.validated_at = Time.current
 
     if @validation.save
+      # enqueue handles the status transition to :in_queue internally
       QueueEntryService.new(@triage_session).enqueue
-      @triage_session.update!(status: :validated)
 
       # Broadcast panel update to all validation staff
       ValidationPanelChannel.broadcast_update

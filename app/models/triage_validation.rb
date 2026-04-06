@@ -1,6 +1,6 @@
 class TriageValidation < ApplicationRecord
   belongs_to :ai_classification
-  belongs_to :user  # the attendant who validated
+  belongs_to :user  # the colaborador who validated
 
   enum :decision, {
     confirmed: "confirmed",
@@ -22,7 +22,7 @@ class TriageValidation < ApplicationRecord
 
   def validator_must_be_staff
     unless user&.staff?
-      errors.add(:user, "must be an attendant or doctor to validate")
+      errors.add(:user, "must be a colaborador or specialist to validate")
     end
   end
 

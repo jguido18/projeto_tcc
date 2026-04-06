@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_05_000012) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_06_113502) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -120,13 +120,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_000012) do
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.boolean "admin", default: false, null: false
-    t.boolean "attendant", default: false, null: false
     t.date "birth_date"
+    t.boolean "colaborador", default: false, null: false
     t.string "cpf"
     t.datetime "created_at", null: false
     t.datetime "current_sign_in_at"
     t.string "current_sign_in_ip"
-    t.boolean "doctor", default: false, null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "job_title"
@@ -138,13 +137,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_000012) do
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.integer "sign_in_count", default: 0, null: false
+    t.boolean "specialist", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["admin"], name: "index_users_on_admin"
-    t.index ["attendant"], name: "index_users_on_attendant"
+    t.index ["colaborador"], name: "index_users_on_colaborador"
     t.index ["cpf"], name: "index_users_on_cpf", unique: true, where: "(cpf IS NOT NULL)"
-    t.index ["doctor"], name: "index_users_on_doctor"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["specialist"], name: "index_users_on_specialist"
   end
 
   add_foreign_key "ai_classifications", "triage_sessions", on_delete: :cascade

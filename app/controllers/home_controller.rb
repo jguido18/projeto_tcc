@@ -6,11 +6,11 @@ class HomeController < ApplicationController
     end
 
     # Staff vai para seu painel
-    if user_signed_in? && current_user.attendant?
+    if user_signed_in? && current_user.colaborador?
       redirect_to validation_root_path and return
     end
 
-    if user_signed_in? && current_user.doctor?
+    if user_signed_in? && current_user.specialist?
       redirect_to attendance_root_path and return
     end
 

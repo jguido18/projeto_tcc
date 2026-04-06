@@ -196,7 +196,7 @@ function maskName(name) {
 }
 
 onMounted(async () => {
-  if (!store.loaded) await store.fetchStatus()
+  await store.fetchStatus()
   await loadQueue()
   if (session.value?.id) {
     unsubscribe = useQueueChannel(session.value.id)

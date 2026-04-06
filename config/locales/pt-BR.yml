@@ -65,8 +65,8 @@ pt-BR:
         birth_date: "Data de nascimento"
         phone: "Telefone"
         job_title: "Cargo"
-        attendant: "Atendente"
-        doctor: "Especialista"
+        colaborador: "Colaborador"
+        specialist: "Especialista"
         admin: "Administrador"
         active: "Ativo"
         establishment: "Estabelecimento"
@@ -199,7 +199,7 @@ pt-BR:
       job_title:
         nurse: "Analista"
         receptionist: "Recepcionista"
-        doctor: "Especialista"
+        specialist: "Especialista"
         manager: "Gestor(a)"
 
   # ─── Textos da interface ───────────────────────────────────────────────────────
@@ -211,8 +211,8 @@ pt-BR:
     nav:
       patient: "Solicitante (App)"
       queue_tv: "Fila (TV)"
-      nursing: "Validação"
-      doctor: "Atendimento"
+      colaborador: "Validação"
+      specialist: "Atendimento"
       validation: "Validação"
       attendance: "Atendimento"
       logout: "Sair"
@@ -258,7 +258,7 @@ pt-BR:
         go_to_office: "DIRIJA-SE AO PONTO DE ATENDIMENTO"
         calling_now: "● CHAMANDO AGORA"
 
-    nursing:
+    colaborador:
       title: "Painel de Validação"
       subtitle: "Validação e gerenciamento de fila inteligente"
       awaiting_validation: "Aguardando Validação"
@@ -315,7 +315,7 @@ pt-BR:
         cancel: "Cancelar"
         confirm: "Confirmar Validação"
 
-    doctor:
+    specialist:
       title: "Painel de Atendimento"
       subtitle: "Atendimentos chamados aguardando conclusão"
       initial_demand: "DEMANDA INICIAL"
@@ -382,7 +382,7 @@ pt-BR:
       columns:
         patient: "Solicitante"
         classification: "Classificação Final"
-        ia_vs_nursing: "IA vs Equipe"
+        ia_vs_equipe: "IA vs Equipe"
         specialist: "Especialista"
         status: "Status"
         datetime: "Data/Hora"
@@ -399,7 +399,7 @@ pt-BR:
         patient: "Solicitante"
         final_priority: "Prioridade (Final)"
         symptom_summary: "Resumo Sintomas"
-        ia_vs_nursing: "IA vs Equipe"
+        ia_vs_equipe: "IA vs Equipe"
         status: "Status"
 
     flash:
@@ -407,7 +407,7 @@ pt-BR:
       unauthorized_patient: "Acesso restrito a solicitantes."
       unauthorized_admin: "Acesso restrito a administradores."
       session_not_found: "Sessão de triagem não encontrada."
-      unauthorized_doctor: "Acesso restrito à equipe de atendimento."
+      unauthorized_specialist: "Acesso restrito à equipe de atendimento."
       triage_already_active: "Você já possui uma triagem em andamento."
       validation_success: "Triagem validada com sucesso."
       validation_error: "Erro ao validar triagem. Verifique os campos."

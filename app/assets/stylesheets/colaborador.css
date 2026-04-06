@@ -1,13 +1,13 @@
 /* ─── Nursing layout ─────────────────────────────────────────────────── */
 
-.nursing-layout {
+.colaborador-layout {
   font-family: system-ui, -apple-system, sans-serif;
   background: #f0f4f8;
   min-height: 100vh;
   color: #1a202c;
 }
 
-.nursing-header {
+.colaborador-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -17,7 +17,7 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-.nursing-header__brand {
+.colaborador-header__brand {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -25,44 +25,44 @@
   text-decoration: none;
 }
 
-.nursing-header .app-header__logo-text {
+.colaborador-header .app-header__logo-text {
   color: #f7fafc;
 }
 
-.nursing-header .app-header__logo-text strong {
+.colaborador-header .app-header__logo-text strong {
   color: #90cdf4;
 }
 
-.nursing-header__logo {
+.colaborador-header__logo {
   font-size: 1.75rem;
 }
 
-.nursing-header__title {
+.colaborador-header__title {
   font-size: 1.1rem;
   font-weight: 700;
 }
 
-.nursing-header__subtitle {
+.colaborador-header__subtitle {
   font-size: 0.75rem;
   color: #a0aec0;
 }
 
-.nursing-header__user {
+.colaborador-header__user {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.nursing-header__name {
+.colaborador-header__name {
   font-weight: 600;
 }
 
-.nursing-header__role {
+.colaborador-header__role {
   font-size: 0.8rem;
   color: #a0aec0;
 }
 
-.nursing-header__logout {
+.colaborador-header__logout {
   background: rgba(255,255,255,0.15);
   color: #fff;
   border: 1px solid rgba(255,255,255,0.3);
@@ -73,17 +73,17 @@
   transition: background 0.2s;
 }
 
-.nursing-header__logout:hover {
+.colaborador-header__logout:hover {
   background: rgba(255,255,255,0.25);
 }
 
-.nursing-main {
+.colaborador-main {
   padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.nursing-panel-toolbar {
+.colaborador-panel-toolbar {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 1rem;
@@ -111,19 +111,19 @@
 
 /* ─── Two-column panel ───────────────────────────────────────────────── */
 
-.nursing-panel {
+.colaborador-panel {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
 @media (max-width: 900px) {
-  .nursing-panel {
+  .colaborador-panel {
     grid-template-columns: 1fr;
   }
 }
 
-.nursing-column {
+.colaborador-column {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -132,30 +132,30 @@
   flex-direction: column;
 }
 
-.nursing-column__header {
+.colaborador-column__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.85rem 1.25rem;
 }
 
-.nursing-column__header--yellow {
+.colaborador-column__header--yellow {
   background: #fefcbf;
   border-bottom: 3px solid #ecc94b;
 }
 
-.nursing-column__header--green {
+.colaborador-column__header--green {
   background: #c6f6d5;
   border-bottom: 3px solid #48bb78;
 }
 
-.nursing-column__title {
+.colaborador-column__title {
   font-size: 1rem;
   font-weight: 700;
   margin: 0;
 }
 
-.nursing-column__badge {
+.colaborador-column__badge {
   background: #2d3748;
   color: #fff;
   border-radius: 999px;
@@ -164,7 +164,7 @@
   font-weight: 700;
 }
 
-.nursing-column__body {
+.colaborador-column__body {
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -174,7 +174,7 @@
   max-height: calc(100vh - 220px);
 }
 
-.nursing-empty {
+.colaborador-empty {
   color: #a0aec0;
   text-align: center;
   padding: 2rem 0;
@@ -183,7 +183,7 @@
 
 /* ─── Patient cards ──────────────────────────────────────────────────── */
 
-.nursing-card {
+.colaborador-card {
   border-radius: 10px;
   padding: 1rem;
   border-left: 5px solid #e2e8f0;
@@ -191,17 +191,17 @@
   transition: box-shadow 0.15s;
 }
 
-.nursing-card:hover {
+.colaborador-card:hover {
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
-.nursing-card--red    { border-left-color: #e53e3e; }
-.nursing-card--orange { border-left-color: #dd6b20; }
-.nursing-card--yellow { border-left-color: #d69e2e; }
-.nursing-card--green  { border-left-color: #38a169; }
-.nursing-card--blue   { border-left-color: #3182ce; }
+.colaborador-card--red    { border-left-color: #e53e3e; }
+.colaborador-card--orange { border-left-color: #dd6b20; }
+.colaborador-card--yellow { border-left-color: #d69e2e; }
+.colaborador-card--green  { border-left-color: #38a169; }
+.colaborador-card--blue   { border-left-color: #3182ce; }
 
-.nursing-card__top {
+.colaborador-card__top {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -209,14 +209,14 @@
   flex-wrap: wrap;
 }
 
-.nursing-card__position {
+.colaborador-card__position {
   font-weight: 700;
   font-size: 1rem;
   color: #4a5568;
   min-width: 2rem;
 }
 
-.nursing-card__ticket {
+.colaborador-card__ticket {
   margin-left: auto;
   font-family: monospace;
   font-size: 0.85rem;
@@ -224,39 +224,39 @@
   font-weight: 600;
 }
 
-.nursing-card__time {
+.colaborador-card__time {
   margin-left: auto;
   font-size: 0.75rem;
   color: #718096;
 }
 
-.nursing-card__name {
+.colaborador-card__name {
   font-size: 1rem;
   font-weight: 700;
   color: #2d3748;
   margin-bottom: 0.25rem;
 }
 
-.nursing-card__complaint {
+.colaborador-card__complaint {
   font-size: 0.875rem;
   color: #4a5568;
   margin-bottom: 0.35rem;
 }
 
-.nursing-card__summary {
+.colaborador-card__summary {
   font-size: 0.8rem;
   color: #718096;
   font-style: italic;
   margin-bottom: 0.5rem;
 }
 
-.nursing-card__meta {
+.colaborador-card__meta {
   font-size: 0.75rem;
   color: #a0aec0;
   margin-bottom: 0.5rem;
 }
 
-.nursing-card__action {
+.colaborador-card__action {
   display: inline-block;
   padding: 0.4rem 1rem;
   border-radius: 6px;
@@ -272,28 +272,28 @@
   box-sizing: border-box;
 }
 
-.nursing-card__action--validate {
+.colaborador-card__action--validate {
   background: #ecc94b;
   color: #744210;
 }
 
-.nursing-card__action--validate:hover {
+.colaborador-card__action--validate:hover {
   background: #d69e2e;
   color: #744210;
 }
 
-.nursing-card__action--call {
+.colaborador-card__action--call {
   background: #38a169;
   color: #fff;
 }
 
-.nursing-card__action--call:hover {
+.colaborador-card__action--call:hover {
   background: #276749;
 }
 
 /* ─── Urgency badges / backgrounds ──────────────────────────────────── */
 
-.nursing-card__urgency-badge,
+.colaborador-card__urgency-badge,
 .urgency-badge {
   display: inline-block;
   padding: 0.2rem 0.6rem;
@@ -631,4 +631,63 @@
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #fff;
+}
+
+/* ── Admin: tabela de atendentes ── */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-table th {
+  font-weight: 600;
+  color: #4a5568;
+  background: #f7fafc;
+}
+
+.admin-table tbody tr:hover {
+  background: #f7fafc;
+}
+
+.admin-table__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-empty {
+  color: #718096;
+  text-align: center;
+  padding: 32px 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.status-badge--active {
+  background: #c6f6d5;
+  color: #276749;
+}
+
+.status-badge--inactive {
+  background: #fed7d7;
+  color: #9b2c2c;
+}
+
+.btn--sm {
+  padding: 4px 12px;
+  font-size: 0.8rem;
 }

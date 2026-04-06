@@ -24,17 +24,18 @@
 
       <nav class="app-header__nav">
         <% if user_signed_in? && current_user.patient? %>
-          <%= link_to t("app.nav.patient"), queue_triage_path, class: "app-nav__link" %>
+          <%= link_to t("app.nav.patient"), patient_app_path, class: "app-nav__link" %>
         <% end %>
         <%= link_to t("app.nav.queue_tv"), queue_tv_path, class: "app-nav__link app-nav__link--secondary" %>
-        <% if user_signed_in? && current_user.attendant? %>
+        <% if user_signed_in? && current_user.colaborador? %>
           <%= link_to t("app.nav.validation"), validation_root_path, class: "app-nav__link" %>
         <% end %>
-        <% if user_signed_in? && current_user.doctor? %>
+        <% if user_signed_in? && current_user.specialist? %>
           <%= link_to t("app.nav.attendance"), attendance_root_path, class: "app-nav__link" %>
         <% end %>
         <% if user_signed_in? && current_user.admin? %>
           <%= link_to "Configuração IA", edit_admin_triage_setting_path, class: "app-nav__link" %>
+          <%= link_to "Equipe", admin_users_path, class: "app-nav__link" %>
         <% end %>
         <% if user_signed_in? %>
           <%= link_to t("app.nav.logout"), destroy_user_session_path,

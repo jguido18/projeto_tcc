@@ -128,6 +128,7 @@ export const useTriageStore = defineStore("triage", () => {
       session.value.queue_entry   = entry
       session.value.urgency_level = entry.urgency_level
       session.value.urgency_label = entry.urgency_label
+      session.value.status        = "in_queue"
     }
   }
 

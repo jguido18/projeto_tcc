@@ -9,25 +9,25 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="doctor-layout">
-    <header class="doctor-header">
-      <%= link_to attendance_root_path, class: "doctor-header__brand app-header__logo-link" do %>
+  <body class="specialist-layout">
+    <header class="specialist-header">
+      <%= link_to attendance_root_path, class: "specialist-header__brand app-header__logo-link" do %>
         <span class="app-header__logo-icon">+</span>
         <span class="app-header__logo-text">Triagem<strong>AI</strong></span>
       <% end %>
 
-      <nav class="doctor-header__nav">
-        <%= link_to t("app.attendance.title"), attendance_root_path, class: "doctor-nav__link" %>
+      <nav class="specialist-header__nav">
+        <%= link_to t("app.attendance.title"), attendance_root_path, class: "specialist-nav__link" %>
         <% if current_user.admin? %>
-          <%= link_to "Configuração IA", edit_admin_triage_setting_path, class: "doctor-nav__link" %>
+          <%= link_to "Configuração IA", edit_admin_triage_setting_path, class: "specialist-nav__link" %>
         <% end %>
       </nav>
 
-      <div class="doctor-header__user">
-        <span class="doctor-header__name"><%= current_user.name %></span>
+      <div class="specialist-header__user">
+        <span class="specialist-header__name"><%= current_user.name %></span>
         <%= link_to t("app.nav.logout"), destroy_user_session_path,
               data: { turbo_method: :delete },
-              class: "doctor-header__logout" %>
+              class: "specialist-header__logout" %>
       </div>
     </header>
 
@@ -38,7 +38,7 @@
       <div class="flash flash--alert"><%= alert %></div>
     <% end %>
 
-    <main class="doctor-main">
+    <main class="specialist-main">
       <%= yield %>
     </main>
   </body>

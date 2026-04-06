@@ -56,9 +56,9 @@ class ApplicationController < ActionController::Base
       patient_app_path
     elsif resource.admin?
       edit_admin_triage_setting_path
-    elsif resource.attendant?
+    elsif resource.colaborador?
       validation_root_path
-    elsif resource.doctor?
+    elsif resource.specialist?
       attendance_root_path
     else
       root_path

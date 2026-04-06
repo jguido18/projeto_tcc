@@ -1,0 +1,86 @@
+<% if user.errors.any? %>
+  <div class="validation-errors">
+    <ul>
+      <% user.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<section class="triage-settings-card">
+  <h2>Dados do membro</h2>
+
+  <div class="urgency-level-row__grid">
+    <div class="validation-field">
+      <%= f.label :name, "Nome completo", class: "validation-label" %>
+      <%= f.text_field :name, class: "validation-textarea", placeholder: "Nome completo" %>
+    </div>
+
+    <div class="validation-field">
+      <%= f.label :email, "E-mail", class: "validation-label" %>
+      <%= f.email_field :email, class: "validation-textarea", placeholder: "email@exemplo.com" %>
+    </div>
+
+    <div class="validation-field">
+      <%= f.label :cpf, "CPF", class: "validation-label" %>
+      <%= f.text_field :cpf, class: "validation-textarea", placeholder: "Somente números" %>
+    </div>
+
+    <div class="validation-field">
+      <%= f.label :phone, "Telefone", class: "validation-label" %>
+      <%= f.text_field :phone, class: "validation-textarea", placeholder: "(11) 99999-9999" %>
+    </div>
+  </div>
+
+  <div class="validation-field" style="margin-top:12px;">
+    <%= f.label :job_title, "Cargo", class: "validation-label" %>
+    <%= f.text_field :job_title, class: "validation-textarea", placeholder: "Ex: Recepcionista, Enfermeiro, Analista" %>
+  </div>
+
+  <div class="validation-field" style="margin-top:16px;">
+    <span class="validation-label">Perfil de acesso</span>
+    <div style="display:flex; gap:1.5rem; margin-top:6px; flex-wrap:wrap;">
+      <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+        <%= f.check_box :colaborador %>
+        <span>Colaborador <small style="color:#6b7f99">(valida triagens)</small></span>
+      </label>
+      <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+        <%= f.check_box :specialist %>
+        <span>Especialista <small style="color:#6b7f99">(realiza atendimentos)</small></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="validation-field" style="margin-top:12px;">
+    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+      <%= f.check_box :active %>
+      <span>Usuário ativo</span>
+    </label>
+  </div>
+</section>
+
+<section class="triage-settings-card">
+  <h2><%= user.new_record? ? "Senha de acesso" : "Nova senha (deixe em branco para não alterar)" %></h2>
+
+  <div class="urgency-level-row__grid">
+    <div class="validation-field">
+      <%= f.label :password, "Senha", class: "validation-label" %>
+      <%= f.password_field :password, class: "validation-textarea",
+            autocomplete: "new-password",
+            placeholder: user.new_record? ? "Mínimo 6 caracteres" : "Deixe em branco para manter" %>
+    </div>
+
+    <div class="validation-field">
+      <%= f.label :password_confirmation, "Confirmação de senha", class: "validation-label" %>
+      <%= f.password_field :password_confirmation, class: "validation-textarea",
+            autocomplete: "new-password",
+            placeholder: "Repita a senha" %>
+    </div>
+  </div>
+</section>
+
+<div class="validation-actions">
+  <%= f.submit user.new_record? ? "Criar membro" : "Salvar alterações", class: "btn btn--primary" %>
+  <%= link_to "Cancelar", admin_users_path, class: "btn btn--secondary" %>
+</div>

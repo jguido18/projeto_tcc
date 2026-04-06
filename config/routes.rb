@@ -5,8 +5,8 @@ Rails.application.routes.draw do
              path_names: { sign_in: "login", sign_out: "logout", sign_up: "register" },
              controllers: { registrations: "registrations" }
 
-  # Staff login — /staff/login (attendants and admins)
-  # Uses custom controller to enforce attendant/admin permission before signing in
+  # Staff login — /staff/login (colaboradors and admins)
+  # Uses custom controller to enforce colaborador/admin permission before signing in
   devise_scope :user do
     get  "staff/login",  to: "staff/sessions#new",    as: :new_staff_session
     post "staff/login",  to: "staff/sessions#create",  as: :staff_session
@@ -49,6 +49,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     resource :triage_setting, only: [ :edit, :update ]
+    resources :users, only: [ :index, :new, :create, :edit, :update, :destroy ]
   end
 
   # TV pública de fila — sem autenticação

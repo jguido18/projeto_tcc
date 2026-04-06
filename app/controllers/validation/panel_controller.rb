@@ -1,6 +1,6 @@
 class Validation::PanelController < Validation::BaseController
   def index
-    # Left column: sessions awaiting nursing validation
+    # Left column: sessions awaiting colaborador validation
     @awaiting_validation = TriageSession
       .includes(:user, ai_classification: :triage_validation)
       .where(status: :awaiting_validation)

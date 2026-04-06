@@ -1,48 +1,48 @@
 <% content_for :title, t("app.validation.title") %>
 
-<div class="nursing-panel-toolbar">
+<div class="colaborador-panel-toolbar">
   <%= link_to t("app.reports.title"), validation_reports_path, class: "btn btn--secondary" %>
 </div>
 
-<div class="nursing-panel"
+<div class="colaborador-panel"
   data-controller="validation-panel">
 
-  <%# ── Left column: awaiting nursing validation ── %>
-  <section class="nursing-column nursing-column--validation">
-    <div class="nursing-column__header nursing-column__header--yellow">
-      <h2 class="nursing-column__title"><%= t("app.validation.awaiting_validation") %></h2>
-      <span class="nursing-column__badge" data-validation-panel-target="awaitingCount">
+  <%# ── Left column: awaiting colaborador validation ── %>
+  <section class="colaborador-column colaborador-column--validation">
+    <div class="colaborador-column__header colaborador-column__header--yellow">
+      <h2 class="colaborador-column__title"><%= t("app.validation.awaiting_validation") %></h2>
+      <span class="colaborador-column__badge" data-validation-panel-target="awaitingCount">
         <%= @awaiting_validation.count %>
       </span>
     </div>
 
-    <div class="nursing-column__body" data-validation-panel-target="awaitingList">
+    <div class="colaborador-column__body" data-validation-panel-target="awaitingList">
       <% if @awaiting_validation.empty? %>
-        <p class="nursing-empty"><%= t("app.validation.no_pending") %></p>
+        <p class="colaborador-empty"><%= t("app.validation.no_pending") %></p>
       <% else %>
         <% @awaiting_validation.each do |session| %>
           <% classification = session.ai_classification %>
           <% level = classification&.urgency_level %>
-          <div class="nursing-card" style="border-left: 5px solid <%= urgency_color(level) %>;">
-            <div class="nursing-card__top">
-              <div class="nursing-card__urgency-badge" style="<%= urgency_badge_style(level) %>">
+          <div class="colaborador-card" style="border-left: 5px solid <%= urgency_color(level) %>;">
+            <div class="colaborador-card__top">
+              <div class="colaborador-card__urgency-badge" style="<%= urgency_badge_style(level) %>">
                 <%= urgency_label(level) %>
               </div>
-              <span class="nursing-card__time">
+              <span class="colaborador-card__time">
                 <%= t("app.validation.arrived_at") %>: <%= l(session.created_at, format: :short) %>
               </span>
             </div>
 
-            <div class="nursing-card__name"><%= session.user.name %></div>
-            <div class="nursing-card__complaint"><%= session.initial_demand %></div>
+            <div class="colaborador-card__name"><%= session.user.name %></div>
+            <div class="colaborador-card__complaint"><%= session.initial_demand %></div>
 
             <% if classification&.summary.present? %>
-              <div class="nursing-card__summary"><%= classification.summary.truncate(120) %></div>
+              <div class="colaborador-card__summary"><%= classification.summary.truncate(120) %></div>
             <% end %>
 
             <%= link_to t("app.validation.validate_button"),
               new_validation_triage_validation_path(triage_session_id: session.id),
-                  class: "nursing-card__action nursing-card__action--validate" %>
+                  class: "colaborador-card__action colaborador-card__action--validate" %>
           </div>
         <% end %>
       <% end %>
@@ -50,17 +50,17 @@
   </section>
 
   <%# ── Right column: validated sessions waiting in queue ── %>
-  <section class="nursing-column nursing-column--queue">
-    <div class="nursing-column__header nursing-column__header--green">
-      <h2 class="nursing-column__title"><%= t("app.validation.priority_queue") %></h2>
-      <span class="nursing-column__badge" data-validation-panel-target="queueCount">
+  <section class="colaborador-column colaborador-column--queue">
+    <div class="colaborador-column__header colaborador-column__header--green">
+      <h2 class="colaborador-column__title"><%= t("app.validation.priority_queue") %></h2>
+      <span class="colaborador-column__badge" data-validation-panel-target="queueCount">
         <%= @total_waiting %>
       </span>
     </div>
 
-    <div class="nursing-column__body" data-validation-panel-target="queueList">
+    <div class="colaborador-column__body" data-validation-panel-target="queueList">
       <% if @priority_queue.empty? %>
-        <p class="nursing-empty"><%= t("app.validation.queue_empty") %></p>
+        <p class="colaborador-empty"><%= t("app.validation.queue_empty") %></p>
       <% else %>
         <% @priority_queue.each_with_index do |entry, idx| %>
           <% session     = entry.triage_session %>
@@ -68,26 +68,26 @@
           <% final_level = validation&.final_urgency_level || session.ai_classification&.urgency_level %>
           <% final_label = urgency_label(final_level) %>
 
-          <div class="nursing-card" style="border-left: 5px solid <%= urgency_color(final_level) %>;">
-            <div class="nursing-card__top">
-              <span class="nursing-card__position">#<%= idx + 1 %></span>
-              <div class="nursing-card__urgency-badge" style="<%= urgency_badge_style(final_level) %>">
+          <div class="colaborador-card" style="border-left: 5px solid <%= urgency_color(final_level) %>;">
+            <div class="colaborador-card__top">
+              <span class="colaborador-card__position">#<%= idx + 1 %></span>
+              <div class="colaborador-card__urgency-badge" style="<%= urgency_badge_style(final_level) %>">
                 <%= final_label %>
               </div>
-              <span class="nursing-card__ticket"><%= entry.ticket_number %></span>
+              <span class="colaborador-card__ticket"><%= entry.ticket_number %></span>
             </div>
 
-            <div class="nursing-card__name"><%= session.user.name %></div>
-            <div class="nursing-card__complaint"><%= session.initial_demand %></div>
+            <div class="colaborador-card__name"><%= session.user.name %></div>
+            <div class="colaborador-card__complaint"><%= session.initial_demand %></div>
 
-            <div class="nursing-card__meta">
+            <div class="colaborador-card__meta">
               <%= t("app.validation.arrived_at") %>: <%= l(entry.queued_at, format: :short) %>
             </div>
 
             <%= button_to t("app.validation.call_button"),
                   call_validation_queue_entry_path(entry),
                   method: :patch,
-                  class: "nursing-card__action nursing-card__action--call" %>
+                  class: "colaborador-card__action colaborador-card__action--call" %>
           </div>
         <% end %>
       <% end %>

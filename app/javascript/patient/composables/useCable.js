@@ -1,0 +1,92 @@
+import { createConsumer } from "@rails/actioncable"
+import { useTriageStore } from "../stores/triage"
+import { useRouter } from "vue-router"
+
+let consumer = null
+
+function getConsumer() {
+  if (!consumer) consumer = createConsumer()
+  return consumer
+}
+
+/**
+ * Assina o TriageChannel para receber mensagens e mudanças de status em tempo real.
+ * Retorna uma função de cleanup para desinscrever.
+ */
+export function useTriageChannel(sessionId) {
+  const store  = useTriageStore()
+  const router = useRouter()
+
+  const subscription = getConsumer().subscriptions.create(
+    { channel: "TriageChannel", session_id: sessionId },
+    {
+      received(data) {
+        switch (data.type) {
+          case "message":
+            // Remove pending e insere mensagem real do servidor
+            store.messages = store.messages.filter((m) => !m.pending)
+            store.applyRealtimeMessage({
+              id:       data.id || Date.now(),
+              sender:   data.sender,
+              content:  data.content,
+              sent_at:  data.sent_at,
+              sequence: data.sequence,
+            })
+            break
+
+          case "status_change":
+            store.applyStatusChange(data.status)
+            if (data.status === "awaiting_validation" ||
+                data.status === "in_queue") {
+              store.fetchStatus().then(() => router.push("/app/queue"))
+            }
+            break
+        }
+      },
+    }
+  )
+
+  return () => subscription.unsubscribe()
+}
+
+/**
+ * Assina o QueueChannel para receber atualizações de posição na fila.
+ */
+export function useQueueChannel(sessionId) {
+  const store  = useTriageStore()
+  const router = useRouter()
+
+  const subscription = getConsumer().subscriptions.create(
+    { channel: "QueueChannel", session_id: sessionId },
+    {
+      received(data) {
+        switch (data.type) {
+          case "queued":
+            store.applyQueueEntry({
+              ticket_number:  data.ticket_number,
+              urgency_level:  data.urgency_level,
+              urgency_label:  data.urgency_label,
+              queue_position: data.position,
+              status:         "waiting",
+            })
+            router.push("/app/queue")
+            break
+
+          case "position_update":
+            if (store.session?.queue_entry) {
+              store.session.queue_entry.queue_position = data.position
+            }
+            break
+
+          case "called":
+            if (store.session?.queue_entry) {
+              store.session.queue_entry.status = "called"
+            }
+            break
+        }
+      },
+    }
+  )
+
+  return () => subscription.unsubscribe()
+}

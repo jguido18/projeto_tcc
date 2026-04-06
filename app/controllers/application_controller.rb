@@ -49,4 +49,17 @@ class ApplicationController < ActionController::Base
       redirect_to root_path
     end
   end
+
+  # Após o login, direciona para o destino correto conforme perfil
+  def after_sign_in_path_for(resource)
+    if resource.patient?
+      patient_app_path
+    elsif resource.attendant?
+      nursing_root_path
+    elsif resource.doctor?
+      doctor_root_path
+    else
+      root_path
+    end
+  end
 end

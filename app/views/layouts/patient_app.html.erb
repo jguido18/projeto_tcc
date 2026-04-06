@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <title>TriagemAI — Paciente</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="UTF-8">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%# Vuetify precisa de Material Design Icons %>
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css" rel="stylesheet">
+    <%= vite_client_tag %>
+    <%= vite_stylesheet_tag "patient_app" %>
+    <%= vite_javascript_tag "patient_app" %>
+  </head>
+  <body>
+    <%# Ponto de montagem do Vue %>
+    <div id="patient-app"></div>
+  </body>
+</html>

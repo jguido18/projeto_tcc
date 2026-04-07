@@ -14,12 +14,17 @@
   <section class="triage-settings-card">
     <% if @staff.any? %>
       <div class="admin-table-meta">
-        <span class="admin-table-meta__count">
-          <%= @pagy.count %> membro<%= @pagy.count == 1 ? "" : "s" %> encontrado<%= @pagy.count == 1 ? "" : "s" %>
-        </span>
-        <span class="admin-table-meta__pages">
-          Página <%= @pagy.page %> de <%= @pagy.last %>
-        </span>
+        <span><%= @pagy.count %> membro<%= @pagy.count == 1 ? "" : "s" %></span>
+        <div class="admin-limit-select">
+          <label for="limit-select">Linhas por página:</label>
+          <select id="limit-select" onchange="window.location.href=this.value">
+            <% [10, 20, 50, 100].each do |n| %>
+              <option value="<%= admin_users_path(limit: n, page: 1) %>" <%= "selected" if @limit == n %>>
+                <%= n %>
+              </option>
+            <% end %>
+          </select>
+        </div>
       </div>
 
       <table class="admin-table">
@@ -66,13 +71,17 @@
       <% if @pagy.pages > 1 %>
         <div class="admin-pagination">
           <% if @pagy.previous %>
-            <%= link_to "← Anterior", admin_users_path(page: @pagy.previous), class: "btn btn--secondary btn--sm" %>
+            <%= link_to "←", admin_users_path(page: @pagy.previous, limit: @limit), class: "admin-page-btn" %>
+          <% else %>
+            <span class="admin-page-btn admin-page-btn--disabled">←</span>
           <% end %>
-          <span class="admin-pagination__info">
-            Página <%= @pagy.page %> de <%= @pagy.pages %>
-          </span>
+
+          <span class="admin-page-info">Página <%= @pagy.page %> de <%= @pagy.pages %></span>
+
           <% if @pagy.next %>
-            <%= link_to "Próxima →", admin_users_path(page: @pagy.next), class: "btn btn--secondary btn--sm" %>
+            <%= link_to "→", admin_users_path(page: @pagy.next, limit: @limit), class: "admin-page-btn" %>
+          <% else %>
+            <span class="admin-page-btn admin-page-btn--disabled">→</span>
           <% end %>
         </div>
       <% end %>

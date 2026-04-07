@@ -82,6 +82,7 @@
 
       <div class="board-panel__body">
         <div class="board-table-head">
+          <div class="board-col board-col--pos">#</div>
           <div class="board-col board-col--priority">PRIORIDADE</div>
           <div class="board-col board-col--name">NOME</div>
           <div class="board-col board-col--wait">ESPERA ESTIMADA</div>
@@ -90,11 +91,12 @@
         <div v-if="queueRows.length === 0" class="board-empty">Fila vazia</div>
 
         <div
-          v-for="row in queueRows"
+          v-for="(row, idx) in queueRows"
           :key="row.id"
           class="board-row"
           :class="{ 'board-row--mine': row.isMine }"
         >
+          <div class="board-col board-col--pos">{{ idx + 1 }}º</div>
           <div class="board-col board-col--priority">
             <span class="urgency-dot" :style="{ background: urgencyColor(row.urgency_level) }"></span>
             <span :style="{ color: urgencyColor(row.urgency_level) }">{{ urgencyLabel(row.urgency_level) }}</span>
@@ -429,6 +431,7 @@ onUnmounted(() => unsubscribe?.())
   gap: 0.5rem;
 }
 
+.board-col--pos      { flex: 0.4; color: #6b7f99; font-weight: 700; }
 .board-col--priority { flex: 1.2; font-weight: 700; }
 .board-col--name     { flex: 2;   color: #2d4a6b; font-weight: 600; }
 .board-col--wait     { flex: 1.2; color: #6b7f99; }

@@ -14,9 +14,9 @@ puts "✓ Configuração da IA atualizada."
 # Usa o primeiro admin existente ou cria um novo com email exclusivo
 admin = User.find_by(admin: true) || User.new
 if admin.new_record?
-  admin.email       = "admin@triagemAI.com"
+  admin.email       = "admin@admin.com"
   admin.name        = "Administrador"
-  admin.password    = "123456"
+  admin.password    = "123456789"
   admin.admin       = true
   admin.colaborador = true
   admin.job_title   = "manager"
@@ -197,7 +197,7 @@ puts "\n✓ 15 pacientes criados na fila de espera."
 
 puts "\n══════════════════════════════════════════"
 puts "  Seed concluído!"
-puts "  Admin:        admin@triagemAI.com / 123456"
+puts "  Admin:        admin@admin.com / 123456789"
 puts "  Colaborador:  colaborador1@triagemAI.com / 123456"
 puts "  Especialista: especialista1@triagemAI.com / 123456"
 puts "  Paciente:     paciente1@email.com / 123456"

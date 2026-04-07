@@ -1,9 +1,14 @@
 class Admin::UsersController < Admin::BaseController
   before_action :set_user, only: [ :edit, :update, :destroy ]
 
+  ALLOWED_LIMITS = [ 10, 20, 50, 100 ].freeze
+
   def index
     collection = User.where("colaborador = true OR specialist = true").order(:name)
-    @pagy  = Pagy::Offset.new(count: collection.count, page: params[:page], limit: 10, request: request)
+    limit = params[:limit].to_i
+    limit = 10 unless ALLOWED_LIMITS.include?(limit)
+    @limit = limit
+    @pagy  = Pagy::Offset.new(count: collection.count, page: params[:page], limit: @limit, request: request)
     @staff = @pagy.records(collection)
   end
 

@@ -1,7 +1,38 @@
-<p>Hello <%= @email %>!</p>
+<!-- Título -->
+<h1 style="margin:0 0 8px; font-size:22px; font-weight:700; color:#1a3558; text-align:center;">
+  E-mail alterado
+</h1>
+<p style="margin:0 0 28px; font-size:14px; color:#718096; text-align:center; line-height:1.6;">
+  Notificação de alteração de e-mail na sua conta.
+</p>
+
+<hr style="border:none; border-top:1px solid #e2e8f0; margin:0 0 28px;">
+
+<p style="margin:0 0 12px; font-size:15px; color:#2d3748; line-height:1.7;">
+  Olá, <strong><%= @email %></strong>!
+</p>
 
 <% if @resource.try(:unconfirmed_email?) %>
-  <p>We're contacting you to notify you that your email is being changed to <%= @resource.unconfirmed_email %>.</p>
+  <p style="margin:0 0 20px; font-size:14px; color:#4a5568; line-height:1.7;">
+    Informamos que foi solicitada a alteração do e-mail da sua conta para
+    <strong><%= @resource.unconfirmed_email %></strong>.
+    <br>Um link de confirmação foi enviado para o novo endereço.
+  </p>
 <% else %>
-  <p>We're contacting you to notify you that your email has been changed to <%= @resource.email %>.</p>
+  <p style="margin:0 0 20px; font-size:14px; color:#4a5568; line-height:1.7;">
+    O e-mail da sua conta foi alterado com sucesso para
+    <strong><%= @resource.email %></strong>.
+  </p>
 <% end %>
+
+<!-- Aviso de segurança -->
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr>
+    <td style="background:#fffbeb; border:1px solid #f6e05e; border-radius:10px; padding:14px 18px;">
+      <p style="margin:0; font-size:13px; color:#744210; line-height:1.6;">
+        <strong>Não reconhece esta alteração?</strong><br>
+        Entre em contato com o suporte imediatamente.
+      </p>
+    </td>
+  </tr>
+</table>

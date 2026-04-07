@@ -35,7 +35,9 @@
         <div class="auth-field">
           <%= f.label :cpf, t("activerecord.attributes.user.cpf"), class: "auth-label" %>
           <%= f.text_field :cpf, autocomplete: "off",
-                class: "auth-input", placeholder: "000.000.000-00" %>
+                class: "auth-input", placeholder: "000.000.000-00",
+                data: { controller: "mask", mask_type_value: "cpf" },
+                maxlength: 14, inputmode: "numeric" %>
         </div>
         <div class="auth-field">
           <%= f.label :birth_date, t("activerecord.attributes.user.birth_date"), class: "auth-label" %>
@@ -46,7 +48,9 @@
       <div class="auth-field">
         <%= f.label :phone, t("activerecord.attributes.user.phone"), class: "auth-label" %>
         <%= f.telephone_field :phone, autocomplete: "tel",
-              class: "auth-input", placeholder: "(11) 99999-9999" %>
+              class: "auth-input", placeholder: "(11) 99999-9999",
+              data: { controller: "mask", mask_type_value: "phone" },
+              maxlength: 15, inputmode: "numeric" %>
       </div>
 
       <%# ── Acesso ── %>
@@ -61,11 +65,11 @@
       <div class="auth-row">
         <div class="auth-field">
           <%= f.label :password, t("activerecord.attributes.user.password"), class: "auth-label" %>
+          <%= f.password_field :password, autocomplete: "new-password",
+                class: "auth-input", placeholder: "••••••••" %>
           <% if @minimum_password_length %>
             <span class="auth-hint">(<%= @minimum_password_length %> <%= t("devise.registrations.new.password_hint") %>)</span>
           <% end %>
-          <%= f.password_field :password, autocomplete: "new-password",
-                class: "auth-input", placeholder: "••••••••" %>
         </div>
         <div class="auth-field">
           <%= f.label :password_confirmation, t("activerecord.attributes.user.password_confirmation"), class: "auth-label" %>

@@ -134,17 +134,11 @@ function urgencyLabel(level) {
   return store.urgencyMap[level]?.label || "Sem classificação"
 }
 
-const WAIT_TIMES = computed(() => {
-  const levels = urgencyLevels.value
-  return levels.reduce((acc, level) => {
-    acc[level.key] = Math.max((Number(level.weight) - 1) * 20, 0)
-    return acc
-  }, {})
-})
-
+// Tempo estimado baseado na posição real do paciente na fila (15 min/pessoa).
+// Atualizado automaticamente ao recarregar queueRows via ActionCable.
 const estimatedWait = computed(() => {
-  const level = entry.value?.urgency_level || session.value?.urgency_level
-  return WAIT_TIMES.value[level] ?? null
+  const mine = queueRows.value.find((r) => r.isMine)
+  return mine ? mine.estimated_wait : null
 })
 
 const urgencyIcon = computed(() => {

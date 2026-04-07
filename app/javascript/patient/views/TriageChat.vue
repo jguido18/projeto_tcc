@@ -104,6 +104,27 @@
 
           <v-divider />
 
+          <div
+            v-if="showQuickReplies"
+            class="quick-replies px-3 pt-3 pb-2"
+          >
+            <div class="quick-replies__label">Respostas rápidas</div>
+            <div class="quick-replies__list mt-2">
+              <v-btn
+                v-for="reply in quickReplies"
+                :key="reply"
+                class="quick-reply-btn"
+                color="primary"
+                variant="tonal"
+                size="small"
+                :disabled="store.sending || isAwaitingValidation"
+                @click="sendQuickReply(reply)"
+              >
+                {{ reply }}
+              </v-btn>
+            </div>
+          </div>
+
           <!-- Campo de input -->
           <div class="chat-input pa-3">
             <v-text-field
@@ -156,6 +177,173 @@ const statusLabel = computed(() =>
   isAwaitingValidation.value ? "Aguardando validação da equipe" : "Em triagem"
 )
 
+const lastAiMessage = computed(() => {
+  for (let i = store.messages.length - 1; i >= 0; i -= 1) {
+    const msg = store.messages[i]
+    if (msg.sender === "ai" && msg.content) return msg.content
+  }
+  return ""
+})
+
+function normalizeText(text = "") {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+}
+
+function uniqueReplies(list) {
+  return [...new Set(list)].slice(0, 5)
+}
+
+function extractLastQuestion(text = "") {
+  const normalized = normalizeText(text)
+  const sentences = normalized
+    .split(/[.!\n]/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+
+  for (let i = sentences.length - 1; i >= 0; i -= 1) {
+    const sentence = sentences[i]
+    if (sentence.includes("?")) return sentence
+  }
+
+  return sentences.at(-1) || normalized
+}
+
+function matchCount(text, patterns) {
+  return patterns.reduce((count, pattern) => (pattern.test(text) ? count + 1 : count), 0)
+}
+
+const INTENT_RULES = [
+  {
+    key: "medication",
+    priority: 120,
+    patterns: [/tomou/, /medicamento/, /remedio/, /aliviar/, /se sim, qual/],
+    replies: ["Nao tomei remedio", "Tomei e melhorou", "Tomei e nao melhorou", "Tomei, mas nao lembro o nome"],
+  },
+  {
+    key: "pain_pattern",
+    priority: 110,
+    patterns: [/constante/, /vem e vai/, /vai e volta/, /intermitente/, /o tempo todo/],
+    replies: ["Constante", "Vem e vai", "Piorou nas ultimas horas", "Nao sei informar"],
+  },
+  {
+    key: "pain_intensity",
+    priority: 100,
+    patterns: [
+      /\bde\s*0\s*a\s*10\b/,
+      /escala/,
+      /intensidade.*dor/,
+      /dor.*intensidade/,
+      /leve.*moderad.*intens/,
+      /intens.*moderad.*leve/,
+      /dor.*leve/,
+      /dor.*moderad/,
+      /dor.*intens/,
+    ],
+    replies: ["0 a 3 (leve)", "4 a 7 (moderada)", "8 a 10 (forte)", "Sem dor"],
+  },
+  {
+    key: "shortness_of_breath",
+    priority: 95,
+    patterns: [/falta de ar/, /dificuldade para respirar/, /consegue respirar/, /respiracao/],
+    replies: ["Sem falta de ar", "Falta de ar leve", "Falta de ar intensa", "Piorando agora"],
+  },
+  {
+    key: "fever",
+    priority: 90,
+    patterns: [/febre/, /temperatura/, /termometro/],
+    replies: ["Sem febre", "Febre baixa", "Febre alta", "Nao medi a temperatura"],
+  },
+  {
+    key: "symptom_duration",
+    priority: 85,
+    patterns: [/ha quanto tempo/, /desde quando/, /quando comecou/, /quanto tempo/],
+    replies: ["Comecou hoje", "Ha 1 a 2 dias", "Ha mais de 3 dias", "Piorou hoje"],
+  },
+  {
+    key: "pain_location",
+    priority: 80,
+    patterns: [/onde doi/, /em qual local/, /em qual regiao/, /onde esta a dor/, /local da dor/],
+    replies: ["Cabeca", "Peito", "Abdomen", "Garganta", "Outro local"],
+  },
+  {
+    key: "allergy",
+    priority: 75,
+    patterns: [/alerg/],
+    replies: ["Nao tenho alergias", "Alergia a medicamento", "Alergia alimentar", "Nao sei informar"],
+  },
+  {
+    key: "nausea",
+    priority: 70,
+    patterns: [/vomito/, /nausea/, /enjoo/],
+    replies: ["Sem vomito", "Nausea leve", "Vomitei 1 vez", "Vomitos frequentes"],
+  },
+  {
+    key: "bleeding",
+    priority: 65,
+    patterns: [/sangramento/, /sangue/],
+    replies: ["Sem sangramento", "Sangramento leve", "Sangramento intenso", "Sangue nas fezes/urina"],
+  },
+  {
+    key: "dizziness",
+    priority: 60,
+    patterns: [/tontura/, /desmaio/, /desmaiou/],
+    replies: ["Sem tontura", "Tontura leve", "Tontura forte", "Quase desmaiei"],
+  },
+  {
+    key: "age_group",
+    priority: 55,
+    patterns: [/qual sua idade/, /quantos anos/, /idade/],
+    replies: ["Menos de 18", "18 a 59", "60 ou mais", "Prefiro nao informar"],
+  },
+]
+
+function bestIntentReplies(text) {
+  let bestRule = null
+  let bestScore = 0
+
+  INTENT_RULES.forEach((rule) => {
+    const hits = matchCount(text, rule.patterns)
+    if (hits === 0) return
+
+    const score = rule.priority + hits * 10
+    if (score > bestScore) {
+      bestScore = score
+      bestRule = rule
+    }
+  })
+
+  return bestRule?.replies || null
+}
+
+function buildDynamicReplies(message) {
+  const text = extractLastQuestion(message)
+  const genericReplies = ["Sim", "Nao", "Nao sei informar", "Pode repetir a pergunta?"]
+
+  if (!text) {
+    return genericReplies
+  }
+
+  const intentReplies = bestIntentReplies(text)
+  if (intentReplies) {
+    return uniqueReplies([...intentReplies, "Nao sei informar", "Pode repetir a pergunta?"])
+  }
+
+  if (text.includes("?")) {
+    return uniqueReplies(genericReplies)
+  }
+
+  return uniqueReplies(["Entendi", "Pode repetir a pergunta?", "Nao sei informar", "Prefiro digitar minha resposta"])
+}
+
+const quickReplies = computed(() => buildDynamicReplies(lastAiMessage.value))
+
+const showQuickReplies = computed(() =>
+  !isAwaitingValidation.value && quickReplies.value.length > 0
+)
+
 onMounted(async () => {
   if (store.messages.length === 0) {
     await store.fetchMessages()
@@ -183,6 +371,11 @@ async function sendMessage() {
   if (!text || store.sending || isAwaitingValidation.value) return
   inputText.value = ""
   await store.sendMessage(text)
+}
+
+async function sendQuickReply(reply) {
+  if (!reply || store.sending || isAwaitingValidation.value) return
+  await store.sendMessage(reply)
 }
 
 async function finishTriage() {
@@ -232,6 +425,53 @@ async function finishTriage() {
 
 .chat-header {
   background: #fff;
+}
+
+.quick-replies {
+  background: linear-gradient(180deg, #f8fbff 0%, #f3f8fe 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.quick-replies__label {
+  font-size: 0.86rem;
+  color: #2d3748;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.quick-replies__list {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: #a0c4e8 transparent;
+}
+
+.quick-replies__list::-webkit-scrollbar {
+  height: 6px;
+}
+
+.quick-replies__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.quick-replies__list::-webkit-scrollbar-thumb {
+  background: #a0c4e8;
+  border-radius: 999px;
+}
+
+.quick-reply-btn {
+  text-transform: none;
+  font-weight: 600;
+  letter-spacing: 0;
+  min-height: 38px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px rgba(49, 130, 206, 0.18);
 }
 
 .message-row {

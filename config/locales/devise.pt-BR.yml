@@ -58,9 +58,11 @@ pt-BR:
       updated_not_active: "Sua senha foi alterada com sucesso."
       new:
         title: "Esqueceu sua senha?"
+        subtitle: "Informe seu e-mail e enviaremos as instruções de recuperação."
         submit: "Enviar instruções para redefinição de senha"
       edit:
         title: "Redefinir senha"
+        subtitle: "Escolha uma nova senha para acessar sua conta."
         new_password: "Nova senha"
         confirm_password: "Confirmar nova senha"
         submit: "Alterar minha senha"

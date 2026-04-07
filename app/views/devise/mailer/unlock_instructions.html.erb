@@ -1,7 +1,35 @@
-<p>Hello <%= @resource.email %>!</p>
+<!-- Título -->
+<h1 style="margin:0 0 8px; font-size:22px; font-weight:700; color:#1a3558; text-align:center;">
+  Desbloquear conta
+</h1>
+<p style="margin:0 0 28px; font-size:14px; color:#718096; text-align:center; line-height:1.6;">
+  Sua conta foi bloqueada por excesso de tentativas de login.
+</p>
 
-<p>Your account has been locked due to an excessive number of unsuccessful sign in attempts.</p>
+<hr style="border:none; border-top:1px solid #e2e8f0; margin:0 0 28px;">
 
-<p>Click the link below to unlock your account:</p>
+<p style="margin:0 0 12px; font-size:15px; color:#2d3748; line-height:1.7;">
+  Olá, <strong><%= @resource.name.presence || @resource.email %></strong>!
+</p>
+<p style="margin:0 0 28px; font-size:14px; color:#4a5568; line-height:1.7;">
+  Clique no botão abaixo para desbloquear o acesso à sua conta.
+</p>
 
-<p><%= link_to 'Unlock my account', unlock_url(@resource, unlock_token: @token) %></p>
+<!-- Botão -->
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+  <tr>
+    <td align="center">
+      <%= link_to unlock_url(@resource, unlock_token: @token),
+            style: "display:inline-block; background: linear-gradient(135deg, #c05621, #dd6b20); color:#ffffff; font-size:15px; font-weight:600; text-decoration:none; padding:14px 36px; border-radius:10px; letter-spacing:0.2px;" do %>
+        Desbloquear minha conta
+      <% end %>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0 0 8px; font-size:12px; color:#a0aec0; text-align:center;">
+  Ou copie e cole o link abaixo no seu navegador:
+</p>
+<p style="margin:0; font-size:11px; color:#718096; text-align:center; word-break:break-all;">
+  <%= unlock_url(@resource, unlock_token: @token) %>
+</p>

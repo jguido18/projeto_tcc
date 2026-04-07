@@ -1,13 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <style>
-      /* Email styles need to be inline */
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriagemAI</title>
   </head>
 
-  <body>
-    <%= yield %>
+  <body style="margin:0; padding:0; background-color:#f0f4f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+
+    <!-- Wrapper -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4f8; padding: 40px 16px;">
+      <tr>
+        <td align="center">
+
+          <!-- Card -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+
+            <!-- Header -->
+            <tr>
+              <td style="background: linear-gradient(135deg, #1a3558 0%, #2b6cb0 100%); padding: 32px 40px; text-align:center;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center">
+                      <!-- Logo icon -->
+                      <div style="display:inline-block; width:44px; height:44px; background:rgba(255,255,255,0.15); border-radius:10px; line-height:44px; text-align:center; font-size:22px; font-weight:900; color:#fff; margin-bottom:12px;">+</div>
+                      <br>
+                      <span style="font-size:22px; font-weight:700; color:#ffffff; letter-spacing:-0.3px;">
+                        Triagem<strong style="color:#90cdf4;">AI</strong>
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 36px 40px 28px;">
+                <%= yield %>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:20px 40px; text-align:center;">
+                <p style="margin:0; font-size:12px; color:#a0aec0; line-height:1.6;">
+                  Este e-mail foi enviado automaticamente pelo sistema <strong style="color:#718096;">TriagemAI</strong>.<br>
+                  Se você não solicitou esta ação, ignore esta mensagem.
+                </p>
+              </td>
+            </tr>
+
+          </table>
+          <!-- /Card -->
+
+        </td>
+      </tr>
+    </table>
+    <!-- /Wrapper -->
+
   </body>
 </html>

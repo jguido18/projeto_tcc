@@ -17,6 +17,12 @@ const routes = [
     name: "queue",
     component: () => import("../views/TriageQueue.vue"),
   },
+  {
+    path: "/app/profile",
+    name: "profile",
+    component: () => import("../views/ProfileEdit.vue"),
+    meta: { skipGuard: true },
+  },
   // Redireciona qualquer rota desconhecida para /app
   { path: "/:pathMatch(.*)*", redirect: "/app" },
 ]
@@ -36,6 +42,9 @@ router.beforeEach(async (to) => {
   }
 
   const status = store.session?.status
+
+  // Rota de perfil não depende de sessão de triagem
+  if (to.meta?.skipGuard) return
 
   // Se não tem sessão ativa, vai para início
   if (!status && to.name !== "home") return { name: "home" }

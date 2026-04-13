@@ -14,7 +14,7 @@ class TvChannel < ApplicationCable::Channel
     entries = QueueEntry
       .includes(triage_session: :user)
       .where(status: :called)
-      .order(:urgency_weight, :called_at)
+      .order(called_at: :desc)
       .map do |entry|
         {
           id:             entry.id,

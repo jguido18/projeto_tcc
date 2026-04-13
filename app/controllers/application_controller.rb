@@ -26,7 +26,7 @@ class ApplicationController < ActionController::Base
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [ :name, :cpf, :birth_date, :phone ])
-    devise_parameter_sanitizer.permit(:account_update, keys: [ :name, :phone ])
+    devise_parameter_sanitizer.permit(:account_update, keys: [ :name, :phone, :birth_date, :avatar ])
   end
 
   def require_staff!

@@ -12,20 +12,12 @@
   <body class="colaborador-layout">
     <header class="colaborador-header">
       <%= link_to validation_root_path, class: "colaborador-header__brand app-header__logo-link" do %>
-        <span class="app-header__logo-icon">+</span>
+        <%= image_tag "logo.svg", width: 30, height: 30, alt: "TriagemAI", style: "border-radius:7px;" %>
         <span class="app-header__logo-text">Triagem<strong>AI</strong></span>
       <% end %>
 
       <div class="colaborador-header__user">
-        <span class="colaborador-header__name"><%= current_user.name %></span>
-        <span class="colaborador-header__role"><%= t("enums.user.job_title.#{current_user.job_title}") if current_user.job_title.present? %></span>
-        <% if current_user.admin? %>
-          <%= link_to "Equipe", admin_users_path, class: "colaborador-header__logout" %>
-          <%= link_to "Configuração IA", edit_admin_triage_setting_path, class: "colaborador-header__logout" %>
-        <% end %>
-        <%= link_to t("app.nav.logout"), destroy_user_session_path,
-              data: { turbo_method: :delete },
-              class: "colaborador-header__logout" %>
+        <%= render "shared/staff_user_dropdown" %>
       </div>
     </header>
 

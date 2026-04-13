@@ -1,0 +1,77 @@
+<div class="user-dropdown" data-controller="user-dropdown">
+  <button class="user-dropdown__trigger" data-action="click->user-dropdown#toggle">
+    <div class="user-dropdown__avatar">
+      <% if current_user.avatar.attached? && current_user.avatar.blob.persisted? %>
+        <%= image_tag current_user.avatar, class: "user-dropdown__avatar-img" %>
+      <% else %>
+        <span class="user-dropdown__avatar-placeholder">
+          <%= current_user.name.first.upcase %>
+        </span>
+      <% end %>
+    </div>
+    <span class="user-dropdown__name"><%= current_user.name %></span>
+    <svg class="user-dropdown__chevron" viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+    </svg>
+  </button>
+
+  <div class="user-dropdown__menu" data-user-dropdown-target="menu">
+    <div class="user-dropdown__header">
+      <div class="user-dropdown__avatar user-dropdown__avatar--lg">
+        <% if current_user.avatar.attached? && current_user.avatar.blob.persisted? %>
+          <%= image_tag current_user.avatar, class: "user-dropdown__avatar-img" %>
+        <% else %>
+          <span class="user-dropdown__avatar-placeholder">
+            <%= current_user.name.first.upcase %>
+          </span>
+        <% end %>
+      </div>
+      <div>
+        <p class="user-dropdown__header-name"><%= current_user.name %></p>
+        <p class="user-dropdown__header-email"><%= current_user.email %></p>
+      </div>
+    </div>
+
+    <div class="user-dropdown__divider"></div>
+
+    <%= link_to staff_edit_profile_path, class: "user-dropdown__item" do %>
+      <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z"/></svg>
+      Meu perfil
+    <% end %>
+
+    <div class="user-dropdown__divider"></div>
+
+    <% if current_user.colaborador? || current_user.admin? %>
+      <%= link_to validation_root_path, class: "user-dropdown__item" do %>
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+        Validações
+      <% end %>
+    <% end %>
+
+    <% if current_user.specialist? || current_user.admin? %>
+      <%= link_to attendance_root_path, class: "user-dropdown__item" do %>
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zM1.49 15.326a.78.78 0 01-.358-.442 3 3 0 014.308-3.516 6.484 6.484 0 00-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 01-2.07-.655zM16.44 15.98a4.97 4.97 0 002.07-.654.78.78 0 00.357-.442 3 3 0 00-4.308-3.517 6.484 6.484 0 011.907 3.96 2.32 2.32 0 01-.026.654zM18 8a2 2 0 11-4 0 2 2 0 014 0zM5.304 16.19a.844.844 0 01-.277-.71 5 5 0 019.947 0 .843.843 0 01-.277.71A6.975 6.975 0 0110 18a6.974 6.974 0 01-4.696-1.81z"/></svg>
+        Atendimento
+      <% end %>
+    <% end %>
+
+    <% if current_user.admin? %>
+      <%= link_to admin_users_path, class: "user-dropdown__item" do %>
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/></svg>
+        Equipe
+      <% end %>
+
+      <%= link_to edit_admin_triage_setting_path, class: "user-dropdown__item" do %>
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.205 1.251l-1.18 2.044a1 1 0 01-1.186.447l-1.598-.54a6.993 6.993 0 01-1.929 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.205-1.251l1.18-2.044a1 1 0 011.186-.447l1.598.54A6.993 6.993 0 017.51 3.456l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+        Configuração IA
+      <% end %>
+    <% end %>
+
+    <div class="user-dropdown__divider"></div>
+
+    <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "user-dropdown__item user-dropdown__item--danger" do %>
+      <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M19 10a.75.75 0 00-.75-.75H8.704l1.048-1.08a.75.75 0 10-1.004-1.11l-2.5 2.57a.75.75 0 000 1.08l2.5 2.57a.75.75 0 101.004-1.11l-1.048-1.08h9.546A.75.75 0 0019 10z" clip-rule="evenodd"/></svg>
+      Sair
+    <% end %>
+  </div>
+</div>

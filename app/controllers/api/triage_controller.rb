@@ -4,11 +4,13 @@ class Api::TriageController < Api::BaseController
   # GET /api/triage/status
   # Retorna o estado atual da triagem do paciente logado.
   def status
+    hint = TriageSetting.current.hint_example
+
     if @triage_session.nil?
-      render json: { status: "none" } and return
+      render json: { status: "none", hint_example: hint } and return
     end
 
-    render json: session_json(@triage_session)
+    render json: session_json(@triage_session).merge(hint_example: hint)
   end
 
   # POST /api/triage/start

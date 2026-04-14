@@ -160,8 +160,8 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue"
-import { useTriageStore } from "../stores/triage"
-import { useTriageChannel } from "../composables/useCable"
+import { useTriageStore } from "../../stores/triage"
+import { useTriageChannel } from "../../composables/useCable"
 
 const store     = useTriageStore()
 const chatEl    = ref(null)

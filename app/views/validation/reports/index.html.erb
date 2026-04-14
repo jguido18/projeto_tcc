@@ -1,135 +1,192 @@
-<% content_for :title, t("app.validation.reports_title") %>
+<% content_for :title, "Relatórios" %>
 
-<div class="reports-page">
+<% content_for :head do %>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" data-turbo-track="reload"></script>
+<% end %>
 
-  <div class="reports-header">
-    <h1 class="reports-header__title"><%= t("app.reports.title") %></h1>
-    <p class="reports-header__subtitle">
-      <%= t("app.reports.subtitle", date: l(Date.today, format: :long)) %>
-    </p>
-  </div>
+<div class="rpt-page">
 
-  <%# ── Cards de métricas ── %>
-  <div class="reports-stats">
-
-    <div class="reports-stat-card reports-stat-card--blue">
-      <div class="reports-stat-card__value"><%= @total_today %></div>
-      <div class="reports-stat-card__label"><%= t("app.reports.total_patients") %></div>
-      <div class="reports-stat-card__sub"><%= t("app.reports.today") %></div>
+  <%# ── Cabeçalho ── %>
+  <div class="rpt-header">
+    <div>
+      <h1 class="rpt-header__title">Relatórios</h1>
+      <p class="rpt-header__subtitle">
+        <% if @period == "today" %>Dados de hoje, <%= l(Date.today, format: :long) %>
+        <% elsif @period == "week" %>Últimos 7 dias
+        <% else %>Últimos 30 dias
+        <% end %>
+      </p>
     </div>
-
-    <div class="reports-stat-card reports-stat-card--green">
-      <div class="reports-stat-card__value"><%= @attended_today %></div>
-      <div class="reports-stat-card__label"><%= t("app.reports.total_attended") %></div>
-      <div class="reports-stat-card__sub"><%= t("app.reports.today") %></div>
-    </div>
-
-    <div class="reports-stat-card reports-stat-card--yellow">
-      <div class="reports-stat-card__value"><%= @waiting_now %></div>
-      <div class="reports-stat-card__label"><%= t("app.reports.waiting_in_queue") %></div>
-      <div class="reports-stat-card__sub"><%= t("app.reports.right_now") %></div>
-    </div>
-
-    <div class="reports-stat-card reports-stat-card--orange">
-      <div class="reports-stat-card__value"><%= @called_now %></div>
-      <div class="reports-stat-card__label"><%= t("app.reports.called_now") %></div>
-      <div class="reports-stat-card__sub"><%= t("app.reports.right_now") %></div>
-    </div>
-
-    <% if @ai_accuracy_pct %>
-      <div class="reports-stat-card reports-stat-card--purple">
-        <div class="reports-stat-card__value"><%= @ai_accuracy_pct %>%</div>
-        <div class="reports-stat-card__label"><%= t("app.reports.ai_accuracy") %></div>
-        <div class="reports-stat-card__sub"><%= t("app.reports.ai_accuracy_hint") %></div>
+    <div class="rpt-header__actions">
+      <%# Filtro de período %>
+      <div class="rpt-period-tabs">
+        <%= link_to validation_reports_path(period: "today"),
+              class: "rpt-period-tab #{"rpt-period-tab--active" if @period == "today"}" do %>Hoje<% end %>
+        <%= link_to validation_reports_path(period: "week"),
+              class: "rpt-period-tab #{"rpt-period-tab--active" if @period == "week"}" do %>7 dias<% end %>
+        <%= link_to validation_reports_path(period: "month"),
+              class: "rpt-period-tab #{"rpt-period-tab--active" if @period == "month"}" do %>30 dias<% end %>
       </div>
-    <% end %>
-
-  </div>
-
-  <%# ── Distribuição por urgência ── %>
-  <div class="reports-section">
-    <h2 class="reports-section__title"><%= t("app.reports.distribution_by_severity") %></h2>
-    <div class="urgency-distribution">
-      <% TriageSetting.current.urgency_levels.each do |level| %>
-        <% key = level["key"] %>
-        <% count = @urgency_counts[key] || 0 %>
-        <% label = level["label"] %>
-        <% color = level["color"] %>
-        <div class="urgency-dist-bar">
-          <div class="urgency-dist-bar__header">
-            <span class="urgency-badge" style="<%= urgency_badge_style(key) %>"><%= label %></span>
-            <span class="urgency-dist-bar__count"><%= count %></span>
-          </div>
-          <div class="urgency-dist-bar__track">
-            <% total = @urgency_counts.values.sum %>
-            <% pct   = total > 0 ? (count.to_f / total * 100).round(1) : 0 %>
-            <div class="urgency-dist-bar__fill"
-                 style="background: <%= color %>; width: <%= pct %>%;"></div>
-          </div>
-          <div class="urgency-dist-bar__pct"><%= pct %>%</div>
-        </div>
+      <%# Exportar CSV %>
+      <%= link_to validation_reports_export_path, class: "btn btn--secondary rpt-export-btn" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+        Exportar CSV
       <% end %>
     </div>
   </div>
 
+  <%# ── KPI Cards ── %>
+  <div class="rpt-kpis">
+    <div class="rpt-kpi rpt-kpi--blue">
+      <div class="rpt-kpi__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <div class="rpt-kpi__body">
+        <div class="rpt-kpi__value"><%= @total_period %></div>
+        <div class="rpt-kpi__label">Triagens iniciadas</div>
+      </div>
+    </div>
+
+    <div class="rpt-kpi rpt-kpi--green">
+      <div class="rpt-kpi__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="rpt-kpi__body">
+        <div class="rpt-kpi__value"><%= @attended_period %></div>
+        <div class="rpt-kpi__label">Atendimentos concluídos</div>
+      </div>
+    </div>
+
+    <div class="rpt-kpi rpt-kpi--yellow">
+      <div class="rpt-kpi__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="rpt-kpi__body">
+        <div class="rpt-kpi__value"><%= @waiting_now %></div>
+        <div class="rpt-kpi__label">Aguardando agora</div>
+      </div>
+    </div>
+
+    <div class="rpt-kpi rpt-kpi--orange">
+      <div class="rpt-kpi__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-9.33-4.988M9 11v3.159c0 .538-.214 1.055-.595 1.436L7 17h5m0 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      </div>
+      <div class="rpt-kpi__body">
+        <div class="rpt-kpi__value"><%= @called_now %></div>
+        <div class="rpt-kpi__label">Chamados agora</div>
+      </div>
+    </div>
+
+    <% if @ai_accuracy_pct %>
+      <div class="rpt-kpi rpt-kpi--purple">
+        <div class="rpt-kpi__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+        </div>
+        <div class="rpt-kpi__body">
+          <div class="rpt-kpi__value"><%= @ai_accuracy_pct %>%</div>
+          <div class="rpt-kpi__label">Precisão da IA</div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# ── Gráficos ── %>
+  <div class="rpt-charts">
+
+    <%# Donut — Distribuição por urgência %>
+    <div class="rpt-chart-card">
+      <div class="rpt-chart-card__header">
+        <h2 class="rpt-chart-card__title">Distribuição por Urgência</h2>
+        <span class="rpt-chart-card__period"><%= @period == "today" ? "Hoje" : @period == "week" ? "7 dias" : "30 dias" %></span>
+      </div>
+      <% if @urgency_chart_data[:values].sum == 0 %>
+        <div class="rpt-chart-empty">Nenhum dado no período</div>
+      <% else %>
+        <div class="rpt-donut-wrap">
+          <canvas id="urgencyChart" height="220"></canvas>
+        </div>
+        <div class="rpt-urgency-legend">
+          <% TriageSetting.current.urgency_levels.each_with_index do |level, i| %>
+            <% count = @urgency_counts[level["key"]] || 0 %>
+            <div class="rpt-legend-item">
+              <span class="rpt-legend-dot" style="background:<%= level["color"] %>"></span>
+              <span class="rpt-legend-label"><%= level["label"] %></span>
+              <span class="rpt-legend-count"><%= count %></span>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Barras — Tendência diária %>
+    <div class="rpt-chart-card">
+      <div class="rpt-chart-card__header">
+        <h2 class="rpt-chart-card__title">Atendimentos por Dia</h2>
+        <span class="rpt-chart-card__period">Últimos 7 dias</span>
+      </div>
+      <canvas id="trendChart" height="220"></canvas>
+    </div>
+
+  </div>
+
   <%# ── Últimos atendimentos ── %>
-  <div class="reports-section">
-    <h2 class="reports-section__title"><%= t("app.reports.recent_attendances") %></h2>
+  <div class="rpt-section">
+    <div class="rpt-section__header">
+      <h2 class="rpt-section__title">Últimos Atendimentos</h2>
+      <span class="rpt-section__count"><%= @recent.size %> registros</span>
+    </div>
 
     <% if @recent.empty? %>
-      <p class="reports-empty"><%= t("app.reports.no_records") %></p>
+      <div class="rpt-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#cbd5e0" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <p>Nenhum atendimento concluído ainda.</p>
+      </div>
     <% else %>
-      <div class="reports-table-wrap">
-        <table class="reports-table">
+      <div class="rpt-table-wrap">
+        <table class="rpt-table">
           <thead>
             <tr>
-              <th><%= t("app.reports.columns.datetime") %></th>
-              <th><%= t("app.reports.columns.patient") %></th>
-              <th><%= t("app.reports.columns.classification") %></th>
-              <th><%= t("app.reports.columns.ia_vs_equipe") %></th>
-              <th><%= t("app.reports.columns.status") %></th>
+              <th>Data/Hora</th>
+              <th>Paciente</th>
+              <th>Urgência Final</th>
+              <th>Decisão IA</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
             <% @recent.each do |session| %>
-              <% ai         = session.ai_classification %>
-              <% validation = ai&.triage_validation %>
+              <% ai          = session.ai_classification %>
+              <% validation  = ai&.triage_validation %>
               <% final_level = validation&.final_urgency_level || ai&.urgency_level %>
-              <% adjusted = validation && validation.final_urgency_level != ai&.urgency_level %>
-
+              <% adjusted    = validation && validation.final_urgency_level != ai&.urgency_level %>
               <tr>
-                <td class="reports-table__datetime">
-                  <%= l(session.finished_at, format: :short) if session.finished_at %>
+                <td class="rpt-table__dt">
+                  <% if session.finished_at %>
+                    <span class="rpt-table__date"><%= l(session.finished_at, format: :long).split(",").first %></span>
+                    <span class="rpt-table__time"><%= l(session.finished_at, format: :time_only) rescue session.finished_at.strftime("%H:%M") %></span>
+                  <% else %>—<% end %>
                 </td>
-                <td class="reports-table__patient"><%= session.user.name %></td>
+                <td class="rpt-table__patient"><%= session.user.name %></td>
                 <td>
                   <% if final_level.present? %>
                     <span class="urgency-badge" style="<%= urgency_badge_style(final_level) %>">
                       <%= urgency_label(final_level) %>
                     </span>
-                  <% else %>
-                    —
-                  <% end %>
+                  <% else %>—<% end %>
                 </td>
                 <td>
                   <% if validation %>
                     <% if adjusted %>
-                      <span class="reports-badge reports-badge--adjusted">
-                        <%= t("app.reports.ai_adjusted") %>
-                      </span>
+                      <span class="rpt-badge rpt-badge--adjusted">Ajustado</span>
                     <% else %>
-                      <span class="reports-badge reports-badge--confirmed">
-                        <%= t("app.reports.ai_confirmed") %>
-                      </span>
+                      <span class="rpt-badge rpt-badge--confirmed">Confirmado</span>
                     <% end %>
                   <% else %>
-                    <span class="reports-badge reports-badge--no-validation">—</span>
+                    <span class="rpt-badge rpt-badge--pending">—</span>
                   <% end %>
                 </td>
                 <td>
-                  <span class="reports-badge reports-badge--completed">
-                    <%= t("enums.triage_session.status.completed") %>
-                  </span>
+                  <span class="rpt-badge rpt-badge--completed">Concluído</span>
                 </td>
               </tr>
             <% end %>
@@ -139,8 +196,96 @@
     <% end %>
   </div>
 
-  <div class="reports-footer">
-    <%= link_to "← #{t("app.validation.title")}", validation_root_path, class: "btn btn--secondary" %>
-  </div>
-
 </div>
+
+<%# ── Chart.js init ── %>
+<script>
+  function initReportCharts() {
+    if (typeof Chart === "undefined") return;
+
+    // Destrói instâncias anteriores para evitar duplicatas no Turbo
+    ["urgencyChart", "trendChart"].forEach(function(id) {
+      const canvas = document.getElementById(id);
+      if (canvas) {
+        const existing = Chart.getChart(canvas);
+        if (existing) existing.destroy();
+      }
+    });
+
+    Chart.defaults.font.family = "system-ui, -apple-system, 'Segoe UI', sans-serif";
+    Chart.defaults.color = "#718096";
+
+    // Donut — Urgências
+    const urgencyCanvas = document.getElementById("urgencyChart");
+    if (urgencyCanvas) {
+      new Chart(urgencyCanvas, {
+        type: "doughnut",
+        data: {
+          labels: <%= raw @urgency_chart_data[:labels].to_json %>,
+          datasets: [{
+            data:            <%= raw @urgency_chart_data[:values].to_json %>,
+            backgroundColor: <%= raw @urgency_chart_data[:colors].to_json %>,
+            borderWidth: 2,
+            borderColor: "#fff",
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          cutout: "68%",
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` ${ctx.label}: ${ctx.parsed} pacientes`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Barras — Tendência diária
+    const trendCanvas = document.getElementById("trendChart");
+    if (trendCanvas) {
+      new Chart(trendCanvas, {
+        type: "bar",
+        data: {
+          labels: <%= raw @daily_trend_data[:labels].to_json %>,
+          datasets: [{
+            label: "Atendimentos",
+            data:  <%= raw @daily_trend_data[:values].to_json %>,
+            backgroundColor: "rgba(49,130,206,0.15)",
+            borderColor:     "#3182ce",
+            borderWidth: 2,
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 },
+              grid: { color: "#f0f4f8" }
+            },
+            x: {
+              grid: { display: false }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+  }
+
+  // Turbo Drive: dispara em cada navegação (inclui filtros de período)
+  document.addEventListener("turbo:load", initReportCharts);
+
+  // Fallback para carregamento direto sem Turbo
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    initReportCharts();
+  }
+</script>

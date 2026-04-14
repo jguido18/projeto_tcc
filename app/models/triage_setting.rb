@@ -1,5 +1,6 @@
 class TriageSetting < ApplicationRecord
-  DEFAULT_PURPOSE = "Configuração global da IA de triagem".freeze
+  DEFAULT_PURPOSE      = "Configuração global da IA de triagem".freeze
+  DEFAULT_HINT_EXAMPLE = "Descreva brevemente o motivo do atendimento. Ex: \"Estou com dor de cabeça forte há 2 dias.\"".freeze
   DEFAULT_SYSTEM_PROMPT = <<~PROMPT.freeze
     Você é um assistente de triagem do sistema TriagemAI.
     Seu papel é coletar informações essenciais com linguagem empática e objetiva.
@@ -66,9 +67,10 @@ class TriageSetting < ApplicationRecord
   private
 
   def set_defaults
-    self.purpose = DEFAULT_PURPOSE if purpose.blank?
+    self.purpose       = DEFAULT_PURPOSE      if purpose.blank?
     self.system_prompt = DEFAULT_SYSTEM_PROMPT if system_prompt.blank?
     self.urgency_levels = DEFAULT_URGENCY_LEVELS if urgency_levels.blank?
+    self.hint_example  = DEFAULT_HINT_EXAMPLE  if hint_example.blank?
   end
 
   def normalize_urgency_levels

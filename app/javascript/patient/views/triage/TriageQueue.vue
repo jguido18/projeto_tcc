@@ -82,6 +82,8 @@
 
       <div class="board-panel__body">
         <div class="board-table-head">
+          <div class="board-col board-col--pos">#</div>
+          <div class="board-col board-col--ticket">SENHA</div>
           <div class="board-col board-col--priority">PRIORIDADE</div>
           <div class="board-col board-col--name">NOME</div>
           <div class="board-col board-col--wait">ESPERA ESTIMADA</div>
@@ -95,6 +97,14 @@
           class="board-row"
           :class="{ 'board-row--mine': row.isMine }"
         >
+          <div class="board-col board-col--pos">
+            <span class="board-pos">{{ row.queue_position }}º</span>
+          </div>
+          <div class="board-col board-col--ticket">
+            <span class="board-ticket" :class="{ 'board-ticket--mine': row.isMine }">
+              {{ row.ticket_number }}
+            </span>
+          </div>
           <div class="board-col board-col--priority">
             <span class="urgency-dot" :style="{ background: urgencyColor(row.urgency_level) }"></span>
             <span :style="{ color: urgencyColor(row.urgency_level) }">{{ urgencyLabel(row.urgency_level) }}</span>
@@ -110,9 +120,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue"
-import { useTriageStore } from "../stores/triage"
-import { useQueueChannel } from "../composables/useCable"
-import { apiFetch } from "../composables/useApi"
+import { useTriageStore } from "../../stores/triage"
+import { useQueueChannel } from "../../composables/useCable"
+import { apiFetch } from "../../composables/useApi"
 
 const store = useTriageStore()
 
@@ -185,6 +195,8 @@ async function loadQueue() {
       urgency_level:  e.urgency_level,
       masked_name:    e.masked_name,
       estimated_wait: e.estimated_wait,
+      queue_position: e.queue_position,
+      ticket_number:  e.ticket_number,
       isMine:         e.is_mine,
     }))
   } catch {
@@ -429,9 +441,34 @@ onUnmounted(() => unsubscribe?.())
   gap: 0.5rem;
 }
 
+.board-col--pos      { flex: 0 0 42px; }
+.board-col--ticket   { flex: 0 0 130px; }
 .board-col--priority { flex: 1.2; font-weight: 700; }
 .board-col--name     { flex: 2;   color: #2d4a6b; font-weight: 600; }
 .board-col--wait     { flex: 1.2; color: #6b7f99; }
+
+.board-pos {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #a0aec0;
+}
+
+.board-ticket {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #4a5568;
+  background: #edf2f7;
+  border-radius: 5px;
+  padding: 0.15rem 0.5rem;
+  letter-spacing: 0.04em;
+}
+
+.board-ticket--mine {
+  background: #ebf8ff;
+  color: #2b6cb0;
+  border: 1px solid #bee3f8;
+}
 
 .board-empty {
   padding: 3rem 1rem;

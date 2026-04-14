@@ -1,12 +1,14 @@
 <% content_for :title, "Editar Membro" %>
 
-<div class="triage-settings-page">
-  <div class="triage-settings-header">
-    <h1>Editar Membro</h1>
-    <p><%= @user.name %> — <%= @user.email %></p>
+<div class="profile-page">
+  <div class="profile-page__header">
+    <div>
+      <h1 class="profile-page__title">Editar Membro</h1>
+      <p class="profile-page__subtitle"><%= @user.name %> — <%= @user.email %></p>
+    </div>
   </div>
 
-  <%= form_with model: [:admin, @user], class: "triage-settings-form" do |f| %>
+  <%= form_with model: [:admin, @user] do |f| %>
     <%= render "form", user: @user, f: f %>
   <% end %>
 </div>

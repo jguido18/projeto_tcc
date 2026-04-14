@@ -33,7 +33,7 @@ class Attendance::AttendancesController < Attendance::BaseController
   def set_queue_entry
     @queue_entry = QueueEntry
       .includes(triage_session: [ :user, { ai_classification: :triage_validation }, :chat_messages ])
-      .where(status: :called)
+      .where(status: [ :called, :completed ])
       .find(params[:id])
   rescue ActiveRecord::RecordNotFound
     redirect_to attendance_root_path, alert: t("app.flash.session_not_found")

@@ -3,10 +3,11 @@ import { ref, computed } from "vue"
 import { apiFetch } from "../composables/useApi"
 
 export const useTriageStore = defineStore("triage", () => {
-  const session  = ref(null)   // dados da sessão vindos da API
-  const messages = ref([])     // histórico do chat
-  const loaded   = ref(false)  // se já buscou status pela primeira vez
-  const sending  = ref(false)  // aguardando resposta da IA
+  const session     = ref(null)   // dados da sessão vindos da API
+  const messages    = ref([])     // histórico do chat
+  const loaded      = ref(false)  // se já buscou status pela primeira vez
+  const sending     = ref(false)  // aguardando resposta da IA
+  const hintExample = ref("")     // sugestão de demanda inicial (vinda do TriageSetting)
 
   // ── Urgência ──────────────────────────────────────────────────────
 
@@ -31,6 +32,7 @@ export const useTriageStore = defineStore("triage", () => {
   async function fetchStatus() {
     try {
       const data = await apiFetch("/api/triage/status")
+      hintExample.value = data.hint_example || ""
       session.value = data.status !== "none" ? data : null
     } finally {
       loaded.value = true
@@ -133,7 +135,7 @@ export const useTriageStore = defineStore("triage", () => {
   }
 
   return {
-    session, messages, loaded, sending,
+    session, messages, loaded, sending, hintExample,
     urgencyColor, urgencyMap,
     fetchStatus, fetchMessages, startTriage, sendMessage,
     finishTriage, restartTriage,

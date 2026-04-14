@@ -1,56 +1,60 @@
 <% content_for :title, t("app.attendance.title") %>
 
-<div class="attendance-panel specialist-panel">
-  <div class="attendance-panel__header specialist-panel__header">
-    <div>
-      <h1 class="attendance-panel__title specialist-panel__title"><%= t("app.attendance.title") %></h1>
-      <p class="attendance-panel__subtitle specialist-panel__subtitle"><%= t("app.attendance.subtitle") %></p>
-    </div>
-    <div class="attendance-panel__stats specialist-panel__stats">
-      <div class="attendance-stat specialist-stat">
-        <span class="attendance-stat__value specialist-stat__value"><%= @called_entries.count %></span>
-        <span class="attendance-stat__label specialist-stat__label"><%= t("app.attendance.waiting_count") %></span>
-      </div>
+<%# ── Page header ── %>
+<div class="panel-page-header">
+  <div class="panel-page-header__left">
+    <h1 class="panel-page-header__title"><%= t("app.attendance.title") %></h1>
+    <p class="panel-page-header__subtitle"><%= t("app.attendance.subtitle") %></p>
+  </div>
+  <div class="panel-page-header__stats">
+    <div class="panel-stat panel-stat--blue">
+      <span class="panel-stat__value"><%= @called_entries.count %></span>
+      <span class="panel-stat__label"><%= t("app.attendance.waiting_count") %></span>
     </div>
   </div>
-
-  <% if @called_entries.empty? %>
-    <div class="specialist-empty">
-      <div class="specialist-empty__icon">✓</div>
-      <p class="specialist-empty__text"><%= t("app.attendance.no_patients") %></p>
-    </div>
-  <% else %>
-    <div class="specialist-cards">
-      <% @called_entries.each_with_index do |entry, idx| %>
-        <% session    = entry.triage_session %>
-        <% patient    = session.user %>
-        <% ai         = session.ai_classification %>
-        <% validation = ai&.triage_validation %>
-        <% final_level = validation&.final_urgency_level || ai&.urgency_level %>
-        <% final_label = urgency_label(final_level) %>
-
-        <div class="specialist-card" style="border-left: 5px solid <%= urgency_color(final_level) %>;">
-          <div class="specialist-card__top">
-            <span class="specialist-card__order">#<%= idx + 1 %></span>
-            <span class="urgency-badge" style="<%= urgency_badge_style(final_level) %>"><%= final_label %></span>
-            <span class="specialist-card__ticket"><%= entry.ticket_number %></span>
-            <span class="specialist-card__called-at">
-              <%= t("app.attendance.called_at") %>: <%= l(entry.called_at, format: :short) %>
-            </span>
-          </div>
-
-          <div class="specialist-card__name"><%= patient.name %></div>
-          <div class="specialist-card__complaint"><%= session.initial_demand %></div>
-
-          <% if ai&.summary.present? %>
-            <div class="specialist-card__summary"><%= ai.summary.truncate(150) %></div>
-          <% end %>
-
-              <%= link_to t("app.attendance.see_details"),
-                attendance_attendance_path(entry),
-                class: "specialist-card__action" %>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
 </div>
+
+<% if @called_entries.empty? %>
+  <div class="panel-empty-state">
+    <div class="panel-empty-state__icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    </div>
+    <p class="panel-empty-state__text"><%= t("app.attendance.no_patients") %></p>
+    <p class="panel-empty-state__hint">Nenhum paciente chamado no momento.</p>
+  </div>
+<% else %>
+  <div class="specialist-cards">
+    <% @called_entries.each_with_index do |entry, idx| %>
+      <% session    = entry.triage_session %>
+      <% patient    = session.user %>
+      <% ai         = session.ai_classification %>
+      <% validation = ai&.triage_validation %>
+      <% final_level = validation&.final_urgency_level || ai&.urgency_level %>
+      <% final_label = urgency_label(final_level) %>
+
+      <div class="specialist-card" style="border-left: 5px solid <%= urgency_color(final_level) %>;">
+        <div class="specialist-card__top">
+          <span class="specialist-card__order">#<%= idx + 1 %></span>
+          <span class="urgency-badge" style="<%= urgency_badge_style(final_level) %>"><%= final_label %></span>
+          <span class="specialist-card__ticket"><%= entry.ticket_number %></span>
+          <span class="specialist-card__called-at">
+            <%= t("app.attendance.called_at") %>: <%= l(entry.called_at, format: :short) %>
+          </span>
+        </div>
+
+        <div class="specialist-card__name"><%= patient.name %></div>
+        <div class="specialist-card__complaint"><%= session.initial_demand %></div>
+
+        <% if ai&.summary.present? %>
+          <div class="specialist-card__summary"><%= ai.summary.truncate(150) %></div>
+        <% end %>
+
+            <%= link_to t("app.attendance.see_details"),
+              attendance_attendance_path(entry),
+              class: "specialist-card__action" %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

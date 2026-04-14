@@ -5,22 +5,22 @@ const routes = [
   {
     path: "/app",
     name: "home",
-    component: () => import("../views/TriageStart.vue"),
+    component: () => import("../views/triage/TriageStart.vue"),
   },
   {
     path: "/app/chat",
     name: "chat",
-    component: () => import("../views/TriageChat.vue"),
+    component: () => import("../views/triage/TriageChat.vue"),
   },
   {
     path: "/app/queue",
     name: "queue",
-    component: () => import("../views/TriageQueue.vue"),
+    component: () => import("../views/triage/TriageQueue.vue"),
   },
   {
     path: "/app/profile",
     name: "profile",
-    component: () => import("../views/ProfileEdit.vue"),
+    component: () => import("../views/profile/ProfileEdit.vue"),
     meta: { skipGuard: true },
   },
   // Redireciona qualquer rota desconhecida para /app

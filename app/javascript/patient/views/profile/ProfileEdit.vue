@@ -160,7 +160,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue"
-import { apiFetch } from "../composables/useApi"
+import { apiFetch } from "../../composables/useApi"
 
 const profile = ref({ name: "", email: "", phone: "", birth_date: "", cpf: "", avatar_url: null })
 const originalEmail = ref("")

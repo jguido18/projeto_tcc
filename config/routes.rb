@@ -52,7 +52,8 @@ Rails.application.routes.draw do
         patch :finish
       end
     end
-    get :reports, to: "reports#index"
+    get :reports,        to: "reports#index"
+    get :reports_export, to: "reports#export_csv"
   end
 
 
@@ -72,6 +73,7 @@ Rails.application.routes.draw do
         patch :finish
       end
     end
+    get "history", to: "history#index", as: :history
   end
 
   # Health check

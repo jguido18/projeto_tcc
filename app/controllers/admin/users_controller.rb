@@ -3,6 +3,23 @@ class Admin::UsersController < Admin::BaseController
 
   def index
     collection = User.where("colaborador = true OR specialist = true").order(:name)
+
+    @total_count       = collection.count
+    @active_count      = collection.where(active: true).count
+    @inactive_count    = collection.where(active: false).count
+    @colaborador_count = collection.where(colaborador: true).count
+    @specialist_count  = collection.where(specialist: true).count
+
+    collection = collection.where(active: true)       if params[:status] == "active"
+    collection = collection.where(active: false)      if params[:status] == "inactive"
+    collection = collection.where(colaborador: true)  if params[:role] == "colaborador"
+    collection = collection.where(specialist: true)   if params[:role] == "specialist"
+
+    if params[:search].present?
+      term = "%#{params[:search].strip}%"
+      collection = collection.where("name ILIKE ? OR email ILIKE ?", term, term)
+    end
+
     @pagy  = Pagy::Offset.new(count: collection.count, page: params[:page], limit: 10, request: request)
     @staff = @pagy.records(collection)
   end

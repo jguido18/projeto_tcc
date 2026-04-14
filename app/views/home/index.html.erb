@@ -1,55 +1,321 @@
 <% content_for :title, t("app.name") %>
 
-<div class="home-page">
+<div class="home-page home-page--landing">
 
-  <div class="home-hero">
-    <div class="home-hero__badge"><%= t("app.tagline") %></div>
-    <h1 class="home-hero__title">
-      Triagem<strong>AI</strong>
-    </h1>
-    <p class="home-hero__subtitle">
-      <%= t("app.home.subtitle") %>
-    </p>
-  </div>
-
-  <div class="home-cards">
-
-    <%# ── Card Paciente ── %>
-    <div class="home-card home-card--patient">
-      <div class="home-card__icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
+  <%# ── Hero ── %>
+  <section class="home-hero-section">
+    <div class="home-hero-content">
+      <div class="home-hero__badge">
+        <span class="home-hero__badge-dot"></span>
+        <%= t("app.tagline") %>
       </div>
-      <h2 class="home-card__title"><%= t("app.home.patient_title") %></h2>
-      <p class="home-card__desc"><%= t("app.home.patient_desc") %></p>
-      <div class="home-card__actions">
-        <%= link_to t("app.home.patient_login"), new_user_session_path,
-              class: "btn btn--primary btn--full" %>
-        <%= link_to t("app.home.patient_register"), new_user_registration_path,
-              class: "btn btn--outline btn--full" %>
+      <h1 class="home-hero__title">
+        Triagem<strong>AI</strong>
+      </h1>
+      <p class="home-hero__subtitle">
+        Plataforma inteligente de triagem universal — classifique, priorize e gerencie atendimentos em tempo real com o apoio de inteligência artificial.
+      </p>
+      <div class="home-hero__actions">
+        <%= link_to "Iniciar Triagem", new_user_session_path, class: "btn btn--primary btn--lg" %>
+        <%= link_to "Acesso da Equipe", new_staff_session_path, class: "btn btn--hero-outline btn--lg" %>
       </div>
-    </div>
-
-    <%# ── Card Equipe ── %>
-    <div class="home-card home-card--staff">
-      <div class="home-card__icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-      </div>
-      <h2 class="home-card__title"><%= t("app.home.staff_title") %></h2>
-      <p class="home-card__desc"><%= t("app.home.staff_desc") %></p>
-      <div class="home-card__actions">
-        <%= link_to t("app.home.staff_login"), new_staff_session_path,
-              class: "btn btn--staff btn--full" %>
+      <div class="home-hero__trust">
+        <span class="home-hero__trust-item">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .5a7.5 7.5 0 1 0 0 15A7.5 7.5 0 0 0 8 .5Zm3.28 5.78-4 4a.75.75 0 0 1-1.06 0l-2-2a.75.75 0 0 1 1.06-1.06L6.75 8.69l3.47-3.47a.75.75 0 0 1 1.06 1.06Z"/></svg>
+          Triagem automatizada com IA
+        </span>
+        <span class="home-hero__trust-item">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .5a7.5 7.5 0 1 0 0 15A7.5 7.5 0 0 0 8 .5Zm3.28 5.78-4 4a.75.75 0 0 1-1.06 0l-2-2a.75.75 0 0 1 1.06-1.06L6.75 8.69l3.47-3.47a.75.75 0 0 1 1.06 1.06Z"/></svg>
+          Protocolo de Manchester
+        </span>
+        <span class="home-hero__trust-item">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .5a7.5 7.5 0 1 0 0 15A7.5 7.5 0 0 0 8 .5Zm3.28 5.78-4 4a.75.75 0 0 1-1.06 0l-2-2a.75.75 0 0 1 1.06-1.06L6.75 8.69l3.47-3.47a.75.75 0 0 1 1.06 1.06Z"/></svg>
+          Fila em tempo real
+        </span>
       </div>
     </div>
 
-  </div>
+    <div class="home-hero-illustration" aria-hidden="true">
+      <%# SVG: AI Triage Flow Illustration %>
+      <svg viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" class="home-hero-svg">
+        <!-- Background cards -->
+        <rect x="20" y="30" width="220" height="360" rx="20" fill="#EBF8FF" opacity="0.7"/>
+        <rect x="280" y="50" width="220" height="320" rx="20" fill="#F0FFF4" opacity="0.7"/>
+
+        <!-- Chat card -->
+        <rect x="36" y="50" width="188" height="320" rx="14" fill="white" filter="url(#shadow1)"/>
+        <!-- Chat header -->
+        <rect x="36" y="50" width="188" height="48" rx="14" fill="#3182CE"/>
+        <rect x="36" y="78" width="188" height="20" fill="#3182CE"/>
+        <circle cx="64" cy="74" r="12" fill="white" opacity="0.25"/>
+        <circle cx="64" cy="74" r="7" fill="white" opacity="0.5"/>
+        <rect x="84" y="67" width="90" height="7" rx="3.5" fill="white" opacity="0.9"/>
+        <rect x="84" y="78" width="60" height="5" rx="2.5" fill="white" opacity="0.55"/>
+
+        <!-- Chat messages -->
+        <!-- User msg 1 -->
+        <rect x="68" y="110" width="138" height="32" rx="10" fill="#EBF8FF"/>
+        <rect x="68" y="110" width="138" height="32" rx="10" stroke="#BEE3F8" stroke-width="1"/>
+        <rect x="76" y="119" width="90" height="6" rx="3" fill="#3182CE" opacity="0.5"/>
+        <rect x="76" y="129" width="112" height="5" rx="2.5" fill="#3182CE" opacity="0.3"/>
+
+        <!-- AI msg 1 -->
+        <rect x="48" y="155" width="130" height="38" rx="10" fill="#F7FAFC"/>
+        <rect x="48" y="155" width="130" height="38" rx="10" stroke="#E2E8F0" stroke-width="1"/>
+        <rect x="56" y="164" width="100" height="6" rx="3" fill="#718096" opacity="0.5"/>
+        <rect x="56" y="174" width="80" height="5" rx="2.5" fill="#718096" opacity="0.3"/>
+        <rect x="56" y="182" width="60" height="5" rx="2.5" fill="#718096" opacity="0.3"/>
+
+        <!-- User msg 2 -->
+        <rect x="68" y="207" width="120" height="28" rx="10" fill="#EBF8FF"/>
+        <rect x="68" y="207" width="120" height="28" rx="10" stroke="#BEE3F8" stroke-width="1"/>
+        <rect x="76" y="216" width="88" height="6" rx="3" fill="#3182CE" opacity="0.5"/>
+        <rect x="76" y="226" width="64" height="5" rx="2.5" fill="#3182CE" opacity="0.3"/>
+
+        <!-- AI msg 2 (analyzing) -->
+        <rect x="48" y="249" width="148" height="32" rx="10" fill="#F7FAFC"/>
+        <rect x="48" y="249" width="148" height="32" rx="10" stroke="#E2E8F0" stroke-width="1"/>
+        <rect x="56" y="258" width="76" height="6" rx="3" fill="#718096" opacity="0.5"/>
+        <rect x="56" y="268" width="110" height="5" rx="2.5" fill="#718096" opacity="0.3"/>
+
+        <!-- Input bar -->
+        <rect x="48" y="302" width="166" height="34" rx="10" fill="#F7FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+        <rect x="58" y="315" width="100" height="6" rx="3" fill="#A0AEC0" opacity="0.5"/>
+        <rect x="196" y="308" width="24" height="24" rx="6" fill="#3182CE"/>
+        <path d="M204 320l4-4m0 0l-4-4m4 4h-10" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Arrow connecting chat to AI panel -->
+        <path d="M228 215 Q256 215 272 215" stroke="#3182CE" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+
+        <!-- AI Processing panel -->
+        <rect x="295" y="68" width="188" height="284" rx="14" fill="white" filter="url(#shadow1)"/>
+
+        <!-- AI panel header -->
+        <rect x="295" y="68" width="188" height="44" rx="14" fill="#1A202C"/>
+        <rect x="295" y="92" width="188" height="20" fill="#1A202C"/>
+        <rect x="313" y="79" width="10" height="10" rx="5" fill="#FC8181"/>
+        <rect x="327" y="79" width="10" height="10" rx="5" fill="#F6E05E"/>
+        <rect x="341" y="79" width="10" height="10" rx="5" fill="#68D391"/>
+        <rect x="360" y="80" width="90" height="7" rx="3.5" fill="white" opacity="0.4"/>
+
+        <!-- AI brain / nodes -->
+        <circle cx="389" cy="148" r="28" fill="#EBF8FF" stroke="#BEE3F8" stroke-width="2"/>
+        <!-- Brain mesh lines -->
+        <circle cx="389" cy="148" r="10" fill="#3182CE" opacity="0.15"/>
+        <circle cx="389" cy="148" r="5" fill="#3182CE" opacity="0.3"/>
+        <path d="M369 138 Q378 143 389 138 Q400 133 409 138" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
+        <path d="M367 148 Q378 153 389 148 Q400 143 411 148" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
+        <path d="M369 158 Q378 153 389 158 Q400 163 409 158" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
+        <path d="M379 124 Q384 136 379 148 Q374 160 379 172" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
+        <path d="M389 122 L389 174" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
+        <path d="M399 124 Q394 136 399 148 Q404 160 399 172" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
+        <!-- Spark lines -->
+        <path d="M418 130 L426 128 M420 148 L430 148 M418 166 L426 168" stroke="#3182CE" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+        <path d="M360 130 L352 128 M358 148 L348 148 M360 166 L352 168" stroke="#3182CE" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+
+        <!-- Classification result -->
+        <rect x="311" y="192" width="154" height="40" rx="10" fill="#FFF5F5" stroke="#FED7D7" stroke-width="1.5"/>
+        <rect x="320" y="203" width="6" height="18" rx="3" fill="#E53E3E"/>
+        <rect x="333" y="206" width="70" height="6" rx="3" fill="#C53030" opacity="0.6"/>
+        <rect x="333" y="216" width="95" height="5" rx="2.5" fill="#C53030" opacity="0.35"/>
+
+        <!-- Summary section -->
+        <rect x="311" y="242" width="154" height="52" rx="10" fill="#F7FAFC" stroke="#E2E8F0" stroke-width="1"/>
+        <rect x="319" y="251" width="48" height="5" rx="2.5" fill="#718096" opacity="0.6"/>
+        <rect x="319" y="261" width="138" height="5" rx="2.5" fill="#718096" opacity="0.35"/>
+        <rect x="319" y="270" width="110" height="5" rx="2.5" fill="#718096" opacity="0.35"/>
+        <rect x="319" y="279" width="80" height="5" rx="2.5" fill="#718096" opacity="0.25"/>
+
+        <!-- Confirm button -->
+        <rect x="311" y="304" width="154" height="32" rx="8" fill="#E53E3E"/>
+        <rect x="350" y="316" width="76" height="7" rx="3.5" fill="white" opacity="0.9"/>
+
+        <!-- Defs -->
+        <defs>
+          <filter id="shadow1" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#3182CE" flood-opacity="0.08"/>
+          </filter>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#3182CE" opacity="0.6"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+  </section>
+
+  <%# ── Recursos ── %>
+  <section class="home-features">
+    <div class="home-section-header">
+      <p class="home-section__label">O que oferecemos</p>
+      <h2 class="home-section__title">Triagem inteligente do início ao fim</h2>
+      <p class="home-section__desc">Do primeiro contato até o atendimento, o TriagemAI automatiza e organiza cada etapa do fluxo.</p>
+    </div>
+
+    <div class="home-features-grid">
+
+      <div class="home-feature-card">
+        <div class="home-feature-card__icon home-feature-card__icon--blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <h3 class="home-feature-card__title">Triagem por Chat com IA</h3>
+        <p class="home-feature-card__desc">O solicitante descreve sua necessidade em linguagem natural. O assistente de IA faz as perguntas certas e coleta informações com precisão.</p>
+      </div>
+
+      <div class="home-feature-card">
+        <div class="home-feature-card__icon home-feature-card__icon--purple">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4l3 3"/>
+          </svg>
+        </div>
+        <h3 class="home-feature-card__title">Classificação Automática</h3>
+        <p class="home-feature-card__desc">Baseado no Protocolo de Manchester, a IA classifica o nível de urgência do solicitante (Vermelho, Laranja, Amarelo, Verde ou Azul) em segundos.</p>
+      </div>
+
+      <div class="home-feature-card">
+        <div class="home-feature-card__icon home-feature-card__icon--teal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h3 class="home-feature-card__title">Validação pela Equipe</h3>
+        <p class="home-feature-card__desc">Analistas revisam e confirmam (ou ajustam) a classificação da IA antes de inserir o solicitante na fila, garantindo segurança no processo.</p>
+      </div>
+
+      <div class="home-feature-card">
+        <div class="home-feature-card__icon home-feature-card__icon--green">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"/>
+            <line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/>
+            <line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </div>
+        <h3 class="home-feature-card__title">Fila Priorizada em Tempo Real</h3>
+        <p class="home-feature-card__desc">A fila é ordenada automaticamente por urgência. Solicitantes acompanham sua posição em tempo real via app, e a TV exibe as chamadas ao vivo.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <%# ── Como funciona ── %>
+  <section class="home-steps-section">
+    <div class="home-section-header">
+      <p class="home-section__label">Como funciona</p>
+      <h2 class="home-section__title">Quatro etapas, do contato ao atendimento</h2>
+    </div>
+
+    <div class="home-steps">
+      <div class="home-step">
+        <div class="home-step__number">1</div>
+        <div class="home-step__content">
+          <h3 class="home-step__title">Solicitante inicia a triagem</h3>
+          <p class="home-step__desc">O solicitante acessa o sistema, cria uma conta e descreve sua necessidade inicial. A IA conduz uma conversa guiada para coletar todos os detalhes relevantes.</p>
+        </div>
+      </div>
+      <div class="home-steps__connector" aria-hidden="true"></div>
+      <div class="home-step">
+        <div class="home-step__number">2</div>
+        <div class="home-step__content">
+          <h3 class="home-step__title">IA classifica a urgência</h3>
+          <p class="home-step__desc">Ao finalizar o chat, o sistema analisa a transcrição completa e gera automaticamente uma classificação de urgência com resumo e raciocínio clínico.</p>
+        </div>
+      </div>
+      <div class="home-steps__connector" aria-hidden="true"></div>
+      <div class="home-step">
+        <div class="home-step__number">3</div>
+        <div class="home-step__content">
+          <h3 class="home-step__title">Analista valida e insere na fila</h3>
+          <p class="home-step__desc">O analista revisa a classificação da IA, pode ajustá-la se necessário, e confirma a entrada do solicitante na fila de espera priorizada.</p>
+        </div>
+      </div>
+      <div class="home-steps__connector" aria-hidden="true"></div>
+      <div class="home-step">
+        <div class="home-step__number">4</div>
+        <div class="home-step__content">
+          <h3 class="home-step__title">Especialista realiza o atendimento</h3>
+          <p class="home-step__desc">O especialista chama o próximo da fila, acessa o histórico completo do chat e a análise da IA, e registra a conclusão do atendimento.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# ── Acesso ── %>
+  <section class="home-access-section">
+    <div class="home-section-header">
+      <p class="home-section__label">Acesse agora</p>
+      <h2 class="home-section__title">Escolha seu perfil de acesso</h2>
+    </div>
+
+    <div class="home-access-cards">
+
+      <div class="home-access-card home-access-card--patient">
+        <div class="home-access-card__visual">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+            <circle cx="28" cy="28" r="28" fill="#EBF8FF"/>
+            <circle cx="28" cy="22" r="8" fill="#3182CE" opacity="0.85"/>
+            <path d="M12 46c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="#3182CE" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="home-access-card__body">
+          <h2 class="home-access-card__title"><%= t("app.home.patient_title") %></h2>
+          <p class="home-access-card__desc"><%= t("app.home.patient_desc") %></p>
+          <ul class="home-access-card__bullets">
+            <li>Chat guiado com assistente de IA</li>
+            <li>Acompanhe sua posição na fila</li>
+            <li>Receba notificação de chamada</li>
+          </ul>
+        </div>
+        <div class="home-access-card__actions">
+          <%= link_to t("app.home.patient_login"), new_user_session_path,
+                class: "btn btn--primary btn--full btn--lg" %>
+          <%= link_to t("app.home.patient_register"), new_user_registration_path,
+                class: "btn btn--outline btn--full" %>
+        </div>
+      </div>
+
+      <div class="home-access-card home-access-card--staff">
+        <div class="home-access-card__visual">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+            <circle cx="28" cy="28" r="28" fill="#F0FFF4"/>
+            <circle cx="20" cy="22" r="7" fill="#38A169" opacity="0.85"/>
+            <path d="M6 44c0-7.732 6.268-14 14-14s14 6.268 14 14" stroke="#38A169" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="37" cy="20" r="5" fill="#38A169" opacity="0.5"/>
+            <path d="M30 42c0-3.866 3.134-7 7-7" stroke="#38A169" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="home-access-card__body">
+          <h2 class="home-access-card__title"><%= t("app.home.staff_title") %></h2>
+          <p class="home-access-card__desc"><%= t("app.home.staff_desc") %></p>
+          <ul class="home-access-card__bullets">
+            <li>Painel de validação de triagens</li>
+            <li>Gestão de fila e chamadas</li>
+            <li>Dashboard e histórico</li>
+          </ul>
+        </div>
+        <div class="home-access-card__actions">
+          <%= link_to t("app.home.staff_login"), new_staff_session_path,
+                class: "btn btn--staff btn--full btn--lg" %>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <%# ── Footer ── %>
+  <footer class="home-footer">
+    <div class="home-footer__brand">
+      <%= image_tag "logo.svg", width: 24, height: 24, alt: "TriagemAI", style: "border-radius:5px;" %>
+      <span>Triagem<strong>AI</strong></span>
+    </div>
+    <p class="home-footer__copy">Sistema de Triagem Inteligente — Projeto de TCC</p>
+    <%= link_to "Painel TV (Fila)", queue_tv_path, class: "home-footer__link" %>
+  </footer>
 
 </div>

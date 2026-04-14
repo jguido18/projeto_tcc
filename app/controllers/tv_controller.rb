@@ -8,6 +8,6 @@ class TvController < ApplicationController
     @called_entries = QueueEntry
       .includes(triage_session: :user)
       .where(status: :called)
-      .order(:urgency_weight, :called_at)
+      .order(called_at: :desc)
   end
 end

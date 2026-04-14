@@ -1,7 +1,23 @@
 <% content_for :title, t("app.validation.title") %>
 
-<div class="colaborador-panel-toolbar">
-  <%= link_to t("app.reports.title"), validation_reports_path, class: "btn btn--secondary" %>
+<%# ── Page header ── %>
+<div class="panel-page-header">
+  <div class="panel-page-header__left">
+    <h1 class="panel-page-header__title"><%= t("app.validation.title") %></h1>
+    <p class="panel-page-header__subtitle"><%= t("app.validation.subtitle") %></p>
+  </div>
+  <div class="panel-page-header__stats">
+    <div class="panel-stat panel-stat--yellow">
+      <span class="panel-stat__value" data-validation-panel-target="awaitingCount"><%= @awaiting_validation.count %></span>
+      <span class="panel-stat__label">Aguardando validação</span>
+    </div>
+    <div class="panel-stat panel-stat--green">
+      <span class="panel-stat__value" data-validation-panel-target="queueCount"><%= @total_waiting %></span>
+      <span class="panel-stat__label">Na fila</span>
+    </div>
+  </div>
+  <div class="panel-page-header__actions">
+  </div>
 </div>
 
 <div class="colaborador-panel"
@@ -10,7 +26,12 @@
   <%# ── Left column: awaiting colaborador validation ── %>
   <section class="colaborador-column colaborador-column--validation">
     <div class="colaborador-column__header colaborador-column__header--yellow">
-      <h2 class="colaborador-column__title"><%= t("app.validation.awaiting_validation") %></h2>
+      <div class="colaborador-column__header-left">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.8;">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <h2 class="colaborador-column__title"><%= t("app.validation.awaiting_validation") %></h2>
+      </div>
       <span class="colaborador-column__badge" data-validation-panel-target="awaitingCount">
         <%= @awaiting_validation.count %>
       </span>
@@ -18,7 +39,14 @@
 
     <div class="colaborador-column__body" data-validation-panel-target="awaitingList">
       <% if @awaiting_validation.empty? %>
-        <p class="colaborador-empty"><%= t("app.validation.no_pending") %></p>
+        <div class="colaborador-empty-state">
+          <div class="colaborador-empty-state__icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <p><%= t("app.validation.no_pending") %></p>
+        </div>
       <% else %>
         <% @awaiting_validation.each do |session| %>
           <% classification = session.ai_classification %>
@@ -29,7 +57,7 @@
                 <%= urgency_label(level) %>
               </div>
               <span class="colaborador-card__time">
-                <%= t("app.validation.arrived_at") %>: <%= l(session.created_at, format: :short) %>
+                <%= l(session.created_at, format: :short) %>
               </span>
             </div>
 
@@ -52,7 +80,13 @@
   <%# ── Right column: validated sessions waiting in queue ── %>
   <section class="colaborador-column colaborador-column--queue">
     <div class="colaborador-column__header colaborador-column__header--green">
-      <h2 class="colaborador-column__title"><%= t("app.validation.priority_queue") %></h2>
+      <div class="colaborador-column__header-left">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.8;">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+        <h2 class="colaborador-column__title"><%= t("app.validation.priority_queue") %></h2>
+      </div>
       <span class="colaborador-column__badge" data-validation-panel-target="queueCount">
         <%= @total_waiting %>
       </span>
@@ -60,7 +94,14 @@
 
     <div class="colaborador-column__body" data-validation-panel-target="queueList">
       <% if @priority_queue.empty? %>
-        <p class="colaborador-empty"><%= t("app.validation.queue_empty") %></p>
+        <div class="colaborador-empty-state">
+          <div class="colaborador-empty-state__icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <p><%= t("app.validation.queue_empty") %></p>
+        </div>
       <% else %>
         <% @priority_queue.each_with_index do |entry, idx| %>
           <% session     = entry.triage_session %>

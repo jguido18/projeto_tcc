@@ -1,56 +1,97 @@
+require "csv"
+
 class Validation::ReportsController < Validation::BaseController
   def index
-    today = Time.current.beginning_of_day..Time.current.end_of_day
+    @period = params[:period].presence_in(%w[today week month]) || "today"
+    @range  = period_range(@period)
 
-    # ── Contadores do dia ──────────────────────────────────────────────
-    @total_today = TriageSession
-      .where(created_at: today)
-      .count
+    # ── Métricas do período ────────────────────────────────────────────
+    @total_period    = TriageSession.where(created_at: @range).count
+    @attended_period = TriageSession.where(status: :completed, finished_at: @range).count
+    @waiting_now     = QueueEntry.where(status: :waiting).count
+    @called_now      = QueueEntry.where(status: :called).count
 
-    @attended_today = TriageSession
-      .where(status: :completed, finished_at: today)
-      .count
+    # ── Precisão da IA (geral, sem filtro de período) ──────────────────
+    total_val    = TriageValidation.count
+    adjusted_val = TriageValidation.where(decision: :adjusted).count
+    @ai_accuracy_pct = total_val > 0 ?
+      ((total_val - adjusted_val).to_f / total_val * 100).round(1) : nil
 
-    @waiting_now = QueueEntry
-      .where(status: :waiting)
-      .count
+    # ── Distribuição por urgência no período ──────────────────────────
+    raw_urgency = QueueEntry.where(queued_at: @range).group(:urgency_level).count
+    levels      = TriageSetting.current.urgency_levels
+    @urgency_counts = raw_urgency
 
-    @called_now = QueueEntry
-      .where(status: :called)
-      .count
+    @urgency_chart_data = {
+      labels: levels.map { |l| l["label"] },
+      values: levels.map { |l| raw_urgency[l["key"]] || 0 },
+      colors: levels.map { |l| l["color"] }
+    }
 
-    # ── Distribuição por urgência (hoje) ───────────────────────────────
-    # { "red" => 3, "yellow" => 5, ... }
-    @urgency_counts = QueueEntry
-      .where(queued_at: today)
-      .group(:urgency_level)
-      .count
+    # ── Tendência diária (últimos N dias conforme período) ────────────
+    days = @period == "month" ? 30 : @period == "week" ? 7 : 7
+    trend_range = (days - 1).days.ago.to_date..Date.today
 
-    # ── Últimos 20 atendimentos concluídos ─────────────────────────────
+    @daily_trend_data = {
+      labels: trend_range.map { |d| d.strftime("%d/%m") },
+      values: trend_range.map { |d|
+        TriageSession
+          .where(status: :completed,
+                 finished_at: d.beginning_of_day..d.end_of_day)
+          .count
+      }
+    }
+
+    # ── Últimos 20 atendimentos concluídos ────────────────────────────
     @recent = TriageSession
       .includes(:user, ai_classification: :triage_validation)
       .where(status: :completed)
       .order(finished_at: :desc)
       .limit(20)
+  end
 
-    # ── Taxa de ajuste da IA (percentual de validações que alteraram a urgência)
-    total_validations = TriageValidation
-      .joins(:ai_classification)
-      .where(ai_classifications: { triage_session_id:
-        TriageSession.select(:id) })
-      .count
+  def export_csv
+    sessions = TriageSession
+      .includes(:user, ai_classification: :triage_validation)
+      .where(status: :completed)
+      .order(finished_at: :desc)
 
-    adjusted_validations = TriageValidation
-      .joins(:ai_classification)
-      .where(
-        decision: :adjusted,
-        ai_classifications: { triage_session_id:
-          TriageSession.select(:id) }
-      )
-      .count
+    csv_data = CSV.generate(headers: true, col_sep: ";", encoding: "UTF-8") do |csv|
+      csv << [
+        "Data/Hora", "Paciente", "E-mail",
+        "Urgência IA", "Urgência Final", "Decisão do Colaborador", "Notas"
+      ]
 
-    @ai_accuracy_pct = total_validations > 0 ?
-      ((total_validations - adjusted_validations).to_f / total_validations * 100).round(1) :
-      nil
+      sessions.each do |session|
+        ai         = session.ai_classification
+        validation = ai&.triage_validation
+        final_level = validation&.final_urgency_level || ai&.urgency_level
+
+        csv << [
+          session.finished_at&.strftime("%d/%m/%Y %H:%M"),
+          session.user.name,
+          session.user.email,
+          ai ? TriageSetting.current.urgency_label_for(ai.urgency_level) : "—",
+          final_level ? TriageSetting.current.urgency_label_for(final_level) : "—",
+          validation ? I18n.t("enums.triage_validation.decision.#{validation.decision}") : "—",
+          validation&.notes.presence || "—"
+        ]
+      end
+    end
+
+    send_data "\xEF\xBB\xBF#{csv_data}",
+              filename: "atendimentos_#{Date.today.strftime("%Y%m%d")}.csv",
+              type: "text/csv; charset=utf-8",
+              disposition: "attachment"
+  end
+
+  private
+
+  def period_range(period)
+    case period
+    when "today"  then Time.current.beginning_of_day..Time.current.end_of_day
+    when "week"   then 6.days.ago.beginning_of_day..Time.current.end_of_day
+    when "month"  then 29.days.ago.beginning_of_day..Time.current.end_of_day
+    end
   end
 end

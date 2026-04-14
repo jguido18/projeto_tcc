@@ -89,6 +89,86 @@
   margin: 0 auto;
 }
 
+/* ─── Panel page header ──────────────────────────────────────────────── */
+
+.panel-page-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.panel-page-header__left { flex: 1; min-width: 0; }
+
+.panel-page-header__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a202c;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.panel-page-header__subtitle {
+  font-size: 0.875rem;
+  color: #718096;
+  margin: 0.2rem 0 0;
+}
+
+.panel-page-header__stats { display: flex; gap: 0.75rem; }
+
+.panel-stat {
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.6rem 1.25rem;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+  min-width: 80px;
+  border-top: 3px solid transparent;
+}
+
+.panel-stat--blue { border-top-color: #4299e1; }
+
+.panel-stat__value {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #2d3748;
+}
+
+.panel-stat__label {
+  display: block;
+  font-size: 0.7rem;
+  color: #718096;
+  margin-top: 0.2rem;
+  white-space: nowrap;
+}
+
+.panel-empty-state {
+  text-align: center;
+  padding: 5rem 2rem;
+  color: #a0aec0;
+}
+
+.panel-empty-state__icon {
+  color: #68d391;
+  margin-bottom: 1rem;
+}
+
+.panel-empty-state__text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 0 0 0.25rem;
+}
+
+.panel-empty-state__hint {
+  font-size: 0.875rem;
+  color: #a0aec0;
+  margin: 0;
+}
+
 /* ─── Panel (lista de chamados) ──────────────────────────────────────── */
 
 .specialist-panel__header {
@@ -344,6 +424,14 @@
   gap: 0.35rem;
 }
 
+.attendance-section__content--meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #4a5568;
+  font-size: 0.875rem;
+}
+
 .attendance-section--colaborador {
   background: #fffff0;
   border: 1px solid #ecc94b;
@@ -441,6 +529,189 @@
 }
 
 .btn--finish:hover { background: #c53030; }
+
+/* ─── Histórico de atendimentos ─────────────────────────────────────── */
+
+.history-filters {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.25rem;
+}
+
+.history-filters__form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 160px 160px auto;
+  gap: 0.75rem 1rem;
+  align-items: flex-end;
+}
+
+@media (max-width: 1100px) {
+  .history-filters__form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .history-filter-actions { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .history-filters__form { grid-template-columns: 1fr; }
+}
+
+.history-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.history-filter-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.history-filter-input {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: #2d3748;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.history-filter-input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66,153,225,0.15);
+}
+
+.history-filter-input::placeholder { color: #a0aec0; }
+
+.history-filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding-top: 0.1rem;
+}
+
+.history-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.history-table-wrap { overflow-x: auto; }
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.history-table thead tr {
+  background: #f7fafc;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.history-table thead th {
+  text-align: left;
+  padding: 0.65rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #718096;
+  white-space: nowrap;
+}
+
+.history-row {
+  border-bottom: 1px solid #f0f4f8;
+  transition: background 0.1s;
+}
+
+.history-row:last-child { border-bottom: none; }
+.history-row:hover { background: #f7fafc; }
+
+.history-row td {
+  padding: 0.8rem 1rem;
+  vertical-align: middle;
+  color: #2d3748;
+}
+
+.history-row__ticket {
+  font-family: monospace;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #4a5568;
+  white-space: nowrap;
+}
+
+.history-row__patient {
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.history-row__demand {
+  color: #718096;
+  font-size: 0.845rem;
+  max-width: 320px;
+}
+
+.history-row__date {
+  white-space: nowrap;
+  font-size: 0.845rem;
+}
+
+.history-row__date-day {
+  font-size: 0.75rem;
+  color: #a0aec0;
+  margin-top: 0.1rem;
+}
+
+.history-row__link {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #3182ce;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid #bee3f8;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.history-row__link:hover {
+  background: #ebf8ff;
+  color: #2b6cb0;
+}
+
+.history-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f7fafc;
+}
+
+.history-pagination__info {
+  font-size: 0.82rem;
+  color: #718096;
+}
+
+.history-pagination__controls {
+  display: flex;
+  gap: 0.5rem;
+}
 
 /* ─── Shared urgency chips (também usados aqui) ──────────────────────── */
 

@@ -21,7 +21,7 @@ class Admin::TriageSettingsController < Admin::BaseController
   end
 
   def triage_setting_params
-    base = params.require(:triage_setting).permit(:purpose, :system_prompt)
+    base = params.require(:triage_setting).permit(:purpose, :system_prompt, :hint_example)
 
     raw_levels = params.dig(:triage_setting, :urgency_levels)
     urgency_levels = case raw_levels
@@ -47,8 +47,9 @@ class Admin::TriageSettingsController < Admin::BaseController
     end
 
     {
-      purpose: base[:purpose],
+      purpose:       base[:purpose],
       system_prompt: base[:system_prompt],
+      hint_example:  base[:hint_example],
       urgency_levels: cleaned
     }
   end

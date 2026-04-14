@@ -16,6 +16,7 @@ class Api::QueueController < Api::BaseController
         urgency_label:  entry.urgency_label,
         urgency_color:  entry.urgency_color,
         queue_position: position,
+        ticket_number:  entry.ticket_number,
         masked_name:    mask_name(entry.triage_session.user.name),
         is_mine:        entry.triage_session.user_id == current_user.id,
         estimated_wait: estimated_wait_for(position)

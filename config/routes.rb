@@ -13,6 +13,12 @@ Rails.application.routes.draw do
     delete "staff/logout", to: "staff/sessions#destroy", as: :destroy_staff_session
   end
 
+  # Perfil da equipe
+  namespace :staff do
+    get  "profile/edit", to: "profile#edit", as: :edit_profile
+    patch "profile",     to: "profile#update", as: :profile
+  end
+
   # API JSON para o app Vue do paciente
   namespace :api do
     get  "session",          to: "session#show"
@@ -23,6 +29,8 @@ Rails.application.routes.draw do
     post "triage/finish",    to: "triage#finish"
     post "triage/restart",   to: "triage#restart"
     get  "queue",            to: "queue#index"
+    get  "profile",          to: "profile#show"
+    patch "profile",         to: "profile#update"
   end
 
   # Shell Vue — serve o SPA para o paciente (todas as rotas /app/*)
@@ -44,7 +52,8 @@ Rails.application.routes.draw do
         patch :finish
       end
     end
-    get :reports, to: "reports#index"
+    get :reports,        to: "reports#index"
+    get :reports_export, to: "reports#export_csv"
   end
 
 
@@ -64,6 +73,7 @@ Rails.application.routes.draw do
         patch :finish
       end
     end
+    get "history", to: "history#index", as: :history
   end
 
   # Health check

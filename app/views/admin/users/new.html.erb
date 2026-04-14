@@ -1,12 +1,14 @@
 <% content_for :title, "Novo Membro da Equipe" %>
 
-<div class="triage-settings-page">
-  <div class="triage-settings-header">
-    <h1>Novo Membro da Equipe</h1>
-    <p>Crie um colaborador (validação) ou especialista (atendimento).</p>
+<div class="profile-page">
+  <div class="profile-page__header">
+    <div>
+      <h1 class="profile-page__title">Novo Membro da Equipe</h1>
+      <p class="profile-page__subtitle">Crie um colaborador (validação) ou especialista (atendimento).</p>
+    </div>
   </div>
 
-  <%= form_with model: [:admin, @user], class: "triage-settings-form" do |f| %>
+  <%= form_with model: [:admin, @user] do |f| %>
     <%= render "form", user: @user, f: f %>
   <% end %>
 </div>

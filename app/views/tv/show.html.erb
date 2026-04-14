@@ -4,7 +4,7 @@
   <%# ── Cabeçalho ── %>
   <header class="tv-header">
     <%= link_to root_path, class: "tv-header__brand app-header__logo-link" do %>
-      <span class="app-header__logo-icon">+</span>
+      <%= image_tag "logo.svg", width: 30, height: 30, alt: "TriagemAI", style: "border-radius:7px;" %>
       <span class="app-header__logo-text">Triagem<strong>AI</strong></span>
       <span class="tv-header__name">— Painel de Chamadas</span>
     <% end %>

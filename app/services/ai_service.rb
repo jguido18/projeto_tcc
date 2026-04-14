@@ -103,12 +103,13 @@ class AiService
       }
     )
 
-    content = response.dig("choices", 0, "message", "content").to_s
+    raw_content = response.dig("choices", 0, "message", "content").to_s
+    finished = triage_finished?(raw_content)
 
     {
-      content: content,
+      content: strip_marker(raw_content),
       raw_response: response,
-      finished: triage_finished?(content)
+      finished: finished
     }
   end
 
@@ -121,12 +122,13 @@ class AiService
       messages: messages
     )
 
-    content = response.content.first.text
+    raw_content = response.content.first.text
+    finished = triage_finished?(raw_content)
 
     {
-      content: content,
+      content: strip_marker(raw_content),
       raw_response: response.to_h,
-      finished: triage_finished?(content)
+      finished: finished
     }
   end
 
@@ -175,8 +177,24 @@ class AiService
     setting = TriageSetting.current
     [
       setting.purpose.presence,
-      setting.system_prompt
+      setting.system_prompt,
+      user_context
     ].compact.join("\n\n")
+  end
+
+  def user_context
+    user = @session.user
+    lines = [ "## DADOS JÁ CADASTRADOS DO USUÁRIO (não solicite novamente):" ]
+    lines << "- Nome: #{user.name}" if user.name.present?
+    lines << "- CPF: #{user.cpf}" if user.cpf.present?
+    lines << "- E-mail: #{user.email}" if user.email.present?
+    lines << "- Telefone: #{user.phone}" if user.phone.present?
+    lines << "- Data de nascimento: #{user.birth_date.strftime('%d/%m/%Y')}" if user.birth_date.present?
+    lines.join("\n")
+  end
+
+  def strip_marker(content)
+    content.gsub(/\[triagem_concluida\]/i, "").strip
   end
 
   def build_messages(user_message)
@@ -203,23 +221,27 @@ class AiService
   def classification_system_prompt
     setting = TriageSetting.current
     levels = setting.urgency_levels.map { |level| "#{level['key']} (#{level['label']}, prioridade=#{level['weight']})" }.join(", ")
+    context_hint = setting.purpose.presence || "triagem geral"
 
     <<~PROMPT
-      Você é um sistema de classificação de triagem.
-      Com base na transcrição da triagem fornecida, retorne um JSON com exatamente estes campos:
+      Você é um sistema de classificação de triagem. O contexto desta triagem é: #{context_hint}.
+      Com base na transcrição fornecida, retorne um JSON com exatamente estes campos:
       {
         "urgency_level": "uma chave válida da configuração",
-        "protocol_reference": "código ou referência opcional do protocolo usado",
-        "summary": "resumo da classificação em 1-2 frases",
-        "identified_symptoms": ["sintoma1", "sintoma2"],
-        "ai_suggestion": "sugestão geral de ação",
-        "classification_reasoning": "raciocínio da classificação detalhado",
-        "routing_suggestion": "destino ou fila recomendada",
+        "protocol_reference": "referência ou categoria interna usada para este tipo de solicitação (pode ser vazio)",
+        "summary": "resumo objetivo da solicitação em 1-2 frases",
+        "identified_symptoms": ["ponto-chave-1", "ponto-chave-2"],
+        "ai_suggestion": "ação sugerida para o atendente",
+        "classification_reasoning": "justificativa detalhada para o nível de prioridade escolhido",
+        "routing_suggestion": "setor ou fila de destino recomendada",
         "confidence_score": 85.0
       }
-      Níveis de urgência válidos: #{levels}
-      Regra de prioridade: 1 é o nível mais urgente e 10 é o menos urgente.
-      Escolha urgency_level respeitando essa ordem numérica de prioridade.
+      Nota: o campo "identified_symptoms" deve listar os principais tópicos ou pontos identificados na conversa
+      (ex: para secretaria acadêmica, pode ser "matrícula inicial", "curso de Sistemas de Informação";
+      para saúde, pode ser "dor abdominal", "febre há 2 dias").
+      Níveis de prioridade válidos: #{levels}
+      Regra: prioridade 1 = mais urgente, #{setting.urgency_levels.size} = menos urgente.
+      Escolha urgency_level respeitando essa escala.
       Retorne apenas o JSON, sem texto adicional.
     PROMPT
   end

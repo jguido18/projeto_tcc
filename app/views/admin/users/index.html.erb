@@ -172,14 +172,14 @@
       <% if @pagy.pages > 1 %>
         <div class="admin-pagination">
           <% if @pagy.previous %>
-            <%= link_to admin_users_path(page: @pagy.previous, status: params[:status], role: params[:role], search: params[:search]), class: "admin-page-btn" do %>
+            <%= link_to admin_users_path(page: @pagy.previous, status: params[:status], role: params[:role], search: params[:search], limit: @limit), class: "admin-page-btn" do %>
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
               Anterior
             <% end %>
           <% end %>
           <span class="admin-pagination__info">Página <strong><%= @pagy.page %></strong> de <strong><%= @pagy.pages %></strong></span>
           <% if @pagy.next %>
-            <%= link_to admin_users_path(page: @pagy.next, status: params[:status], role: params[:role], search: params[:search]), class: "admin-page-btn" do %>
+            <%= link_to admin_users_path(page: @pagy.next, status: params[:status], role: params[:role], search: params[:search], limit: @limit), class: "admin-page-btn" do %>
               Próxima
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             <% end %>

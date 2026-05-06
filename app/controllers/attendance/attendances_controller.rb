@@ -8,6 +8,7 @@ class Attendance::AttendancesController < Attendance::BaseController
     @ai          = @session.ai_classification
     @validation  = @ai&.triage_validation
     @messages    = @session.chat_messages
+    @documents   = @session.triage_documents.with_attached_file.order(:created_at)
   end
 
   # PATCH /attendance/attendances/:id/finish

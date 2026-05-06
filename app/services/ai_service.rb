@@ -8,13 +8,16 @@ class AiService
   end
 
   # Sends the conversation history to the LLM and returns the AI reply text.
+  # document_context: { type: :image, base64: String, content_type: String }
+  #                 | { type: :text,  text: String }
+  #                 | nil
   # Returns a hash: { content: String, raw_response: Hash, finished: Boolean }
-  def call(user_message)
+  def call(user_message, document_context: nil)
     case provider
     when :openai
-      call_openai(user_message)
+      call_openai(user_message, document_context: document_context)
     when :anthropic
-      call_anthropic(user_message)
+      call_anthropic(user_message, document_context: document_context)
     else
       raise "Unsupported AI provider: #{provider}"
     end
@@ -90,15 +93,15 @@ class AiService
     ENV["ANTHROPIC_MODEL"].presence || ANTHROPIC_DEFAULT_MODEL
   end
 
-  def call_openai(user_message)
+  def call_openai(user_message, document_context: nil)
     response = openai_client.chat(
       parameters: {
         model: openai_model,
         max_tokens: MAX_TOKENS,
         temperature: 0.3,
         messages: [
-          { role: "system", content: system_prompt },
-          *build_messages(user_message)
+          { role: "system", content: system_prompt(document_present: document_context.present?) },
+          *build_messages(user_message, document_context: document_context)
         ]
       }
     )
@@ -113,12 +116,12 @@ class AiService
     }
   end
 
-  def call_anthropic(user_message)
-    messages = build_messages(user_message)
+  def call_anthropic(user_message, document_context: nil)
+    messages = build_messages(user_message, document_context: document_context)
     response = anthropic_client.messages.create(
       model: anthropic_model,
       max_tokens: MAX_TOKENS,
-      system: system_prompt,
+      system: system_prompt(document_present: document_context.present?),
       messages: messages
     )
 
@@ -173,13 +176,29 @@ class AiService
     text
   end
 
-  def system_prompt
+  def system_prompt(document_present: false)
     setting = TriageSetting.current
-    [
+    parts = [
       setting.purpose.presence,
       setting.system_prompt,
       user_context
-    ].compact.join("\n\n")
+    ]
+    parts << document_instruction if document_present
+    parts.compact.join("\n\n")
+  end
+
+  def document_instruction
+    <<~INSTRUCTION
+      ## INSTRUÇÃO SOBRE DOCUMENTO ANEXADO
+      O usuário anexou um documento a esta mensagem.
+      Você DEVE ler e utilizar as informações contidas nele para conduzir a triagem.
+      O conteúdo do documento está incluído na mensagem do usuário, entre os marcadores "---DOCUMENTO ANEXADO---" e "---FIM DO DOCUMENTO---".
+      Extraia os dados relevantes (sintomas, diagnósticos, exames, histórico) e use-os para:
+      - Evitar perguntar informações que já constam no documento.
+      - Fazer perguntas complementares sobre pontos ainda não esclarecidos.
+      - Concluir a triagem com mais precisão.
+      Não ignore o documento. Não diga que não pode analisar documentos.
+    INSTRUCTION
   end
 
   def user_context
@@ -197,12 +216,39 @@ class AiService
     content.gsub(/\[triagem_concluida\]/i, "").strip
   end
 
-  def build_messages(user_message)
+  def build_messages(user_message, document_context: nil)
     history = @session.chat_messages.map do |msg|
       { role: msg.user? ? "user" : "assistant", content: msg.content }
     end
-    history << { role: "user", content: user_message }
+
+    last_user_content = build_user_content(user_message, document_context)
+    history << { role: "user", content: last_user_content }
     history
+  end
+
+  # Builds the content for the last user turn, optionally including a document.
+  def build_user_content(user_message, document_context)
+    return user_message if document_context.nil?
+
+    case document_context[:type]
+    when :text
+      "#{user_message}\n\n---DOCUMENTO ANEXADO---\n#{document_context[:text]}\n---FIM DO DOCUMENTO---"
+    when :image
+      case provider
+      when :openai
+        [
+          { type: "text", text: user_message },
+          { type: "image_url", image_url: { url: "data:#{document_context[:content_type]};base64,#{document_context[:base64]}", detail: "high" } }
+        ]
+      when :anthropic
+        [
+          { type: "image", source: { type: "base64", media_type: document_context[:content_type], data: document_context[:base64] } },
+          { type: "text", text: user_message }
+        ]
+      end
+    else
+      user_message
+    end
   end
 
   def build_classification_messages

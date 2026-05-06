@@ -1,6 +1,7 @@
 class TriageSession < ApplicationRecord
   belongs_to :user
   has_many :chat_messages, dependent: :destroy
+  has_many :triage_documents, dependent: :destroy
   has_one :ai_classification, dependent: :destroy
   has_one :queue_entry, dependent: :restrict_with_error
 

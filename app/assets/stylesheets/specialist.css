@@ -729,3 +729,94 @@
 .urgency-chip--yellow { background: #d69e2e; color: #744210; }
 .urgency-chip--green  { background: #38a169; }
 .urgency-chip--blue   { background: #3182ce; }
+
+/* ─── Documentos anexados (attendance show) ──────────────────────────── */
+
+.doc-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f7fafc;
+  margin-bottom: 0.5rem;
+}
+
+.doc-item__info {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-item__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  line-height: 1.3;
+}
+
+.doc-item__name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2d3748;
+  word-break: break-all;
+}
+
+.doc-item__meta {
+  font-size: 0.78rem;
+  color: #718096;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.doc-item__summary {
+  font-size: 0.78rem;
+  color: #4a5568;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.doc-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.doc-badge--valid     { background: #c6f6d5; color: #276749; }
+.doc-badge--invalid   { background: #fed7d7; color: #9b2c2c; }
+.doc-badge--uncertain { background: #fefcbf; color: #7b6c00; }
+.doc-badge--pending   { background: #bee3f8; color: #2c5282; }
+.doc-badge--skipped   { background: #e2e8f0; color: #4a5568; }
+
+.btn--doc-download,
+.btn--doc-view {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+}
+
+.btn--doc-download {
+  background: #3182ce;
+  color: #fff;
+}
+
+.btn--doc-view {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+.btn--doc-download:hover { background: #2b6cb0; }
+.btn--doc-view:hover     { background: #cbd5e0; }

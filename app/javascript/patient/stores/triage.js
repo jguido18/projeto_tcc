@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { ref, computed } from "vue"
-import { apiFetch } from "../composables/useApi"
+import { apiFetch, apiFetchFormData } from "../composables/useApi"
 
 export const useTriageStore = defineStore("triage", () => {
   const session     = ref(null)   // dados da sessão vindos da API
@@ -54,26 +54,36 @@ export const useTriageStore = defineStore("triage", () => {
     return data
   }
 
-  async function sendMessage(content) {
+  // file: File object or null
+  async function sendMessage(content, file = null) {
     if (sending.value) return
     sending.value = true
+
+    // Optimistic local message
+    const optimisticContent = file ? `📎 ${file.name}${content ? " — " + content : ""}` : content
+    messages.value.push({
+      id:       Date.now(),
+      sender:   "user",
+      content:  optimisticContent,
+      sent_at:  new Date().toISOString(),
+      sequence: (messages.value.at(-1)?.sequence || 0) + 1,
+      pending:  true,
+    })
+
     try {
-      // Adiciona mensagem do paciente localmente de imediato (UX responsivo)
-      messages.value.push({
-        id:       Date.now(),
-        sender:   "user",
-        content,
-        sent_at:  new Date().toISOString(),
-        sequence: (messages.value.at(-1)?.sequence || 0) + 1,
-        pending:  true,
-      })
+      let data
+      if (file) {
+        const formData = new FormData()
+        formData.append("content", content || `Segue o documento: ${file.name}`)
+        formData.append("file", file)
+        data = await apiFetchFormData("/api/triage/message", formData)
+      } else {
+        data = await apiFetch("/api/triage/message", {
+          method: "POST",
+          body:   JSON.stringify({ content }),
+        })
+      }
 
-      const data = await apiFetch("/api/triage/message", {
-        method: "POST",
-        body: JSON.stringify({ content }),
-      })
-
-      // Remove mensagens pendentes e recarrega do servidor
       messages.value = messages.value.filter((m) => !m.pending)
       await fetchMessages()
 
@@ -134,11 +144,25 @@ export const useTriageStore = defineStore("triage", () => {
     }
   }
 
+  // documentValidations: { [document_id]: { status, label, summary, confidence_score } }
+  const documentValidations = ref({})
+
+  function applyDocumentValidation(payload) {
+    documentValidations.value[payload.document_id] = {
+      status:          payload.validation_status,
+      document_label:  payload.document_label,
+      summary:         payload.summary,
+      confidence_score: payload.confidence_score,
+      issues_found:    payload.issues_found || [],
+    }
+  }
+
   return {
     session, messages, loaded, sending, hintExample,
     urgencyColor, urgencyMap,
+    documentValidations,
     fetchStatus, fetchMessages, startTriage, sendMessage,
     finishTriage, restartTriage,
-    applyRealtimeMessage, applyStatusChange, applyQueueEntry,
+    applyRealtimeMessage, applyStatusChange, applyQueueEntry, applyDocumentValidation,
   }
 })

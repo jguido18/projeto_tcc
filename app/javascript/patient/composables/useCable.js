@@ -41,6 +41,10 @@ export function useTriageChannel(sessionId) {
               store.fetchStatus().then(() => router.push("/app/queue"))
             }
             break
+
+          case "document_validation":
+            store.applyDocumentValidation(data)
+            break
         }
       },
     }

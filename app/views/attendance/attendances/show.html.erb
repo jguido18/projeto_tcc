@@ -106,6 +106,47 @@
         </div>
       <% end %>
 
+      <% if @documents.any? %>
+        <div class="attendance-section">
+          <div class="attendance-section__title">Documentos Anexados</div>
+          <div class="attendance-section__content">
+            <% @documents.each do |doc| %>
+              <div class="doc-item">
+                <div class="doc-item__info">
+                  <span class="doc-item__icon">
+                    <% if doc.image? %>📷<% else %>📄<% end %>
+                  </span>
+                  <div>
+                    <div class="doc-item__name"><%= doc.original_filename %></div>
+                    <div class="doc-item__meta">
+                      <%= doc.document_type_label %>
+                      <span class="doc-badge doc-badge--<%= doc.validation_status %>">
+                        <%= { "valid" => "✓ Válido", "invalid" => "✗ Inválido", "uncertain" => "? Incerto", "pending" => "⏳ Pendente", "skipped" => "— Sem validação" }[doc.validation_status] || doc.validation_status %>
+                      </span>
+                    </div>
+                    <% if doc.validation_result&.dig("summary").present? %>
+                      <div class="doc-item__summary"><%= doc.validation_result["summary"] %></div>
+                    <% end %>
+                  </div>
+                </div>
+                <% if doc.file.attached? %>
+                  <%= link_to "Baixar",
+                        rails_blob_path(doc.file, disposition: "attachment"),
+                        class: "btn btn--doc-download",
+                        target: "_blank" %>
+                  <% if doc.image? %>
+                    <%= link_to "Ver",
+                          rails_blob_path(doc.file, disposition: "inline"),
+                          class: "btn btn--doc-view",
+                          target: "_blank" %>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
     </aside>
 
     <%# ── Coluna direita: transcrição do chat ── %>
@@ -132,11 +173,13 @@
       <div class="attendance-actions">
           <%= link_to t("app.attendance.back_to_panel"), attendance_root_path, class: "btn btn--secondary" %>
 
-          <%= button_to t("app.attendance.finish_button"),
-            finish_attendance_attendance_path(@queue_entry),
-              method: :patch,
-              class: "btn btn--finish",
-            data: { turbo_confirm: t("app.attendance.finish_confirm") } %>
+          <% if @queue_entry.called? %>
+            <%= button_to t("app.attendance.finish_button"),
+              finish_attendance_attendance_path(@queue_entry),
+                method: :patch,
+                class: "btn btn--finish",
+              data: { turbo_confirm: t("app.attendance.finish_confirm") } %>
+          <% end %>
       </div>
     </main>
 

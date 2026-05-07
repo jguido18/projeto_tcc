@@ -37,8 +37,10 @@
 
         <div class="staff-nav__sep"></div>
 
-        <%= link_to "Relatórios", validation_reports_path,
-              class: "staff-nav__link #{current_page?(validation_reports_path) ? "staff-nav__link--active" : ""}" %>
+        <% if current_user.admin? %>
+          <%= link_to "Relatórios", validation_reports_path,
+                class: "staff-nav__link #{current_page?(validation_reports_path) ? "staff-nav__link--active" : ""}" %>
+        <% end %>
 
         <% if current_user.admin? %>
           <div class="staff-nav__sep"></div>

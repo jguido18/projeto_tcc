@@ -125,11 +125,41 @@
             </div>
           </div>
 
+          <!-- Preview do arquivo selecionado -->
+          <div v-if="selectedFile" class="file-preview px-3 pt-2 pb-1">
+            <v-chip
+              closable
+              :color="fileValidationColor"
+              variant="tonal"
+              size="small"
+              class="file-chip"
+              @click:close="clearFile"
+            >
+              <v-icon start size="14">{{ fileTypeIcon }}</v-icon>
+              {{ selectedFile.name }}
+              <v-icon v-if="isValidatingFile" end size="14" class="spinning">mdi-loading</v-icon>
+              <v-icon v-else-if="fileValidationStatus === 'valid'"   end size="14">mdi-check-circle</v-icon>
+              <v-icon v-else-if="fileValidationStatus === 'invalid'" end size="14">mdi-alert-circle</v-icon>
+            </v-chip>
+            <div v-if="fileValidationSummary" class="file-validation-summary mt-1">
+              {{ fileValidationSummary }}
+            </div>
+          </div>
+
           <!-- Campo de input -->
           <div class="chat-input pa-3">
+            <!-- Input de arquivo oculto -->
+            <input
+              ref="fileInputEl"
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+              class="d-none"
+              @change="onFileSelected"
+            />
+
             <v-text-field
               v-model="inputText"
-              placeholder="Digite sua resposta..."
+              placeholder="Digite sua resposta ou anexe um documento..."
               variant="outlined"
               rounded="pill"
               density="compact"
@@ -137,9 +167,22 @@
               :disabled="store.sending || isAwaitingValidation"
               @keydown.enter.prevent="sendMessage"
             >
+              <template #prepend-inner>
+                <v-btn
+                  icon
+                  size="x-small"
+                  variant="text"
+                  :color="selectedFile ? 'primary' : 'grey'"
+                  :disabled="store.sending || isAwaitingValidation"
+                  title="Anexar documento"
+                  @click="fileInputEl.click()"
+                >
+                  <v-icon size="18">mdi-paperclip</v-icon>
+                </v-btn>
+              </template>
               <template #append-inner>
                 <v-btn
-                  :disabled="!inputText.trim() || store.sending || isAwaitingValidation"
+                  :disabled="(!inputText.trim() && !selectedFile) || store.sending || isAwaitingValidation"
                   icon
                   size="small"
                   color="primary"
@@ -163,10 +206,72 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue"
 import { useTriageStore } from "../../stores/triage"
 import { useTriageChannel } from "../../composables/useCable"
 
-const store     = useTriageStore()
-const chatEl    = ref(null)
-const inputText = ref("")
-let unsubscribe = null
+const store       = useTriageStore()
+const chatEl      = ref(null)
+const inputText   = ref("")
+const fileInputEl = ref(null)
+const selectedFile = ref(null)
+const pendingDocumentId = ref(null)
+let unsubscribe   = null
+
+// ── Document file helpers ──────────────────────────────────────────────────
+
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"]
+const MAX_SIZE      = 10 * 1024 * 1024 // 10 MB
+
+function onFileSelected(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    alert("Tipo de arquivo não permitido. Use JPG, PNG, WebP ou PDF.")
+    fileInputEl.value.value = ""
+    return
+  }
+  if (file.size > MAX_SIZE) {
+    alert("Arquivo muito grande. O limite é 10 MB.")
+    fileInputEl.value.value = ""
+    return
+  }
+  selectedFile.value = file
+  pendingDocumentId.value = null
+}
+
+function clearFile() {
+  selectedFile.value = null
+  pendingDocumentId.value = null
+  if (fileInputEl.value) fileInputEl.value.value = ""
+}
+
+const fileTypeIcon = computed(() => {
+  if (!selectedFile.value) return "mdi-file"
+  if (selectedFile.value.type.startsWith("image/")) return "mdi-image"
+  return "mdi-file-pdf-box"
+})
+
+const isValidatingFile = computed(() => {
+  if (!pendingDocumentId.value) return false
+  const v = store.documentValidations[pendingDocumentId.value]
+  return !v
+})
+
+const fileValidationStatus = computed(() => {
+  if (!pendingDocumentId.value) return null
+  return store.documentValidations[pendingDocumentId.value]?.status || null
+})
+
+const fileValidationSummary = computed(() => {
+  if (!pendingDocumentId.value) return null
+  return store.documentValidations[pendingDocumentId.value]?.summary || null
+})
+
+const fileValidationColor = computed(() => {
+  switch (fileValidationStatus.value) {
+    case "valid":     return "success"
+    case "invalid":   return "error"
+    case "uncertain": return "warning"
+    default:          return "primary"
+  }
+})
 
 const isAwaitingValidation = computed(() =>
   ["awaiting_validation", "validated", "in_queue", "in_attendance", "completed"]
@@ -368,9 +473,18 @@ function scrollBottom() {
 
 async function sendMessage() {
   const text = inputText.value.trim()
-  if (!text || store.sending || isAwaitingValidation.value) return
+  const file = selectedFile.value
+  if ((!text && !file) || store.sending || isAwaitingValidation.value) return
+
   inputText.value = ""
-  await store.sendMessage(text)
+  selectedFile.value = null
+  if (fileInputEl.value) fileInputEl.value.value = ""
+
+  const data = await store.sendMessage(text || `Segue o documento: ${file?.name || ""}`, file)
+
+  if (data?.document?.id && data.document.is_image) {
+    pendingDocumentId.value = data.document.id
+  }
 }
 
 async function sendQuickReply(reply) {
@@ -531,5 +645,31 @@ async function finishTriage() {
 @keyframes bounce {
   0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
   40%           { transform: scale(1);   opacity: 1;   }
+}
+
+/* ── File preview ── */
+.file-preview {
+  background: #f0f7ff;
+  border-top: 1px solid rgba(49, 130, 206, 0.12);
+}
+
+.file-chip {
+  font-size: 0.8rem;
+  max-width: 100%;
+}
+
+.file-validation-summary {
+  font-size: 0.78rem;
+  color: #4a5568;
+  padding-left: 4px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
 }
 </style>

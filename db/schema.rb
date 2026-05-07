@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_14_133648) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_05_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -108,6 +108,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_14_133648) do
     t.index ["user_id"], name: "index_queue_entries_on_user_id"
   end
 
+  create_table "triage_documents", force: :cascade do |t|
+    t.bigint "chat_message_id"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "document_type", default: "desconhecido"
+    t.text "extracted_text"
+    t.string "original_filename"
+    t.bigint "triage_session_id", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "validation_result", default: {}
+    t.string "validation_status", default: "pending", null: false
+    t.index ["chat_message_id"], name: "index_triage_documents_on_chat_message_id"
+    t.index ["triage_session_id"], name: "index_triage_documents_on_triage_session_id"
+    t.index ["validation_status"], name: "index_triage_documents_on_validation_status"
+  end
+
   create_table "triage_sessions", force: :cascade do |t|
     t.jsonb "ai_metadata"
     t.datetime "created_at", null: false
@@ -184,6 +200,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_14_133648) do
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "queue_entries", "triage_sessions", on_delete: :restrict
   add_foreign_key "queue_entries", "users", on_delete: :restrict
+  add_foreign_key "triage_documents", "chat_messages", on_delete: :nullify
+  add_foreign_key "triage_documents", "triage_sessions", on_delete: :cascade
   add_foreign_key "triage_sessions", "users", on_delete: :restrict
   add_foreign_key "triage_validations", "ai_classifications", on_delete: :restrict
   add_foreign_key "triage_validations", "users", on_delete: :restrict

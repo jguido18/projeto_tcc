@@ -22,19 +22,22 @@
 
       <%# Nav principal %>
       <nav class="staff-header__nav">
-        <%= link_to "Validação", validation_root_path,
-              class: "staff-nav__link #{current_page?(validation_root_path) ? "staff-nav__link--active" : ""}" %>
-
-        <% if current_user.admin? || current_user.specialist? %>
+        <% if current_user.admin? || current_user.colaborador? %>
+          <%= link_to "Validação", validation_root_path,
+                class: "staff-nav__link #{current_page?(validation_root_path) ? "staff-nav__link--active" : ""}" %>
           <div class="staff-nav__sep"></div>
-          <%= link_to "Atendimento", attendance_root_path,
-                class: "staff-nav__link #{current_page?(attendance_root_path) ? "staff-nav__link--active" : ""}" %>
         <% end %>
 
-        <div class="staff-nav__sep"></div>
+        <% if current_user.admin? || current_user.specialist? %>
+          <%= link_to "Atendimento", attendance_root_path,
+                class: "staff-nav__link #{current_page?(attendance_root_path) ? "staff-nav__link--active" : ""}" %>
+          <div class="staff-nav__sep"></div>
+        <% end %>
 
-        <%= link_to "Relatórios", validation_reports_path,
-              class: "staff-nav__link #{current_page?(validation_reports_path) ? "staff-nav__link--active" : ""}" %>
+        <% if current_user.admin? %>
+          <%= link_to "Relatórios", validation_reports_path,
+                class: "staff-nav__link #{current_page?(validation_reports_path) ? "staff-nav__link--active" : ""}" %>
+        <% end %>
 
         <% if current_user.admin? %>
           <div class="staff-nav__sep"></div>

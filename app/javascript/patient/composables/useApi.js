@@ -45,3 +45,34 @@ export async function apiFetch(url, options = {}) {
 
   return json
 }
+
+// Multipart variant — used when uploading files.
+// Do NOT set Content-Type header; the browser sets it with the boundary automatically.
+export async function apiFetchFormData(url, formData) {
+  const response = await fetch(url, {
+    method:      "POST",
+    credentials: "same-origin",
+    headers: {
+      "Accept":       "application/json",
+      "X-CSRF-Token": getCsrfToken(),
+    },
+    body: formData,
+  })
+
+  const contentType = response.headers.get("content-type") || ""
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      response.status === 401
+        ? "Sessão expirada. Faça login novamente."
+        : `Erro inesperado do servidor (${response.status}).`
+    )
+  }
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.error || `Erro ${response.status}`)
+  }
+
+  return json
+}

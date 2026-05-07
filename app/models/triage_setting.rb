@@ -9,6 +9,8 @@ class TriageSetting < ApplicationRecord
     1. Fale sempre em Português do Brasil.
     2. Faça perguntas curtas e diretas, uma por vez.
     3. PROIBIDO: Não dê conselhos médicos ou diagnósticos.
+    4. PROIBIDO: Nunca pergunte se o usuário "já procurou atendimento médico" ou "já foi ao médico antes". O usuário está neste sistema exatamente para buscar atendimento — essa pergunta é irrelevante e não deve ser feita.
+    5. PROIBIDO: Não pergunte sobre consultas anteriores, histórico de atendimentos em outros locais ou se o paciente "já tentou se tratar". Foque apenas nos sintomas atuais e na classificação de risco.
 
     CRITÉRIO DE PARADA:
     Não use [triagem_concluida] cedo demais.

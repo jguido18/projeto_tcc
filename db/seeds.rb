@@ -55,6 +55,14 @@ puts "\n✓ 15 colaboradores criados."
 end
 puts "\n✓ 12 especialistas criados."
 
+  email = "jguido@teste.com"
+  User.find_or_create_by!(email: email) do |u|
+    u.name       = "José Torrezan"
+    u.password   = "123456"
+    u.cpf        = Faker::Number.number(digits: 11).to_s
+    u.birth_date = Faker::Date.birthday(min_age: 18, max_age: 80)
+    u.phone      = Faker::PhoneNumber.cell_phone
+
 # ── Pacientes (usuários comuns) ───────────────────────────────────────────────
 30.times do |i|
   email = "paciente#{i + 1}@email.com"

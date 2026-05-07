@@ -56,7 +56,7 @@ class Api::TriageController < Api::BaseController
   end
 
   # POST /api/triage/message
-  # Envia uma mensagem do paciente e retorna a resposta da IA.
+  # Envia uma mensagem do paciente (com arquivo opcional) e retorna a resposta da IA.
   def send_message
     unless @triage_session.in_triage?
       render json: { error: "Triagem não está ativa." }, status: :unprocessable_entity
@@ -68,11 +68,16 @@ class Api::TriageController < Api::BaseController
       return
     end
 
-    result = TriageService.new(@triage_session).process_message(params[:content])
+    result = TriageService.new(@triage_session).process_message(
+      params[:content],
+      uploaded_file: params[:file]
+    )
 
     render json: {
-      finished: result[:finished],
-      session:  session_json(@triage_session.reload)
+      finished:       result[:finished],
+      session:        session_json(@triage_session.reload),
+      document:       result[:document] ? document_json(result[:document]) : nil,
+      document_error: result[:document_error]
     }
   end
 
@@ -162,6 +167,18 @@ class Api::TriageController < Api::BaseController
       urgency_label:  entry.urgency_label,
       queue_position: entry.waiting? ? entry.queue_position : nil,
       queued_at:      entry.queued_at.iso8601
+    }
+  end
+
+  def document_json(doc)
+    {
+      id:                doc.id,
+      original_filename: doc.original_filename,
+      document_type:     doc.document_type,
+      document_label:    doc.document_type_label,
+      validation_status: doc.validation_status,
+      summary:           doc.validation_summary,
+      is_image:          doc.image?
     }
   end
 end

@@ -1,6 +1,8 @@
 require "csv"
 
 class Validation::ReportsController < Validation::BaseController
+  before_action :require_admin!
+
   def index
     @period = params[:period].presence_in(%w[today week month]) || "today"
     @range  = period_range(@period)

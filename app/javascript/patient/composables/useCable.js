@@ -26,11 +26,12 @@ export function useTriageChannel(sessionId) {
             // Remove pending e insere mensagem real do servidor
             store.messages = store.messages.filter((m) => !m.pending)
             store.applyRealtimeMessage({
-              id:       data.id || Date.now(),
-              sender:   data.sender,
-              content:  data.content,
-              sent_at:  data.sent_at,
-              sequence: data.sequence,
+              id:                data.id || Date.now(),
+              sender:            data.sender,
+              content:           data.content,
+              suggested_replies: data.suggested_replies || [],
+              sent_at:           data.sent_at,
+              sequence:          data.sequence,
             })
             break
 

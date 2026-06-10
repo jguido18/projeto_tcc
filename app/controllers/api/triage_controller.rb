@@ -44,13 +44,7 @@ class Api::TriageController < Api::BaseController
   # Retorna o histórico de mensagens da sessão ativa.
   def messages
     msgs = @triage_session.chat_messages.order(:sequence).map do |m|
-      {
-        id:        m.id,
-        sender:    m.sender,
-        content:   m.content,
-        sent_at:   m.sent_at.iso8601,
-        sequence:  m.sequence
-      }
+      message_json(m)
     end
     render json: { messages: msgs }
   end
@@ -180,5 +174,25 @@ class Api::TriageController < Api::BaseController
       summary:           doc.validation_summary,
       is_image:          doc.image?
     }
+  end
+
+  def message_json(message)
+    {
+      id:                message.id,
+      sender:            message.sender,
+      content:           message.content,
+      sent_at:           message.sent_at.iso8601,
+      sequence:          message.sequence,
+      suggested_replies: suggested_replies_for(message)
+    }
+  end
+
+  def suggested_replies_for(message)
+    return [] unless message.ai?
+
+    Array(message.ai_raw_response&.dig("suggested_replies"))
+      .filter_map { |reply| reply.to_s.strip.presence }
+      .uniq
+      .first(4)
   end
 end

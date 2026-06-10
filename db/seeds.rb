@@ -62,6 +62,7 @@ puts "\n✓ 12 especialistas criados."
     u.cpf        = Faker::Number.number(digits: 11).to_s
     u.birth_date = Faker::Date.birthday(min_age: 18, max_age: 80)
     u.phone      = Faker::PhoneNumber.cell_phone
+  end
 
 # ── Pacientes (usuários comuns) ───────────────────────────────────────────────
 30.times do |i|

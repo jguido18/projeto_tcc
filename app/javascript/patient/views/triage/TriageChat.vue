@@ -285,165 +285,26 @@ const statusLabel = computed(() =>
 const lastAiMessage = computed(() => {
   for (let i = store.messages.length - 1; i >= 0; i -= 1) {
     const msg = store.messages[i]
-    if (msg.sender === "ai" && msg.content) return msg.content
+    if (msg.sender === "ai" && msg.content) return msg
   }
-  return ""
+  return null
 })
-
-function normalizeText(text = "") {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-}
 
 function uniqueReplies(list) {
   return [...new Set(list)].slice(0, 5)
 }
 
-function extractLastQuestion(text = "") {
-  const normalized = normalizeText(text)
-  const sentences = normalized
-    .split(/[.!\n]/)
-    .map((part) => part.trim())
-    .filter(Boolean)
-
-  for (let i = sentences.length - 1; i >= 0; i -= 1) {
-    const sentence = sentences[i]
-    if (sentence.includes("?")) return sentence
-  }
-
-  return sentences.at(-1) || normalized
+function fallbackReplies(message) {
+  if (!message?.content) return ["Sim", "Não", "Não sei informar"]
+  if (message.content.includes("?")) return ["Sim", "Não", "Não sei informar"]
+  return ["Entendi", "Pode explicar melhor?", "Não sei informar"]
 }
 
-function matchCount(text, patterns) {
-  return patterns.reduce((count, pattern) => (pattern.test(text) ? count + 1 : count), 0)
-}
-
-const INTENT_RULES = [
-  {
-    key: "medication",
-    priority: 120,
-    patterns: [/tomou/, /medicamento/, /remedio/, /aliviar/, /se sim, qual/],
-    replies: ["Nao tomei remedio", "Tomei e melhorou", "Tomei e nao melhorou", "Tomei, mas nao lembro o nome"],
-  },
-  {
-    key: "pain_pattern",
-    priority: 110,
-    patterns: [/constante/, /vem e vai/, /vai e volta/, /intermitente/, /o tempo todo/],
-    replies: ["Constante", "Vem e vai", "Piorou nas ultimas horas", "Nao sei informar"],
-  },
-  {
-    key: "pain_intensity",
-    priority: 100,
-    patterns: [
-      /\bde\s*0\s*a\s*10\b/,
-      /escala/,
-      /intensidade.*dor/,
-      /dor.*intensidade/,
-      /leve.*moderad.*intens/,
-      /intens.*moderad.*leve/,
-      /dor.*leve/,
-      /dor.*moderad/,
-      /dor.*intens/,
-    ],
-    replies: ["0 a 3 (leve)", "4 a 7 (moderada)", "8 a 10 (forte)", "Sem dor"],
-  },
-  {
-    key: "shortness_of_breath",
-    priority: 95,
-    patterns: [/falta de ar/, /dificuldade para respirar/, /consegue respirar/, /respiracao/],
-    replies: ["Sem falta de ar", "Falta de ar leve", "Falta de ar intensa", "Piorando agora"],
-  },
-  {
-    key: "fever",
-    priority: 90,
-    patterns: [/febre/, /temperatura/, /termometro/],
-    replies: ["Sem febre", "Febre baixa", "Febre alta", "Nao medi a temperatura"],
-  },
-  {
-    key: "symptom_duration",
-    priority: 85,
-    patterns: [/ha quanto tempo/, /desde quando/, /quando comecou/, /quanto tempo/],
-    replies: ["Comecou hoje", "Ha 1 a 2 dias", "Ha mais de 3 dias", "Piorou hoje"],
-  },
-  {
-    key: "pain_location",
-    priority: 80,
-    patterns: [/onde doi/, /em qual local/, /em qual regiao/, /onde esta a dor/, /local da dor/],
-    replies: ["Cabeca", "Peito", "Abdomen", "Garganta", "Outro local"],
-  },
-  {
-    key: "allergy",
-    priority: 75,
-    patterns: [/alerg/],
-    replies: ["Nao tenho alergias", "Alergia a medicamento", "Alergia alimentar", "Nao sei informar"],
-  },
-  {
-    key: "nausea",
-    priority: 70,
-    patterns: [/vomito/, /nausea/, /enjoo/],
-    replies: ["Sem vomito", "Nausea leve", "Vomitei 1 vez", "Vomitos frequentes"],
-  },
-  {
-    key: "bleeding",
-    priority: 65,
-    patterns: [/sangramento/, /sangue/],
-    replies: ["Sem sangramento", "Sangramento leve", "Sangramento intenso", "Sangue nas fezes/urina"],
-  },
-  {
-    key: "dizziness",
-    priority: 60,
-    patterns: [/tontura/, /desmaio/, /desmaiou/],
-    replies: ["Sem tontura", "Tontura leve", "Tontura forte", "Quase desmaiei"],
-  },
-  {
-    key: "age_group",
-    priority: 55,
-    patterns: [/qual sua idade/, /quantos anos/, /idade/],
-    replies: ["Menos de 18", "18 a 59", "60 ou mais", "Prefiro nao informar"],
-  },
-]
-
-function bestIntentReplies(text) {
-  let bestRule = null
-  let bestScore = 0
-
-  INTENT_RULES.forEach((rule) => {
-    const hits = matchCount(text, rule.patterns)
-    if (hits === 0) return
-
-    const score = rule.priority + hits * 10
-    if (score > bestScore) {
-      bestScore = score
-      bestRule = rule
-    }
-  })
-
-  return bestRule?.replies || null
-}
-
-function buildDynamicReplies(message) {
-  const text = extractLastQuestion(message)
-  const genericReplies = ["Sim", "Nao", "Nao sei informar", "Pode repetir a pergunta?"]
-
-  if (!text) {
-    return genericReplies
-  }
-
-  const intentReplies = bestIntentReplies(text)
-  if (intentReplies) {
-    return uniqueReplies([...intentReplies, "Nao sei informar", "Pode repetir a pergunta?"])
-  }
-
-  if (text.includes("?")) {
-    return uniqueReplies(genericReplies)
-  }
-
-  return uniqueReplies(["Entendi", "Pode repetir a pergunta?", "Nao sei informar", "Prefiro digitar minha resposta"])
-}
-
-const quickReplies = computed(() => buildDynamicReplies(lastAiMessage.value))
+const quickReplies = computed(() => {
+  const replies = lastAiMessage.value?.suggested_replies || []
+  if (replies.length > 0) return uniqueReplies(replies)
+  return uniqueReplies(fallbackReplies(lastAiMessage.value))
+})
 
 const showQuickReplies = computed(() =>
   !isAwaitingValidation.value && quickReplies.value.length > 0

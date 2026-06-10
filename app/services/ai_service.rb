@@ -11,7 +11,7 @@ class AiService
   # document_context: { type: :image, base64: String, content_type: String }
   #                 | { type: :text,  text: String }
   #                 | nil
-  # Returns a hash: { content: String, raw_response: Hash, finished: Boolean }
+  # Returns a hash: { content: String, suggested_replies: Array<String>, raw_response: Hash, finished: Boolean }
   def call(user_message, document_context: nil)
     case provider
     when :openai
@@ -99,6 +99,7 @@ class AiService
         model: openai_model,
         max_tokens: MAX_TOKENS,
         temperature: 0.3,
+        response_format: { type: "json_object" },
         messages: [
           { role: "system", content: system_prompt(document_present: document_context.present?) },
           *build_messages(user_message, document_context: document_context)
@@ -106,12 +107,13 @@ class AiService
       }
     )
 
-    raw_content = response.dig("choices", 0, "message", "content").to_s
-    finished = triage_finished?(raw_content)
+    reply = parse_chat_reply(response.dig("choices", 0, "message", "content"))
+    finished = triage_finished?(reply[:content])
 
     {
-      content: strip_marker(raw_content),
-      raw_response: response,
+      content: strip_marker(reply[:content]),
+      suggested_replies: reply[:suggested_replies],
+      raw_response: merge_reply_metadata(response, reply[:suggested_replies]),
       finished: finished
     }
   end
@@ -125,12 +127,13 @@ class AiService
       messages: messages
     )
 
-    raw_content = response.content.first.text
-    finished = triage_finished?(raw_content)
+    reply = parse_chat_reply(response.content.first.text)
+    finished = triage_finished?(reply[:content])
 
     {
-      content: strip_marker(raw_content),
-      raw_response: response.to_h,
+      content: strip_marker(reply[:content]),
+      suggested_replies: reply[:suggested_replies],
+      raw_response: merge_reply_metadata(response.to_h, reply[:suggested_replies]),
       finished: finished
     }
   end
@@ -176,15 +179,151 @@ class AiService
     text
   end
 
+  def parse_chat_reply(raw_content)
+    payload = JSON.parse(extract_json(raw_content.to_s))
+    content = payload["content"].to_s.strip
+
+    if content.blank?
+      raise JSON::ParserError, "AI returned empty content"
+    end
+
+    {
+      content: content,
+      suggested_replies: normalize_suggested_replies(payload["suggested_replies"], content)
+    }
+  rescue JSON::ParserError
+    content = raw_content.to_s.strip
+
+    {
+      content: content,
+      suggested_replies: fallback_suggested_replies(content)
+    }
+  end
+
+  def normalize_suggested_replies(replies, content)
+    Array(replies)
+      .filter_map { |reply| reply.to_s.strip.presence }
+      .select { |reply| valid_suggested_reply?(reply, content) }
+      .uniq
+      .first(4)
+      .yield_self { |items| items.presence || fallback_suggested_replies(content) }
+  end
+
+  def valid_suggested_reply?(reply, content)
+    return false if reply.include?("?")
+    return false if field_label_reply?(reply)
+    return false if reply.to_s.strip.length > 80
+
+    # Accept common numeric-scale answers like "0 a 3" or "7-10".
+    return true if numeric_scale_reply?(reply)
+
+    normalized_reply = normalized_tokens(reply)
+    normalized_content = normalized_tokens(content)
+
+    return false if normalized_reply.empty?
+    return false if normalized_reply == normalized_content
+
+    true
+  end
+
+  def numeric_scale_reply?(reply)
+    text = reply.to_s
+      .downcase
+      .unicode_normalize(:nfkd)
+      .gsub(/\s+/, " ")
+      .strip
+
+    text.match?(/\A\d+\s*(?:a|-|ate)\s*\d+\b/)
+  end
+
+  def field_label_reply?(reply)
+    normalized = reply.to_s
+      .downcase
+      .unicode_normalize(:nfkd)
+      .gsub(/[^a-z0-9\s]/, " ")
+      .squeeze(" ")
+      .strip
+
+    [
+      /\Anome( completo)?\z/,
+      /\Acurso( e semestre)?\z/,
+      /\Asemestre\z/,
+      /\Acurso\z/,
+      /\Atelefone\z/,
+      /\Aemail\z/,
+      /\Acpf\z/,
+      /\Aidade\z/,
+      /\Aendereco\z/,
+      /\Amatricula\z/,
+      /\Adocumento\z/
+    ].any? { |pattern| pattern.match?(normalized) }
+  end
+
+  def normalized_tokens(text)
+    text.to_s
+      .downcase
+      .unicode_normalize(:nfkd)
+      .gsub(/[^a-z0-9\s]/, " ")
+      .split
+      .reject { |token| (token.length <= 2 && token !~ /\A\d+\z/) || stop_word?(token) }
+  end
+
+  def stop_word?(token)
+    %w[
+      a ao aos as com da das de do dos e em esta este eu o os para por qual quais que se sem sua suas seu seus um uma umas uns
+      voce voces
+    ].include?(token)
+  end
+
+  def fallback_suggested_replies(content)
+    if content.to_s.include?("?")
+      ["Não sei informar", "Prefiro responder digitando", "Pode repetir de outra forma?"]
+    else
+      ["Entendi", "Pode explicar melhor?", "Prefiro responder digitando"]
+    end
+  end
+
+  def merge_reply_metadata(raw_response, suggested_replies)
+    metadata = raw_response.is_a?(Hash) ? raw_response.deep_dup : { "raw_response" => raw_response }
+    metadata["suggested_replies"] = suggested_replies
+    metadata
+  end
+
   def system_prompt(document_present: false)
     setting = TriageSetting.current
     parts = [
       setting.purpose.presence,
       setting.system_prompt,
-      user_context
+      user_context,
+      reply_format_instruction
     ]
     parts << document_instruction if document_present
     parts.compact.join("\n\n")
+  end
+
+  def reply_format_instruction
+    <<~INSTRUCTION
+      ## FORMATO DA RESPOSTA
+      Responda sempre em JSON válido, sem markdown e sem texto fora do JSON, usando exatamente esta estrutura:
+      {
+        "content": "sua resposta para o usuário em linguagem natural",
+        "suggested_replies": ["sugestão 1", "sugestão 2", "sugestão 3"]
+      }
+
+      Regras para suggested_replies:
+      - Gere de 2 a 4 respostas curtas que o usuário poderia tocar para continuar a conversa.
+      - As sugestões devem servir para o contexto atual da sua própria pergunta ou orientação.
+      - Cada sugestão deve parecer uma RESPOSTA do usuário, não um rótulo de campo e nem uma repetição da pergunta.
+      - Nunca devolva fragmentos como "curso e semestre", "nome completo", "telefone" ou qualquer outro texto que apenas repita o que foi pedido.
+      - Evite opções genéricas quando houver contexto suficiente.
+      - Não repita sugestões.
+      - Se a melhor continuação exigir texto livre, ainda assim ofereça respostas curtas úteis como "Posso detalhar", "Não sei informar" ou equivalentes contextuais.
+      - Se encerrar a triagem, mantenha o marcador [triagem_concluida] dentro de content quando aplicável.
+
+      Exemplos:
+      - Se a pergunta for "Qual é o seu curso e semestre atual?", sugestões boas seriam ["Sistemas de Informação, 5º semestre", "Administração, 2º semestre", "Prefiro responder digitando"].
+      - Se a pergunta for "Há quanto tempo está com a dor?", sugestões boas seriam ["Começou hoje", "Há 2 dias", "Há mais de uma semana"].
+    INSTRUCTION
   end
 
   def document_instruction

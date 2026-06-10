@@ -18,8 +18,10 @@ class TriageChannel < ApplicationCable::Channel
       "triage_session_#{triage_session.id}",
       {
         type: "message",
+        id: message.id,
         sender: message.sender,
         content: message.content,
+        suggested_replies: Array(message.ai_raw_response&.dig("suggested_replies")).first(4),
         sequence: message.sequence,
         sent_at: message.sent_at.iso8601
       }

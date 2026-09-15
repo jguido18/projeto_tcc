@@ -6,6 +6,10 @@ services:
     plan: free
     healthCheckPath: /up
     envVars:
+      # Matches the Dockerfile's `EXPOSE 80` (Thruster's default listen port).
+      # Render checks this port to confirm the container came up healthy.
+      - key: PORT
+        value: "80"
       - key: RAILS_ENV
         value: production
       - key: RAILS_LOG_LEVEL

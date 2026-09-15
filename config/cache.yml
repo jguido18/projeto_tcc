@@ -12,5 +12,5 @@ test:
   <<: *default
 
 production:
-  database: cache
+  # Uses the primary connection (see config/database.yml for why).
   <<: *default

@@ -82,18 +82,9 @@ test:
 #
 production:
   # Supabase (free tier) only exposes a single physical database per project,
-  # so cache/queue/cable share the same DATABASE_URL as primary. Rails still
-  # treats them as separate connection pools/roles, and each keeps its own
-  # migrations path, so tables never collide.
-  primary: &primary_production
+  # so Solid Queue/Cache/Cable's tables live in the primary database instead
+  # of the separate queue/cache/cable roles `rails new` generates by default
+  # (see db/migrate/20260915220000_create_solid_stack_tables_in_primary.rb).
+  primary:
     <<: *default
     url: <%= ENV["DATABASE_URL"] %>
-  cache:
-    <<: *primary_production
-    migrations_paths: db/cache_migrate
-  queue:
-    <<: *primary_production
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    migrations_paths: db/cable_migrate

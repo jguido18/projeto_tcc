@@ -10,8 +10,6 @@ test:
 
 production:
   adapter: solid_cable
-  connects_to:
-    database:
-      writing: cable
+  # Uses the primary connection (see config/database.yml for why).
   polling_interval: 0.1.seconds
   message_retention: 1.day

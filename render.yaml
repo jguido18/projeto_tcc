@@ -45,5 +45,7 @@ services:
         sync: false
       - key: SUPABASE_S3_ENDPOINT
         sync: false
+      - key: SUPABASE_S3_REGION
+        sync: false
       - key: SUPABASE_S3_BUCKET
         sync: false

@@ -30,12 +30,11 @@ FROM base AS build
 
 # Install packages needed to build gems and the Vite/Vue frontend
 ARG NODE_VERSION=20.20.1
+ENV PATH=/usr/local/node/bin:$PATH
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git libpq-dev libvips libyaml-dev pkg-config curl xz-utils && \
     curl -fsSL https://github.com/nodenv/node-build/archive/refs/heads/master.tar.gz | tar xz -C /tmp && \
     /tmp/node-build-master/bin/node-build "$NODE_VERSION" /usr/local/node && \
-    ln -s /usr/local/node/bin/node /usr/local/bin/node && \
-    ln -s /usr/local/node/bin/npm /usr/local/bin/npm && \
     rm -rf /tmp/node-build-master /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems

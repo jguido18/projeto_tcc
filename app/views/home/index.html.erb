@@ -35,111 +35,11 @@
       </div>
     </div>
 
-    <div class="home-hero-illustration" aria-hidden="true">
-      <%# SVG: AI Triage Flow Illustration %>
-      <svg viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" class="home-hero-svg">
-        <!-- Background cards -->
-        <rect x="20" y="30" width="220" height="360" rx="20" fill="#EBF8FF" opacity="0.7"/>
-        <rect x="280" y="50" width="220" height="320" rx="20" fill="#F0FFF4" opacity="0.7"/>
-
-        <!-- Chat card -->
-        <rect x="36" y="50" width="188" height="320" rx="14" fill="white" filter="url(#shadow1)"/>
-        <!-- Chat header -->
-        <rect x="36" y="50" width="188" height="48" rx="14" fill="#3182CE"/>
-        <rect x="36" y="78" width="188" height="20" fill="#3182CE"/>
-        <circle cx="64" cy="74" r="12" fill="white" opacity="0.25"/>
-        <circle cx="64" cy="74" r="7" fill="white" opacity="0.5"/>
-        <rect x="84" y="67" width="90" height="7" rx="3.5" fill="white" opacity="0.9"/>
-        <rect x="84" y="78" width="60" height="5" rx="2.5" fill="white" opacity="0.55"/>
-
-        <!-- Chat messages -->
-        <!-- User msg 1 -->
-        <rect x="68" y="110" width="138" height="32" rx="10" fill="#EBF8FF"/>
-        <rect x="68" y="110" width="138" height="32" rx="10" stroke="#BEE3F8" stroke-width="1"/>
-        <rect x="76" y="119" width="90" height="6" rx="3" fill="#3182CE" opacity="0.5"/>
-        <rect x="76" y="129" width="112" height="5" rx="2.5" fill="#3182CE" opacity="0.3"/>
-
-        <!-- AI msg 1 -->
-        <rect x="48" y="155" width="130" height="38" rx="10" fill="#F7FAFC"/>
-        <rect x="48" y="155" width="130" height="38" rx="10" stroke="#E2E8F0" stroke-width="1"/>
-        <rect x="56" y="164" width="100" height="6" rx="3" fill="#718096" opacity="0.5"/>
-        <rect x="56" y="174" width="80" height="5" rx="2.5" fill="#718096" opacity="0.3"/>
-        <rect x="56" y="182" width="60" height="5" rx="2.5" fill="#718096" opacity="0.3"/>
-
-        <!-- User msg 2 -->
-        <rect x="68" y="207" width="120" height="28" rx="10" fill="#EBF8FF"/>
-        <rect x="68" y="207" width="120" height="28" rx="10" stroke="#BEE3F8" stroke-width="1"/>
-        <rect x="76" y="216" width="88" height="6" rx="3" fill="#3182CE" opacity="0.5"/>
-        <rect x="76" y="226" width="64" height="5" rx="2.5" fill="#3182CE" opacity="0.3"/>
-
-        <!-- AI msg 2 (analyzing) -->
-        <rect x="48" y="249" width="148" height="32" rx="10" fill="#F7FAFC"/>
-        <rect x="48" y="249" width="148" height="32" rx="10" stroke="#E2E8F0" stroke-width="1"/>
-        <rect x="56" y="258" width="76" height="6" rx="3" fill="#718096" opacity="0.5"/>
-        <rect x="56" y="268" width="110" height="5" rx="2.5" fill="#718096" opacity="0.3"/>
-
-        <!-- Input bar -->
-        <rect x="48" y="302" width="166" height="34" rx="10" fill="#F7FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
-        <rect x="58" y="315" width="100" height="6" rx="3" fill="#A0AEC0" opacity="0.5"/>
-        <rect x="196" y="308" width="24" height="24" rx="6" fill="#3182CE"/>
-        <path d="M204 320l4-4m0 0l-4-4m4 4h-10" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-
-        <!-- Arrow connecting chat to AI panel -->
-        <path d="M228 215 Q256 215 272 215" stroke="#3182CE" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
-
-        <!-- AI Processing panel -->
-        <rect x="295" y="68" width="188" height="284" rx="14" fill="white" filter="url(#shadow1)"/>
-
-        <!-- AI panel header -->
-        <rect x="295" y="68" width="188" height="44" rx="14" fill="#1A202C"/>
-        <rect x="295" y="92" width="188" height="20" fill="#1A202C"/>
-        <rect x="313" y="79" width="10" height="10" rx="5" fill="#FC8181"/>
-        <rect x="327" y="79" width="10" height="10" rx="5" fill="#F6E05E"/>
-        <rect x="341" y="79" width="10" height="10" rx="5" fill="#68D391"/>
-        <rect x="360" y="80" width="90" height="7" rx="3.5" fill="white" opacity="0.4"/>
-
-        <!-- AI brain / nodes -->
-        <circle cx="389" cy="148" r="28" fill="#EBF8FF" stroke="#BEE3F8" stroke-width="2"/>
-        <!-- Brain mesh lines -->
-        <circle cx="389" cy="148" r="10" fill="#3182CE" opacity="0.15"/>
-        <circle cx="389" cy="148" r="5" fill="#3182CE" opacity="0.3"/>
-        <path d="M369 138 Q378 143 389 138 Q400 133 409 138" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
-        <path d="M367 148 Q378 153 389 148 Q400 143 411 148" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
-        <path d="M369 158 Q378 153 389 158 Q400 163 409 158" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
-        <path d="M379 124 Q384 136 379 148 Q374 160 379 172" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
-        <path d="M389 122 L389 174" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
-        <path d="M399 124 Q394 136 399 148 Q404 160 399 172" stroke="#3182CE" stroke-width="1.2" opacity="0.5"/>
-        <!-- Spark lines -->
-        <path d="M418 130 L426 128 M420 148 L430 148 M418 166 L426 168" stroke="#3182CE" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-        <path d="M360 130 L352 128 M358 148 L348 148 M360 166 L352 168" stroke="#3182CE" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-
-        <!-- Classification result -->
-        <rect x="311" y="192" width="154" height="40" rx="10" fill="#FFF5F5" stroke="#FED7D7" stroke-width="1.5"/>
-        <rect x="320" y="203" width="6" height="18" rx="3" fill="#E53E3E"/>
-        <rect x="333" y="206" width="70" height="6" rx="3" fill="#C53030" opacity="0.6"/>
-        <rect x="333" y="216" width="95" height="5" rx="2.5" fill="#C53030" opacity="0.35"/>
-
-        <!-- Summary section -->
-        <rect x="311" y="242" width="154" height="52" rx="10" fill="#F7FAFC" stroke="#E2E8F0" stroke-width="1"/>
-        <rect x="319" y="251" width="48" height="5" rx="2.5" fill="#718096" opacity="0.6"/>
-        <rect x="319" y="261" width="138" height="5" rx="2.5" fill="#718096" opacity="0.35"/>
-        <rect x="319" y="270" width="110" height="5" rx="2.5" fill="#718096" opacity="0.35"/>
-        <rect x="319" y="279" width="80" height="5" rx="2.5" fill="#718096" opacity="0.25"/>
-
-        <!-- Confirm button -->
-        <rect x="311" y="304" width="154" height="32" rx="8" fill="#E53E3E"/>
-        <rect x="350" y="316" width="76" height="7" rx="3.5" fill="white" opacity="0.9"/>
-
-        <!-- Defs -->
-        <defs>
-          <filter id="shadow1" x="-10%" y="-10%" width="120%" height="120%">
-            <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#3182CE" flood-opacity="0.08"/>
-          </filter>
-          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#3182CE" opacity="0.6"/>
-          </marker>
-        </defs>
-      </svg>
+    <div class="home-hero-illustration">
+      <div class="hero-images-container">
+        <%= image_tag "WhatsApp Image 2026-06-11 at 11.18.39.jpeg", alt: "Triagem Chat", class: "hero-image" %>
+        <%= image_tag "WhatsApp Image 2026-06-11 at 11.18.35.jpeg", alt: "Triagem Start", class: "hero-image" %>
+      </div>
     </div>
   </section>
 

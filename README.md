@@ -223,6 +223,52 @@ User.create!(name: "João Silva", email: "joao@teste.com", password: "123456",
 
 ---
 
+## Deploy (Render + Supabase)
+
+O app roda como um único web service Docker no Render, com Solid Queue rodando dentro do
+mesmo processo Puma (`SOLID_QUEUE_IN_PUMA=true`) — não precisa de worker separado. O Postgres
+e o Active Storage (upload de arquivos) usam o Supabase, já que o Render free tier tem
+sistema de arquivos efêmero.
+
+### 1. Criar o projeto no Supabase
+
+1. Crie um projeto em [supabase.com](https://supabase.com) (free tier).
+2. Em **Project Settings → Database → Connection string**, copie a **Direct connection**
+   (porta `5432`, não a "Transaction pooler" — o Rails usa prepared statements e locks de
+   migração que não funcionam bem em modo transaction pooling).
+3. Em **Storage**, crie um bucket (ex.: `projeto-tcc-production`) para os anexos do chat.
+4. Em **Project Settings → Storage → S3 Connection**, gere um par de chaves de acesso S3 e
+   anote o **endpoint** — isso alimenta `config/storage.yml`.
+
+### 2. Criar o web service no Render
+
+1. Crie um novo **Blueprint** em [render.com](https://render.com) apontando para o
+   repositório — ele lê o `render.yaml` na raiz e cria o serviço automaticamente.
+   (Alternativa manual: New → Web Service → Docker, usando o `Dockerfile` da raiz.)
+2. Preencha as variáveis de ambiente marcadas como secretas no `render.yaml`:
+
+   | Variável | De onde vem |
+   |---|---|
+   | `RAILS_MASTER_KEY` | conteúdo de `config/master.key` (local, nunca commitado) |
+   | `DATABASE_URL` | connection string direta do Supabase (passo 1.2) |
+   | `APP_HOST` | domínio do Render, ex. `triagem-ai.onrender.com` |
+   | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | conforme `AI_PROVIDER` |
+   | `SUPABASE_S3_ACCESS_KEY_ID` / `SUPABASE_S3_SECRET_ACCESS_KEY` | passo 1.4 |
+   | `SUPABASE_S3_ENDPOINT` | passo 1.4 |
+   | `SUPABASE_S3_BUCKET` | nome do bucket criado no passo 1.3 |
+
+3. Deploy. O `bin/docker-entrypoint` roda `rails db:prepare` automaticamente no boot,
+   criando/migrando os schemas de `primary`, `cache`, `queue` e `cable` no banco do Supabase.
+
+### Limitações do plano free
+
+- O serviço "dorme" após ~15 min sem tráfego; a próxima requisição demora 30-60s para
+  acordar, e conexões WebSocket (ActionCable) precisam reconectar nesse momento.
+- Supabase free pausa o projeto após 1 semana sem atividade (basta reabrir no dashboard
+  para reativar).
+
+---
+
 ## Estrutura de Diretórios
 
 ```

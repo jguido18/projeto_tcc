@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: triagem-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /up
+    envVars:
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_LOG_LEVEL
+        value: info
+      - key: RAILS_MAX_THREADS
+        value: "5"
+      - key: WEB_CONCURRENCY
+        value: "1"
+      # Runs Solid Queue's supervisor inside the same Puma process (no
+      # separate worker service needed — keeps this free-tier friendly).
+      - key: SOLID_QUEUE_IN_PUMA
+        value: "true"
+      # Secret used to decrypt config/credentials.yml.enc — copy the value
+      # from your local config/master.key.
+      - key: RAILS_MASTER_KEY
+        sync: false
+      # Supabase connection string (use the "Direct connection", port 5432,
+      # not the transaction pooler — Rails' prepared statements and the
+      # migration advisory lock need a session-mode connection).
+      - key: DATABASE_URL
+        sync: false
+      # Public hostname Render assigns you (or your custom domain), e.g.
+      # triagem-ai.onrender.com — used for mailer links and host allowlisting.
+      - key: APP_HOST
+        sync: false
+      - key: AI_PROVIDER
+        value: anthropic
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      # Supabase Storage (S3-compatible) credentials for Active Storage —
+      # see config/storage.yml.
+      - key: SUPABASE_S3_ACCESS_KEY_ID
+        sync: false
+      - key: SUPABASE_S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: SUPABASE_S3_ENDPOINT
+        sync: false
+      - key: SUPABASE_S3_BUCKET
+        sync: false

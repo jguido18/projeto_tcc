@@ -45,6 +45,10 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# S3-compatible client for Active Storage — used to talk to Supabase Storage in production
+# (Render's filesystem is ephemeral, so local disk storage doesn't survive redeploys)
+gem "aws-sdk-s3", require: false
+
 gem "pagy"
 gem "faker"
 gem "rails_db"

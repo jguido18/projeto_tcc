@@ -348,7 +348,28 @@ class AiService
     lines << "- E-mail: #{user.email}" if user.email.present?
     lines << "- Telefone: #{user.phone}" if user.phone.present?
     lines << "- Data de nascimento: #{user.birth_date.strftime('%d/%m/%Y')}" if user.birth_date.present?
+    lines << "- Idade: #{user.age} anos" if user.age.present?
+
+    reasons = user.priority_reasons.map { |r| User::PRIORITY_REASON_LABELS[r] }
+    if reasons.any?
+      lines << "- Condições de prioridade declaradas no cadastro: #{reasons.join(', ')}"
+      lines << "  (use essas condições como contexto clínico relevante; não pergunte se elas se aplicam)"
+    end
+
+    lines << first_reply_instruction if first_reply?
     lines.join("\n")
+  end
+
+  def first_reply?
+    @session.chat_messages.where(sender: :ai).none?
+  end
+
+  def first_reply_instruction
+    <<~INSTRUCTION.strip
+
+      ## PRIMEIRA RESPOSTA DO CHAT
+      Esta é a sua primeira mensagem para o paciente. Comece cumprimentando-o pelo primeiro nome e faça um resumo MUITO breve (1 a 2 frases) do que você já sabe pelo cadastro (idade e TODAS as condições de prioridade listadas, se houver), deixando claro que não precisa repetir essas informações. Em seguida, na mesma mensagem, faça a sua primeira pergunta de triagem.
+    INSTRUCTION
   end
 
   def strip_marker(content)

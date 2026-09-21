@@ -1233,13 +1233,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  gap: 0.3rem;
+  min-height: 34px;
+  padding: 0.4rem 0.9rem;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   background: #fff;
   color: #4a5568;
-  font-size: 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
   text-decoration: none;
   transition: background 0.15s, color 0.15s;
 }

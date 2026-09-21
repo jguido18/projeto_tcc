@@ -50,7 +50,9 @@ GET  /api/triage/messages
 POST /api/triage/message
 POST /api/triage/finish
 POST /api/triage/restart
-GET  /api/queue              ← lista anonimizada da fila (Pagy::Offset não usado aqui)
+GET  /api/queue              ← fila atual, já ordenada por urgência + prioridade (Pagy::Offset não usado aqui)
+GET  /api/profile            ← dados do perfil do paciente (inclui campos de prioridade)
+PATCH /api/profile           ← atualiza perfil do paciente (nome, contato, prioridade, senha)
 
 # Validação (colaborador)
 /validation      → validation/panel#index
@@ -80,6 +82,14 @@ devise :database_authenticatable, :registerable, :recoverable, :rememberable, :v
 # Flags: colaborador (boolean), specialist (boolean), admin (boolean), active (boolean)
 # staff? = colaborador? || specialist? || admin?
 # patient? = !staff?
+
+# Prioridade legal na fila (Lei 10.048/2000 + Estatuto do Idoso — ver seção "Fila Prioritária"):
+# age / elderly? (60+) / super_elderly? (80+)  → calculados a partir de birth_date, não é campo
+# pcd, obeso, mobilidade_reduzida              → condições permanentes, boolean simples
+# gestante/lactante/crianca_de_colo            → boolean + *_valid_until (data de validade obrigatória
+#                                                 quando a flag está true; valida "não pode ser passado")
+# priority_reasons → array de símbolos ativos agora (ex: [:pcd, :gestante])
+# priority_tier    → 0 (nenhuma) | 1 (prioridade legal) | 2 (superprioridade, só idoso 80+)
 ```
 
 ### TriageSession
@@ -96,12 +106,14 @@ has_many :chat_messages
 # ticket_number: string único (ex: "SYZ99G5JC")
 # urgency_level: enum (red, orange, yellow, green, blue)
 # status: waiting, called, in_attendance, left, completed
-# queue_position: calculado via SQL (não armazenado)
-def queue_position
-  QueueEntry.where(status: :waiting)
-             .where("urgency_weight < ? OR (urgency_weight = ? AND queued_at <= ?)", ...)
-             .count + 1
-end
+# priority_tier / priority_reasons: SNAPSHOT do User#priority_tier/priority_reasons no momento do
+#   enqueue (QueueEntryService) — não recalcula depois, então mudanças no perfil do paciente não
+#   afetam quem já está esperando na fila
+# scope ordered_for_queue: order(:urgency_weight).order(priority_tier: :desc).order(:queued_at)
+#   → urgência clínica sempre manda primeiro; prioridade só desempata dentro do mesmo nível
+# queue_position: calculado via SQL usando a mesma regra de ordered_for_queue (não armazenado)
+# self.average_service_minutes: média real dos últimos 50 atendimentos concluídos
+#   (called_at → service_finished_at); cai em DEFAULT_SERVICE_MINUTES (15) sem histórico
 ```
 
 ### TriageSetting
@@ -123,7 +135,38 @@ end
 - `TriageService.new(session).finalize_triage` → classifica, cria AiClassification, muda status para `awaiting_validation`
 
 ### QueueEntryService
-- `QueueEntryService.new(validation).call` → gera ticket, cria QueueEntry, broadcast via QueueChannel e ValidationPanelChannel
+- `QueueEntryService.new(triage_session).enqueue` → gera ticket, tira snapshot de `priority_tier`/`priority_reasons` do paciente, cria QueueEntry, broadcast via QueueChannel
+
+## Fila Prioritária (Lei 10.048/2000 + Estatuto do Idoso)
+
+A fila combina **urgência clínica** (Protocolo Manchester) com **prioridade legal de atendimento**.
+Urgência sempre manda primeiro; prioridade só desempata dentro do mesmo nível de urgência.
+
+- **Onde o paciente declara:** cadastro (`/register`) e perfil (`/app/profile` → `ProfileEdit.vue`).
+  Nunca mais no início da triagem (checkbox removido).
+- **Condições permanentes** (checkbox simples): `pcd` (inclui TEA), `obeso`, `mobilidade_reduzida`.
+- **Idoso:** automático via `birth_date` — `User#elderly?` (60+) e `User#super_elderly?` (80+,
+  subprioridade do Estatuto da Pessoa Idosa). Sem campo/checkbox próprio.
+- **Condições temporárias** (`gestante`, `lactante`, `crianca_de_colo`): checkbox + campo
+  "válido até" que o próprio paciente preenche. Passado esse prazo a condição para de contar
+  sozinha — não existe expiração automática por tempo fixo, é a data informada pelo paciente.
+  Validado em `User#validate_temporary_priority_dates` (obrigatório e não pode ser passado)
+  e no client-side (Vuetify rules / atributo `min` no `date_field` do ERB).
+- **UI do checkbox → data:** `toggle_field_controller.js` (Stimulus, usado no ERB de cadastro)
+  e `v-if`/`v-expand-transition` (Vue, no `ProfileEdit.vue`) revelam o campo de data só quando
+  a condição é marcada, e limpam o valor ao desmarcar.
+- **`User#priority_tier`**: 0 (nenhuma) · 1 (qualquer condição acima ativa) · 2 (só idoso 80+).
+- **Snapshot no enqueue:** `QueueEntryService#enqueue` grava `priority_tier`/`priority_reasons`
+  na `QueueEntry` no momento em que o paciente entra na fila — mudanças posteriores no perfil não
+  reordenam quem já está esperando.
+- **Ordenação:** `QueueEntry.ordered_for_queue` e `QueueEntry#queue_position` — ambos usam
+  `urgency_weight ASC, priority_tier DESC, queued_at ASC`.
+- **Tempo estimado:** `QueueEntry.average_service_minutes` — média real dos atendimentos recentes
+  (`called_at` → `service_finished_at`), não mais um valor fixo.
+- **Exibição:** `Api::QueueController#index` (fila do paciente) e `Validation::PanelController`
+  (painel do colaborador, com badge tipo "★ Idoso (80+)" ou "★ PCD, Gestante") usam a mesma
+  ordenação. Nome do paciente aparece completo em todos os lugares (TV, painel, fila do app) —
+  a máscara de nome (`mask_name`) foi removida.
 
 ## ActionCable Channels
 
@@ -157,6 +200,7 @@ views/
   TriageStart.vue    → Formulário de demanda inicial
   TriageChat.vue     → Chat com scroll, indicador de digitação, botão finalizar
   TriageQueue.vue    → Senha, urgência, posição, fila geral, tela de chamada
+  profile/ProfileEdit.vue → Dados pessoais, senha, e condições de prioridade da fila
 ```
 
 **Importante sobre `useQueueChannel`:** aceita `{ onQueueUpdate }` callback — chamado nos eventos `queued`, `position_update` e `called` para recarregar a lista da fila via `/api/queue`.
@@ -185,6 +229,7 @@ Todos delegam para `TriageSetting.current`.
 - `Api::BaseController` autentica via sessão Devise (`before_action :authenticate_user!`)
 - Urgência nunca é hardcoded — sempre via `TriageSetting.current`
 - Paginação: **sempre** usar `Pagy::Offset.new(count:, page:, limit:, request:)` + `@pagy.records(collection)` — **nunca** `include Pagy::Backend` ou `pagy()` helper
+- Prioridade da fila é *snapshot* na `QueueEntry` no momento do enqueue (`QueueEntryService`), nunca recalculada a partir do `User` depois — se for tocar em ordenação de fila, mexer em `QueueEntry.ordered_for_queue`/`queue_position`, não recalcular `priority_tier` do usuário em tempo real
 
 ---
 

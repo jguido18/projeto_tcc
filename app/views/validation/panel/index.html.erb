@@ -115,6 +115,12 @@
               <div class="colaborador-card__urgency-badge" style="<%= urgency_badge_style(final_level) %>">
                 <%= final_label %>
               </div>
+              <% if entry.priority_tier > 0 %>
+                <% reason_labels = entry.priority_reasons.map { |r| User::PRIORITY_REASON_LABELS[r.to_sym] }.join(", ") %>
+                <span class="colaborador-card__priority-badge <%= "colaborador-card__priority-badge--super" if entry.priority_tier == 2 %>" title="<%= reason_labels %> (Lei 10.048/2000)">
+                  ★ <%= reason_labels %>
+                </span>
+              <% end %>
               <span class="colaborador-card__ticket"><%= entry.ticket_number %></span>
             </div>
 

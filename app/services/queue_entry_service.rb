@@ -9,14 +9,18 @@ class QueueEntryService
   def enqueue
     urgency = @validation.final_urgency_level
 
+    patient = @session.user
+
     entry = QueueEntry.create!(
       triage_session: @session,
-      user: @session.user,
+      user: patient,
       urgency_level: urgency,
       urgency_weight: TriageSetting.current.urgency_weight_for(urgency),
       ticket_number: generate_ticket,
       status: :waiting,
-      queued_at: Time.current
+      queued_at: Time.current,
+      priority_tier: patient.priority_tier,
+      priority_reasons: patient.priority_reasons.map(&:to_s)
     )
 
     @session.update!(status: :in_queue)

@@ -154,13 +154,15 @@ class Api::TriageController < Api::BaseController
 
   def queue_entry_json(entry)
     {
-      id:             entry.id,
-      ticket_number:  entry.ticket_number,
-      status:         entry.status,
-      urgency_level:  entry.urgency_level,
-      urgency_label:  entry.urgency_label,
-      queue_position: entry.waiting? ? entry.queue_position : nil,
-      queued_at:      entry.queued_at.iso8601
+      id:              entry.id,
+      ticket_number:   entry.ticket_number,
+      status:          entry.status,
+      urgency_level:   entry.urgency_level,
+      urgency_label:   entry.urgency_label,
+      queue_position:  entry.waiting? ? entry.queue_position : nil,
+      queued_at:       entry.queued_at.iso8601,
+      priority_tier:   entry.priority_tier,
+      priority_labels: entry.priority_reasons.map { |r| User::PRIORITY_REASON_LABELS[r.to_sym] }
     }
   end
 

@@ -8,7 +8,16 @@ class Api::ProfileController < Api::BaseController
       phone: current_user.phone,
       birth_date: current_user.birth_date,
       cpf: current_user.cpf,
-      avatar_url: avatar_url
+      avatar_url: avatar_url,
+      pcd: current_user.pcd,
+      obeso: current_user.obeso,
+      mobilidade_reduzida: current_user.mobilidade_reduzida,
+      gestante: current_user.gestante,
+      gestante_valid_until: current_user.gestante_valid_until,
+      lactante: current_user.lactante,
+      lactante_valid_until: current_user.lactante_valid_until,
+      crianca_de_colo: current_user.crianca_de_colo,
+      crianca_de_colo_valid_until: current_user.crianca_de_colo_valid_until
     }
   end
 
@@ -34,6 +43,12 @@ class Api::ProfileController < Api::BaseController
   private
 
   def profile_params
-    params.require(:user).permit(:name, :phone, :birth_date, :avatar, :email, :password, :password_confirmation, :current_password)
+    params.require(:user).permit(
+      :name, :phone, :birth_date, :avatar, :email, :password, :password_confirmation, :current_password,
+      :pcd, :obeso, :mobilidade_reduzida,
+      :gestante, :gestante_valid_until,
+      :lactante, :lactante_valid_until,
+      :crianca_de_colo, :crianca_de_colo_valid_until
+    )
   end
 end

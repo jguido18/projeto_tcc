@@ -72,6 +72,11 @@
           </p>
         </div>
 
+        <p class="triage-start-priority-hint">
+          Idoso, gestante, lactante, PCD ou outra condição prioritária?
+          <router-link to="/app/profile">Atualize seu perfil</router-link> para ter prioridade na fila.
+        </p>
+
         <v-alert
           v-if="error"
           type="error"
@@ -111,10 +116,10 @@ import { useTriageStore } from "../../stores/triage"
 const store  = useTriageStore()
 const router = useRouter()
 
-const form           = ref(null)
-const initialDemand  = ref("")
-const loading        = ref(false)
-const error          = ref("")
+const form          = ref(null)
+const initialDemand = ref("")
+const loading       = ref(false)
+const error         = ref("")
 
 const required = (v) => !!v?.trim() || "Campo obrigatório"
 
@@ -238,6 +243,23 @@ async function submit() {
   font-size: 0.75rem;
   color: #a0aec0;
   margin: 0;
+}
+
+.triage-start-priority-hint {
+  font-size: 0.8rem;
+  color: #718096;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.triage-start-priority-hint a {
+  color: #3182ce;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.triage-start-priority-hint a:hover {
+  text-decoration: underline;
 }
 
 .triage-start-submit {

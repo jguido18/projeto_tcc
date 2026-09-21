@@ -19,13 +19,39 @@ class QueueEntry < ApplicationRecord
 
   before_validation :set_urgency_weight, if: -> { urgency_level.present? && urgency_weight.blank? }
 
+  # Ordenação oficial da fila: urgência clínica > prioridade legal (idoso/PCD/...) > ordem de chegada
+  scope :ordered_for_queue, -> { order(:urgency_weight).order(priority_tier: :desc).order(:queued_at) }
+
+  # Cada atendimento dura, em média, isso — usado como fallback quando não há histórico
+  DEFAULT_SERVICE_MINUTES = 15
+  RECENT_SERVICE_SAMPLE_SIZE = 50
+
+  # Média (em minutos) dos atendimentos concluídos recentemente, do momento em
+  # que o paciente foi chamado até o encerramento. Cai no valor padrão quando
+  # ainda não há histórico suficiente.
+  def self.average_service_minutes
+    durations = completed
+      .where.not(called_at: nil)
+      .where.not(service_finished_at: nil)
+      .order(service_finished_at: :desc)
+      .limit(RECENT_SERVICE_SAMPLE_SIZE)
+      .pluck(:called_at, :service_finished_at)
+      .map { |called_at, finished_at| (finished_at - called_at) / 60.0 }
+
+    return DEFAULT_SERVICE_MINUTES if durations.empty?
+
+    (durations.sum / durations.size).round
+  end
+
   # Returns position in queue (1-based) calculated dynamically
   def queue_position
     QueueEntry
       .where(status: :waiting)
       .where(
-        "urgency_weight < ? OR (urgency_weight = ? AND queued_at < ?)",
-        urgency_weight, urgency_weight, queued_at
+        "urgency_weight < :uw
+         OR (urgency_weight = :uw AND priority_tier > :tier)
+         OR (urgency_weight = :uw AND priority_tier = :tier AND queued_at < :qat)",
+        uw: urgency_weight, tier: priority_tier, qat: queued_at
       )
       .count + 1
   end

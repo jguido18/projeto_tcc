@@ -109,7 +109,15 @@
             <span class="urgency-dot" :style="{ background: urgencyColor(row.urgency_level) }"></span>
             <span :style="{ color: urgencyColor(row.urgency_level) }">{{ urgencyLabel(row.urgency_level) }}</span>
           </div>
-          <div class="board-col board-col--name">{{ row.masked_name }}</div>
+          <div class="board-col board-col--name">
+            {{ row.name }}
+            <span
+              v-if="row.priorityTier > 0"
+              class="board-priority-badge"
+              :class="{ 'board-priority-badge--super': row.priorityTier === 2 }"
+              :title="row.priorityLabels.join(', ')"
+            >★</span>
+          </div>
           <div class="board-col board-col--wait">~{{ row.estimated_wait }} min</div>
         </div>
       </div>
@@ -193,7 +201,9 @@ async function loadQueue() {
     queueRows.value = (data.entries || []).map((e) => ({
       id:             e.id,
       urgency_level:  e.urgency_level,
-      masked_name:    e.masked_name,
+      name:           e.name,
+      priorityTier:   e.priority_tier,
+      priorityLabels: e.priority_labels || [],
       estimated_wait: e.estimated_wait,
       queue_position: e.queue_position,
       ticket_number:  e.ticket_number,
@@ -446,6 +456,16 @@ onUnmounted(() => unsubscribe?.())
 .board-col--priority { flex: 1.2; font-weight: 700; }
 .board-col--name     { flex: 2;   color: #2d4a6b; font-weight: 600; }
 .board-col--wait     { flex: 1.2; color: #6b7f99; }
+
+.board-priority-badge {
+  margin-left: 0.35rem;
+  color: #b7791f;
+  font-size: 0.85rem;
+}
+
+.board-priority-badge--super {
+  color: #c53030;
+}
 
 .board-pos {
   font-size: 0.8rem;

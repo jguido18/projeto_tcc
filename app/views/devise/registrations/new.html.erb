@@ -53,6 +53,59 @@
               maxlength: 15, inputmode: "numeric" %>
       </div>
 
+      <%# ── Prioridade no atendimento (Lei 10.048/2000) ── %>
+      <div class="auth-section-label auth-section-label--mt">Prioridade no atendimento (opcional)</div>
+      <p class="auth-hint">Pessoas idosas (60+) são identificadas automaticamente pela data de nascimento.</p>
+
+      <div class="auth-row">
+        <label class="priority-switch">
+          <%= f.check_box :pcd %>
+          <span class="priority-switch__label">Pessoa com deficiência (inclui TEA)</span>
+        </label>
+        <label class="priority-switch">
+          <%= f.check_box :obeso %>
+          <span class="priority-switch__label">Obesidade</span>
+        </label>
+      </div>
+
+      <label class="priority-switch">
+        <%= f.check_box :mobilidade_reduzida %>
+        <span class="priority-switch__label">Mobilidade reduzida</span>
+      </label>
+
+      <div class="priority-condition" data-controller="toggle-field">
+        <label class="priority-switch">
+          <%= f.check_box :gestante, data: { toggle_field_target: "checkbox", action: "change->toggle-field#sync" } %>
+          <span class="priority-switch__label">Gestante</span>
+        </label>
+        <div class="auth-field priority-condition__field" data-toggle-field-target="field">
+          <%= f.label :gestante_valid_until, "Válido até", class: "auth-label" %>
+          <%= f.date_field :gestante_valid_until, class: "auth-input", min: Date.current.iso8601 %>
+        </div>
+      </div>
+
+      <div class="priority-condition" data-controller="toggle-field">
+        <label class="priority-switch">
+          <%= f.check_box :lactante, data: { toggle_field_target: "checkbox", action: "change->toggle-field#sync" } %>
+          <span class="priority-switch__label">Lactante</span>
+        </label>
+        <div class="auth-field priority-condition__field" data-toggle-field-target="field">
+          <%= f.label :lactante_valid_until, "Válido até", class: "auth-label" %>
+          <%= f.date_field :lactante_valid_until, class: "auth-input", min: Date.current.iso8601 %>
+        </div>
+      </div>
+
+      <div class="priority-condition" data-controller="toggle-field">
+        <label class="priority-switch">
+          <%= f.check_box :crianca_de_colo, data: { toggle_field_target: "checkbox", action: "change->toggle-field#sync" } %>
+          <span class="priority-switch__label">Criança de colo</span>
+        </label>
+        <div class="auth-field priority-condition__field" data-toggle-field-target="field">
+          <%= f.label :crianca_de_colo_valid_until, "Válido até", class: "auth-label" %>
+          <%= f.date_field :crianca_de_colo_valid_until, class: "auth-input", min: Date.current.iso8601 %>
+        </div>
+      </div>
+
       <%# ── Acesso ── %>
       <div class="auth-section-label auth-section-label--mt"><%= t("devise.registrations.new.access_data") %></div>
 

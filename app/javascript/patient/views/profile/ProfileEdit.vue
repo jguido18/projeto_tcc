@@ -72,6 +72,124 @@
 
           <v-divider class="my-4" />
 
+          <!-- Prioridade no atendimento -->
+          <p class="section-label">Prioridade no atendimento</p>
+          <p class="text-caption text-medium-emphasis mb-3">
+            Pessoas idosas (60+) já têm prioridade automática pela data de nascimento acima.
+          </p>
+          <v-row dense>
+            <v-col cols="12" sm="6">
+              <v-switch
+                v-model="profile.pcd"
+                label="Pessoa com deficiência (inclui TEA)"
+                color="success"
+                density="comfortable"
+                inset
+                hide-details
+                :disabled="saving"
+              />
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-switch
+                v-model="profile.obeso"
+                label="Obesidade"
+                color="success"
+                density="comfortable"
+                inset
+                hide-details
+                :disabled="saving"
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-switch
+                v-model="profile.mobilidade_reduzida"
+                label="Mobilidade reduzida"
+                color="success"
+                density="comfortable"
+                inset
+                hide-details
+                :disabled="saving"
+              />
+            </v-col>
+
+            <v-col cols="12" sm="6">
+              <v-switch
+                v-model="profile.gestante"
+                label="Gestante"
+                color="success"
+                density="comfortable"
+                inset
+                hide-details
+                :disabled="saving"
+              />
+              <v-expand-transition>
+                <v-text-field
+                  v-if="profile.gestante"
+                  v-model="profile.gestante_valid_until"
+                  label="Válido até"
+                  type="date"
+                  variant="outlined"
+                  density="comfortable"
+                  class="mt-2"
+                  :rules="validUntilRules"
+                  :disabled="saving"
+                />
+              </v-expand-transition>
+            </v-col>
+
+            <v-col cols="12" sm="6">
+              <v-switch
+                v-model="profile.lactante"
+                label="Lactante"
+                color="success"
+                density="comfortable"
+                inset
+                hide-details
+                :disabled="saving"
+              />
+              <v-expand-transition>
+                <v-text-field
+                  v-if="profile.lactante"
+                  v-model="profile.lactante_valid_until"
+                  label="Válido até"
+                  type="date"
+                  variant="outlined"
+                  density="comfortable"
+                  class="mt-2"
+                  :rules="validUntilRules"
+                  :disabled="saving"
+                />
+              </v-expand-transition>
+            </v-col>
+
+            <v-col cols="12" sm="6">
+              <v-switch
+                v-model="profile.crianca_de_colo"
+                label="Criança de colo"
+                color="success"
+                density="comfortable"
+                inset
+                hide-details
+                :disabled="saving"
+              />
+              <v-expand-transition>
+                <v-text-field
+                  v-if="profile.crianca_de_colo"
+                  v-model="profile.crianca_de_colo_valid_until"
+                  label="Válido até"
+                  type="date"
+                  variant="outlined"
+                  density="comfortable"
+                  class="mt-2"
+                  :rules="validUntilRules"
+                  :disabled="saving"
+                />
+              </v-expand-transition>
+            </v-col>
+          </v-row>
+
+          <v-divider class="my-4" />
+
           <!-- E-mail -->
           <p class="section-label">E-mail de acesso</p>
           <v-row dense>
@@ -159,10 +277,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue"
+import { ref, computed, watch, onMounted, onUnmounted } from "vue"
 import { apiFetch } from "../../composables/useApi"
 
-const profile = ref({ name: "", email: "", phone: "", birth_date: "", cpf: "", avatar_url: null })
+const profile = ref({
+  name: "", email: "", phone: "", birth_date: "", cpf: "", avatar_url: null,
+  pcd: false, obeso: false, mobilidade_reduzida: false,
+  gestante: false, gestante_valid_until: "",
+  lactante: false, lactante_valid_until: "",
+  crianca_de_colo: false, crianca_de_colo_valid_until: "",
+})
 const originalEmail = ref("")
 const avatarPreview = ref(null)
 const avatarFile = ref(null)
@@ -174,6 +298,17 @@ const passwords = ref({ new: "", confirmation: "", current: "" })
 
 const emailChanged = computed(() => profile.value.email !== originalEmail.value)
 const requiresCurrentPassword = computed(() => emailChanged.value || !!passwords.value.new)
+
+const todayIso = new Date().toISOString().slice(0, 10)
+const validUntilRules = [
+  (v) => !!v || "Informe até quando a prioridade vale",
+  (v) => !v || v >= todayIso || "Não pode ser uma data no passado",
+]
+
+// Limpa a data de validade quando a condição é desmarcada
+watch(() => profile.value.gestante, (v) => { if (!v) profile.value.gestante_valid_until = "" })
+watch(() => profile.value.lactante, (v) => { if (!v) profile.value.lactante_valid_until = "" })
+watch(() => profile.value.crianca_de_colo, (v) => { if (!v) profile.value.crianca_de_colo_valid_until = "" })
 
 const SCROLL_TARGETS = [
   () => document.documentElement,
@@ -234,6 +369,15 @@ async function save() {
     formData.append("user[phone]", profile.value.phone || "")
     formData.append("user[birth_date]", profile.value.birth_date || "")
     formData.append("user[email]", profile.value.email)
+    formData.append("user[pcd]", profile.value.pcd ? "1" : "0")
+    formData.append("user[obeso]", profile.value.obeso ? "1" : "0")
+    formData.append("user[mobilidade_reduzida]", profile.value.mobilidade_reduzida ? "1" : "0")
+    formData.append("user[gestante]", profile.value.gestante ? "1" : "0")
+    formData.append("user[gestante_valid_until]", profile.value.gestante_valid_until || "")
+    formData.append("user[lactante]", profile.value.lactante ? "1" : "0")
+    formData.append("user[lactante_valid_until]", profile.value.lactante_valid_until || "")
+    formData.append("user[crianca_de_colo]", profile.value.crianca_de_colo ? "1" : "0")
+    formData.append("user[crianca_de_colo_valid_until]", profile.value.crianca_de_colo_valid_until || "")
     if (avatarFile.value) formData.append("user[avatar]", avatarFile.value)
     if (passwords.value.new) {
       formData.append("user[password]", passwords.value.new)

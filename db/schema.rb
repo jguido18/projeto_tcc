@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_15_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_21_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -92,6 +92,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_220000) do
   create_table "queue_entries", force: :cascade do |t|
     t.datetime "called_at"
     t.datetime "created_at", null: false
+    t.string "priority_reasons", default: [], null: false, array: true
+    t.integer "priority_tier", default: 0, null: false
     t.datetime "queued_at", null: false
     t.datetime "service_finished_at"
     t.datetime "service_started_at"
@@ -104,7 +106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_220000) do
     t.bigint "user_id", null: false
     t.index ["ticket_number"], name: "index_queue_entries_on_ticket_number", unique: true
     t.index ["triage_session_id"], name: "index_queue_entries_on_triage_session_id", unique: true
-    t.index ["urgency_weight", "queued_at"], name: "index_queue_entries_on_urgency_weight_and_queued_at"
+    t.index ["urgency_weight", "priority_tier", "queued_at"], name: "index_queue_entries_on_urgency_priority_queued_at"
     t.index ["user_id"], name: "index_queue_entries_on_user_id"
   end
 
@@ -311,14 +313,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_220000) do
     t.boolean "colaborador", default: false, null: false
     t.string "cpf"
     t.datetime "created_at", null: false
+    t.boolean "crianca_de_colo", default: false, null: false
+    t.date "crianca_de_colo_valid_until"
     t.datetime "current_sign_in_at"
     t.string "current_sign_in_ip"
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
+    t.boolean "gestante", default: false, null: false
+    t.date "gestante_valid_until"
     t.string "job_title"
+    t.boolean "lactante", default: false, null: false
+    t.date "lactante_valid_until"
     t.datetime "last_sign_in_at"
     t.string "last_sign_in_ip"
+    t.boolean "mobilidade_reduzida", default: false, null: false
     t.string "name", null: false
+    t.boolean "obeso", default: false, null: false
+    t.boolean "pcd", default: false, null: false
     t.string "phone"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"

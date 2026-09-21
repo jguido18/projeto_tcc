@@ -68,7 +68,7 @@ O sistema é totalmente configurável: o administrador define o prompt da IA, os
 
 ### Autenticação
 - [x] Login separado para solicitantes (`/login`) e equipe (`/staff/login`)
-- [x] Cadastro de solicitantes com nome, CPF, data de nascimento e telefone
+- [x] Cadastro de solicitantes com nome, CPF, data de nascimento, telefone e condições de prioridade
 - [x] Dois perfis de equipe na mesma tabela (`colaborador`, `specialist`, boolean flags)
 - [x] Redirecionamento automático pós-login de acordo com o perfil
 
@@ -77,11 +77,12 @@ O sistema é totalmente configurável: o administrador define o prompt da IA, os
 - [x] Chat em tempo real com IA via ActionCable (WebSocket)
 - [x] Indicador de digitação ("...") enquanto a IA responde
 - [x] Botão "Finalizar Triagem" para encerrar o chat e enviar para validação
-- [x] Tela de fila com senha, urgência, posição e tempo estimado
-- [x] Painel de fila geral com todos os solicitantes aguardando (nomes anonimizados)
+- [x] Tela de fila com senha, urgência, posição e tempo estimado (calculado pela média real dos últimos atendimentos)
+- [x] Painel de fila geral com todos os solicitantes aguardando, nome completo e selo de prioridade (★)
 - [x] Notificação em tempo real quando chamado ("Dirija-se ao ponto de atendimento")
 - [x] Possibilidade de iniciar outra triagem (cancela a atual)
 - [x] Guard de rotas: redireciona para a etapa correta conforme status da sessão
+- [x] Tela de perfil (`/app/profile`) com dados pessoais, troca de senha e condições de prioridade na fila
 
 ### Inteligência Artificial
 - [x] Integração com OpenAI (`gpt-4o-mini`) e Anthropic (`claude-opus-4-6`)
@@ -93,12 +94,23 @@ O sistema é totalmente configurável: o administrador define o prompt da IA, os
 
 ### Painel do Colaborador — Validação (`/validation`)
 - [x] Coluna "Aguardando Validação" com cartões das triagens pendentes
-- [x] Coluna "Fila Prioritária" com solicitantes validados ordenados por urgência
+- [x] Coluna "Fila Prioritária" com solicitantes validados ordenados por urgência clínica e prioridade legal (idosos, PCD, gestantes...)
 - [x] Modal de validação: revisa análise da IA e confirma ou ajusta prioridade
 - [x] Botão "Chamar Atendimento" que notifica o solicitante em tempo real
 - [x] Atualização automática do painel via ActionCable
 - [x] Relatórios do dia (triagens, atendimentos, precisão da IA)
 - [x] Histórico com filtros por gravidade e busca por nome
+
+### Fila Prioritária (Lei 10.048/2000 + Estatuto do Idoso)
+- [x] Ordenação em duas camadas: **urgência clínica sempre em primeiro lugar** (Protocolo Manchester); a prioridade legal só decide quem passa na frente **dentro do mesmo nível de urgência**
+- [x] Idosos (60+) identificados automaticamente pela data de nascimento — sem precisar marcar nada
+- [x] Superprioridade automática para idosos 80+ (Estatuto da Pessoa Idosa), acima da prioridade "comum"
+- [x] Condições permanentes autodeclaráveis no cadastro/perfil: PCD (inclui TEA), obesidade, mobilidade reduzida
+- [x] Condições temporárias com data de validade informada pelo próprio paciente — gestante, lactante e criança de colo deixam de contar automaticamente após a data informada, sem precisar desmarcar
+- [x] Validação de data: o campo "válido até" não pode ficar em branco nem ser uma data passada
+- [x] Nome completo do paciente exibido na fila, na TV pública e no painel do colaborador (sem censura)
+- [x] Painel do colaborador mostra o motivo da prioridade em cada solicitante (ex: "★ Idoso (80+)", "★ PCD, Gestante")
+- [x] Tempo estimado de espera calculado pela média real dos atendimentos concluídos, não mais um valor fixo
 
 ### Painel do Especialista — Atendimento (`/attendance`)
 - [x] Lista de solicitantes chamados aguardando atendimento
@@ -132,7 +144,8 @@ O sistema é totalmente configurável: o administrador define o prompt da IA, os
 - [x] `POST /api/triage/message` — envia mensagem e recebe resposta da IA
 - [x] `POST /api/triage/finish` — finaliza triagem manualmente
 - [x] `POST /api/triage/restart` — cancela triagem ativa
-- [x] `GET /api/queue` — lista anonimizada da fila atual (para o painel Vue)
+- [x] `GET /api/queue` — fila atual ordenada por urgência e prioridade (para o painel Vue)
+- [x] `GET/PATCH /api/profile` — dados do perfil, incluindo as condições de prioridade na fila
 
 ---
 
@@ -293,13 +306,14 @@ projeto_tcc/
 │   │       └── views/
 │   │           ├── TriageStart.vue   # Demanda inicial
 │   │           ├── TriageChat.vue    # Chat com IA
-│   │           └── TriageQueue.vue   # Fila e tela de chamada
+│   │           ├── TriageQueue.vue   # Fila e tela de chamada
+│   │           └── profile/ProfileEdit.vue # Perfil e condições de prioridade
 │   ├── models/
-│   │   ├── user.rb            # Devise + flags: colaborador, specialist, admin
+│   │   ├── user.rb            # Devise + flags de perfil + condições de prioridade na fila
 │   │   ├── triage_session.rb  # 7 status: in_triage → completed
 │   │   ├── ai_classification.rb
 │   │   ├── triage_validation.rb
-│   │   ├── queue_entry.rb     # ticket_number, urgency_level, queue_position (SQL)
+│   │   ├── queue_entry.rb     # ticket_number, urgency_level, priority_tier, queue_position (SQL)
 │   │   ├── chat_message.rb
 │   │   └── triage_setting.rb  # TriageSetting.current — config dinâmica da IA
 │   ├── services/
@@ -318,7 +332,7 @@ projeto_tcc/
 │       ├── pt-BR.yml          # Traduções da aplicação
 │       └── devise.pt-BR.yml   # Traduções do Devise
 └── db/
-    └── migrate/               # 10 migrações criando o schema completo
+    └── migrate/               # migrações do schema completo
 ```
 
 ---

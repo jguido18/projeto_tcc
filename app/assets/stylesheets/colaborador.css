@@ -414,6 +414,23 @@
   font-weight: 600;
 }
 
+.colaborador-card__priority-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #975a16;
+  background: #fefcbf;
+  border: 1px solid #f6e05e;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  white-space: nowrap;
+}
+
+.colaborador-card__priority-badge--super {
+  color: #742a2a;
+  background: #fed7d7;
+  border-color: #fc8181;
+}
+
 .colaborador-card__time {
   margin-left: auto;
   font-size: 0.75rem;

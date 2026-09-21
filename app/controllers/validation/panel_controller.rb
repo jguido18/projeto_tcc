@@ -10,7 +10,7 @@ class Validation::PanelController < Validation::BaseController
     @priority_queue = QueueEntry
       .includes(triage_session: [ :user, { ai_classification: :triage_validation } ])
       .where(status: :waiting)
-      .order(:urgency_weight, :queued_at)
+      .ordered_for_queue
 
     @total_waiting = @priority_queue.count
   end

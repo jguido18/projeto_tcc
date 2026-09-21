@@ -12,6 +12,20 @@
     </div>
 
     <div class="validation-ai-panel__body">
+      <% priority_reasons = @triage_session.user.priority_reasons %>
+      <% if priority_reasons.any? %>
+        <div class="validation-section">
+          <div class="validation-section__title"><%= t("app.validation.validation_modal.patient_priority") %></div>
+          <div class="validation-section__content validation-section__content--symptoms">
+            <% priority_reasons.each do |reason| %>
+              <span class="symptom-tag symptom-tag--priority <%= "symptom-tag--priority-super" if reason == :super_elderly %>">
+                ★ <%= User::PRIORITY_REASON_LABELS[reason] %>
+              </span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
       <div class="validation-section">
         <div class="validation-section__title"><%= t("app.validation.validation_modal.suggested_classification") %></div>
         <div class="validation-section__content">

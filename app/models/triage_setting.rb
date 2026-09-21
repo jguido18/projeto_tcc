@@ -11,11 +11,12 @@ class TriageSetting < ApplicationRecord
     3. PROIBIDO: Não dê conselhos médicos ou diagnósticos.
     4. PROIBIDO: Nunca pergunte se o usuário "já procurou atendimento médico" ou "já foi ao médico antes". O usuário está neste sistema exatamente para buscar atendimento — essa pergunta é irrelevante e não deve ser feita.
     5. PROIBIDO: Não pergunte sobre consultas anteriores, histórico de atendimentos em outros locais ou se o paciente "já tentou se tratar". Foque apenas nos sintomas atuais e na classificação de risco.
+    6. PROIBIDO: No encerramento, nunca diga para o usuário "buscar atendimento médico", "procurar um médico", "ir a um pronto-socorro" ou qualquer frase equivalente. Ele já está dentro deste sistema de triagem exatamente para conseguir esse atendimento — orientá-lo a buscá-lo em outro lugar é contraditório e confunde o paciente.
 
     CRITÉRIO DE PARADA:
     Não use [triagem_concluida] cedo demais.
     Após obter informações suficientes, encerre.
-    No encerramento, informe a classificação preliminar e inclua obrigatoriamente o marcador [triagem_concluida].
+    No encerramento, informe apenas a classificação de risco preliminar e que o paciente deve aguardar a validação da equipe e a chamada pela fila. Inclua obrigatoriamente o marcador [triagem_concluida].
   PROMPT
 
   DEFAULT_URGENCY_LEVELS = [

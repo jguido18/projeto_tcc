@@ -595,6 +595,19 @@
   font-weight: 500;
 }
 
+.symptom-tag--priority {
+  background: #fefcbf;
+  color: #975a16;
+  border: 1px solid #f6e05e;
+  font-weight: 700;
+}
+
+.symptom-tag--priority-super {
+  background: #fed7d7;
+  color: #742a2a;
+  border-color: #fc8181;
+}
+
 .validation-manchester {
   font-family: monospace;
   background: #f7fafc;

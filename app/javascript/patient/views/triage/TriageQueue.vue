@@ -442,7 +442,10 @@ onUnmounted(() => unsubscribe?.())
 }
 
 .board-row--mine {
-  background: linear-gradient(90deg, rgba(49, 130, 206, 0.09) 0%, transparent 100%);
+  background: #bee3f8;
+  box-shadow: inset 4px 0 0 #2b6cb0;
+  color: #1a365d;
+  font-weight: 700;
 }
 
 .board-col {

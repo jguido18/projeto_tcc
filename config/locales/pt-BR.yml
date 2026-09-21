@@ -336,6 +336,7 @@ pt-BR:
         title: "Validar Classificação"
         subtitle: "Confira a análise da IA e ajuste se necessário."
         ai_analysis: "ANÁLISE DA IA"
+        patient_priority: "Prioridade Legal do Paciente"
         suggested_classification: "Classificação Sugerida"
         clinical_summary: "Resumo"
         classification_reasoning: "Raciocínio"

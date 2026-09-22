@@ -1,7 +1,14 @@
 require "test_helper"
 
 class SmsNotifierServiceTest < ActiveSupport::TestCase
+  TEXTBEE_ENV_VARS = %w[TEXTBEE_API_KEY TEXTBEE_DEVICE_ID SMS_FORCE_RECIPIENT].freeze
+
   setup do
+    # Neutraliza o .env do dev (que pode ter chave real, device e o modo de
+    # teste ligados) para os testes ficarem isolados do ambiente local —
+    # cada teste liga explicitamente só o que precisa via with_env.
+    @original_textbee_env = TEXTBEE_ENV_VARS.index_with { |k| ENV.delete(k) }
+
     @user = User.create!(
       name: "Paciente Teste",
       email: "paciente-#{SecureRandom.hex(4)}@example.com",
@@ -16,6 +23,10 @@ class SmsNotifierServiceTest < ActiveSupport::TestCase
       body: "SENHA123 — dirija-se ao ponto de atendimento",
       channel: :sms
     )
+  end
+
+  teardown do
+    @original_textbee_env.each { |k, v| v.nil? ? ENV.delete(k) : ENV[k] = v }
   end
 
   test "skips delivery (without raising) when the patient has no phone" do
@@ -80,6 +91,30 @@ class SmsNotifierServiceTest < ActiveSupport::TestCase
         captured = capture_request_body { SmsNotifierService.new(@notification).deliver }
 
         assert_equal "device-42", captured["deviceId"]
+      end
+    end
+  end
+
+  test "SMS_FORCE_RECIPIENT overrides the destination, ignoring the patient's real phone" do
+    fake_response = Net::HTTPOK.new("1.1", "200", "OK")
+
+    with_env(TEXTBEE_API_KEY: "tb_123", SMS_FORCE_RECIPIENT: "+5519971662004") do
+      with_stubbed_http_start(fake_response) do
+        captured = capture_request_body { SmsNotifierService.new(@notification).deliver }
+
+        assert_equal [ "+5519971662004" ], captured["recipients"]
+      end
+    end
+  end
+
+  test "sends to the patient's real phone when SMS_FORCE_RECIPIENT is not set" do
+    fake_response = Net::HTTPOK.new("1.1", "200", "OK")
+
+    with_env(TEXTBEE_API_KEY: "tb_123", SMS_FORCE_RECIPIENT: nil) do
+      with_stubbed_http_start(fake_response) do
+        captured = capture_request_body { SmsNotifierService.new(@notification).deliver }
+
+        assert_equal [ "+5511999998888" ], captured["recipients"]
       end
     end
   end

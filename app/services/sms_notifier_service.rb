@@ -37,7 +37,12 @@ class SmsNotifierService
   def send_via_textbee(phone)
     uri = URI("#{API_BASE}/gateway/send-sms")
 
-    payload = { recipients: [ normalized_phone(phone) ], message: message_body }
+    target_phone = force_recipient.presence || normalized_phone(phone)
+    if force_recipient.present?
+      Rails.logger.info("[SmsNotifierService] Modo de teste: destinatário forçado para #{force_recipient} (paciente real seria #{normalized_phone(phone)})")
+    end
+
+    payload = { recipients: [ target_phone ], message: message_body }
     payload[:deviceId] = device_id if device_id.present?
 
     request = Net::HTTP::Post.new(uri)
@@ -45,7 +50,7 @@ class SmsNotifierService
     request["Content-Type"] = "application/json"
     request.body = payload.to_json
 
-    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true, read_timeout: 10) do |http|
+    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true, open_timeout: 10, read_timeout: 20) do |http|
       http.request(request)
     end
 
@@ -85,4 +90,12 @@ class SmsNotifierService
 
   def api_key   = ENV["TEXTBEE_API_KEY"]   || Rails.application.credentials.textbee_api_key
   def device_id = ENV["TEXTBEE_DEVICE_ID"] || Rails.application.credentials.textbee_device_id
+
+  # Modo de teste/demonstração: quando configurado, TODO SMS vai pra esse
+  # número em vez do telefone real do paciente — útil pra validar o fluxo
+  # inteiro só com o celular vinculado ao textbee, sem depender de números
+  # reais de pacientes. Deixe a variável vazia/ausente para produção normal.
+  def force_recipient
+    ENV["SMS_FORCE_RECIPIENT"]
+  end
 end

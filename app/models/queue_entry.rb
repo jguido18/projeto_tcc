@@ -23,6 +23,11 @@ class QueueEntry < ApplicationRecord
   DEFAULT_SERVICE_MINUTES = 15
   RECENT_SERVICE_SAMPLE_SIZE = 50
 
+  # Piso mínimo pro tempo médio exibido — protege a estimativa contra
+  # atendimentos de teste/demonstração (chamar e finalizar em segundos), que
+  # puxariam a média real pra baixo de forma irreal para o paciente.
+  MIN_SERVICE_MINUTES = 5
+
   # Peso mínimo que o envelhecimento pode atingir (1 = nível mais urgente configurado).
   # O envelhecimento nunca "ultrapassa" um paciente que é vermelho de verdade — no
   # máximo empata com ele.
@@ -54,7 +59,7 @@ class QueueEntry < ApplicationRecord
 
     return DEFAULT_SERVICE_MINUTES if durations.empty?
 
-    (durations.sum / durations.size).round
+    [ (durations.sum / durations.size).round, MIN_SERVICE_MINUTES ].max
   end
 
   # Returns position in queue (1-based) calculated dynamically, já considerando o

@@ -58,7 +58,30 @@ class QueueEntryTest < ActiveSupport::TestCase
     assert_equal [ aged_green, fresh_red ], ordered
   end
 
+  test "average_service_minutes floors unrealistically short durations (test/demo data)" do
+    3.times { build_completed_entry(duration_minutes: 0.5) } # chamar+finalizar em segundos
+
+    assert_equal QueueEntry::MIN_SERVICE_MINUTES, QueueEntry.average_service_minutes
+  end
+
+  test "average_service_minutes returns the real average when it's already above the floor" do
+    3.times { build_completed_entry(duration_minutes: 20) }
+
+    assert_equal 20, QueueEntry.average_service_minutes
+  end
+
   private
+
+  def build_completed_entry(duration_minutes:)
+    entry = build_waiting_entry(urgency_level: "green", minutes_ago: 60)
+    called_at = 1.hour.ago
+    entry.update!(
+      status: :completed,
+      called_at: called_at,
+      service_finished_at: called_at + duration_minutes.minutes
+    )
+    entry
+  end
 
   def build_waiting_entry(urgency_level:, minutes_ago:)
     user = User.create!(

@@ -111,6 +111,18 @@ O sistema é totalmente configurável: o administrador define o prompt da IA, os
 - [x] Nome completo do paciente exibido na fila, na TV pública e no painel do colaborador (sem censura)
 - [x] Painel do colaborador mostra o motivo da prioridade em cada solicitante (ex: "★ Idoso (80+)", "★ PCD, Gestante")
 - [x] Tempo estimado de espera calculado pela média real dos atendimentos concluídos, não mais um valor fixo
+- [x] **Envelhecimento dinâmico de prioridade** — cada nível de urgência tem um SLA configurável (minutos até a chamada); se estourado, o peso de ordenação sobe automaticamente até empatar com o nível mais urgente, evitando que alguém de baixa urgência espere indefinidamente enquanto casos mais graves continuam chegando
+- [x] Alerta visual de "SLA estourado" no painel do colaborador, atualizado a cada minuto (job recorrente via Solid Queue) sem precisar recarregar a página
+
+### Confiança e Segurança da Classificação da IA
+- [x] Limite de confiança configurável pelo admin — quando a IA classifica abaixo dele (ou não informa confiança), a validação é sinalizada para revisão com atenção redobrada
+- [x] Aviso destacado na tela de validação e badge no painel quando a confiança está baixa
+- [x] Relatório de precisão da IA detalha a **direção** dos erros: subtriagem (IA subestimou a urgência — erro perigoso) vs. sobretriagem (IA superestimou — erro do lado seguro)
+
+### Notificação por SMS
+- [x] Paciente pode optar, no cadastro ou no perfil, por receber um aviso por SMS quando for chamado (além da notificação em tempo real já existente no app) — telefone passa a ser obrigatório enquanto essa opção estiver ativa
+- [x] Envio assíncrono via textbee — celular Android como gateway de SMS (job em background, nunca bloqueia a ação do colaborador)
+- [x] Sem a API key do textbee configurada, o envio é simulado em log, sem quebrar o fluxo
 
 ### Painel do Especialista — Atendimento (`/attendance`)
 - [x] Lista de solicitantes chamados aguardando atendimento
@@ -212,7 +224,38 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 # Chave da API OpenAI (alternativa)
 OPENAI_API_KEY=sk-...
+
+# Opcional — envio de SMS quando o paciente é chamado (textbee)
+TEXTBEE_API_KEY=...
+TEXTBEE_DEVICE_ID=...  # opcional, só se tiver mais de um dispositivo vinculado
 ```
+
+Sem `TEXTBEE_API_KEY`, o sistema funciona normalmente — o envio de SMS só é
+simulado (registrado no log) em vez de disparado de verdade.
+
+> **Por que textbee e não uma operadora tipo Twilio/Zenvia?** Testamos as duas
+> — contas trial do Twilio (WhatsApp e SMS) só aceitam mensagens de templates
+> pré-aprovados, não texto livre customizado, e liberar isso exige conta paga.
+> O [textbee](https://textbee.dev) ([open source](https://github.com/textbee/textbee))
+> usa um celular Android real como gateway — o SMS sai como se você tivesse
+> mandado manualmente, sem essa restrição, e é gratuito (até 300 SMS/mês). A
+> arquitetura (`SmsNotifierService`, `NotificationDeliveryJob`, opt-in no
+> perfil) é a mesma que serviria pra qualquer provedor — só troca a
+> implementação interna do service.
+
+### Configurar o SMS de demonstração (textbee)
+
+1. Instale o app do textbee num celular **Android** (não funciona em iPhone —
+   o iOS não permite apps terceiros mandarem SMS sem confirmação manual).
+2. Crie uma conta em [textbee.dev](https://textbee.dev), gere uma API key no
+   painel e coloque em `TEXTBEE_API_KEY`.
+3. No app, escaneia o QR code do painel pra vincular o celular à sua conta —
+   ele precisa ficar ligado, com internet e o app aberto (ou rodando em
+   segundo plano) na hora de cada teste/demonstração.
+4. No perfil do paciente de teste (`/app/profile`), cadastre o telefone dele
+   e ative "Avisar por SMS quando eu for chamado".
+5. Chame o paciente pelo painel de validação (`/validation`) — o SMS chega
+   pelo chip do celular vinculado.
 
 ### Criar usuário de teste via console
 

@@ -7,10 +7,9 @@ class Validation::PanelController < Validation::BaseController
       .order(created_at: :asc)
 
     # Right column: validated sessions waiting in queue
-    @priority_queue = QueueEntry
-      .includes(triage_session: [ :user, { ai_classification: :triage_validation } ])
-      .where(status: :waiting)
-      .ordered_for_queue
+    @priority_queue = QueueEntry.waiting_ordered_with_aging(
+      QueueEntry.includes(triage_session: [ :user, { ai_classification: :triage_validation } ]).waiting
+    )
 
     @total_waiting = @priority_queue.count
   end

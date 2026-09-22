@@ -21,7 +21,7 @@ class Admin::TriageSettingsController < Admin::BaseController
   end
 
   def triage_setting_params
-    base = params.require(:triage_setting).permit(:purpose, :system_prompt, :hint_example)
+    base = params.require(:triage_setting).permit(:purpose, :system_prompt, :hint_example, :confidence_threshold)
 
     raw_levels = params.dig(:triage_setting, :urgency_levels)
     urgency_levels = case raw_levels
@@ -36,9 +36,9 @@ class Admin::TriageSettingsController < Admin::BaseController
     cleaned = urgency_levels.filter_map do |level|
       level_hash = case level
       when ActionController::Parameters
-        level.permit(:key, :label, :color, :weight).to_h
+        level.permit(:key, :label, :color, :weight, :sla_minutes).to_h
       when Hash
-        level.slice("key", "label", "color", "weight")
+        level.slice("key", "label", "color", "weight", "sla_minutes")
       else
         nil
       end
@@ -47,10 +47,11 @@ class Admin::TriageSettingsController < Admin::BaseController
     end
 
     {
-      purpose:       base[:purpose],
-      system_prompt: base[:system_prompt],
-      hint_example:  base[:hint_example],
-      urgency_levels: cleaned
+      purpose:               base[:purpose],
+      system_prompt:         base[:system_prompt],
+      hint_example:          base[:hint_example],
+      confidence_threshold:  base[:confidence_threshold],
+      urgency_levels:        cleaned
     }
   end
 end

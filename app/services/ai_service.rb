@@ -108,7 +108,7 @@ class AiService
     )
 
     reply = parse_chat_reply(response.dig("choices", 0, "message", "content"))
-    finished = triage_finished?(reply[:content])
+    finished = triage_finished?(reply[:content], finished_field: reply[:finished])
 
     {
       content: strip_marker(reply[:content]),
@@ -128,7 +128,7 @@ class AiService
     )
 
     reply = parse_chat_reply(response.content.first.text)
-    finished = triage_finished?(reply[:content])
+    finished = triage_finished?(reply[:content], finished_field: reply[:finished])
 
     {
       content: strip_marker(reply[:content]),
@@ -189,14 +189,16 @@ class AiService
 
     {
       content: content,
-      suggested_replies: normalize_suggested_replies(payload["suggested_replies"], content)
+      suggested_replies: normalize_suggested_replies(payload["suggested_replies"], content),
+      finished: payload["finished"] == true
     }
   rescue JSON::ParserError
     content = raw_content.to_s.strip
 
     {
       content: content,
-      suggested_replies: fallback_suggested_replies(content)
+      suggested_replies: fallback_suggested_replies(content),
+      finished: false
     }
   end
 
@@ -277,9 +279,9 @@ class AiService
 
   def fallback_suggested_replies(content)
     if content.to_s.include?("?")
-      ["Não sei informar", "Prefiro responder digitando", "Pode repetir de outra forma?"]
+      [ "Não sei informar", "Prefiro responder digitando", "Pode repetir de outra forma?" ]
     else
-      ["Entendi", "Pode explicar melhor?", "Prefiro responder digitando"]
+      [ "Entendi", "Pode explicar melhor?", "Prefiro responder digitando" ]
     end
   end
 
@@ -307,7 +309,8 @@ class AiService
       Responda sempre em JSON válido, sem markdown e sem texto fora do JSON, usando exatamente esta estrutura:
       {
         "content": "sua resposta para o usuário em linguagem natural",
-        "suggested_replies": ["sugestão 1", "sugestão 2", "sugestão 3"]
+        "suggested_replies": ["sugestão 1", "sugestão 2", "sugestão 3"],
+        "finished": false
       }
 
       Regras para suggested_replies:
@@ -318,7 +321,15 @@ class AiService
       - Evite opções genéricas quando houver contexto suficiente.
       - Não repita sugestões.
       - Se a melhor continuação exigir texto livre, ainda assim ofereça respostas curtas úteis como "Posso detalhar", "Não sei informar" ou equivalentes contextuais.
-      - Se encerrar a triagem, mantenha o marcador [triagem_concluida] dentro de content quando aplicável.
+
+      Regras para o campo finished (booleano, obrigatório em toda resposta):
+      - Marque finished como true SOMENTE na mensagem que encerra a triagem — aquela que informa a
+        classificação de risco preliminar e orienta o paciente a aguardar a validação da equipe e a
+        chamada pela fila.
+      - Em qualquer outra mensagem (perguntas, esclarecimentos, agradecimentos intermediários), finished
+        deve ser false.
+      - Quando finished for true, mantenha também o marcador [triagem_concluida] dentro de content, como
+        reforço redundante ao campo.
 
       Exemplos:
       - Se a pergunta for "Qual é o seu curso e semestre atual?", sugestões boas seriam ["Sistemas de Informação, 5º semestre", "Administração, 2º semestre", "Prefiro responder digitando"].
@@ -419,9 +430,13 @@ class AiService
     [ { role: "user", content: "Transcrição da triagem:\n#{transcript}" } ]
   end
 
-  def triage_finished?(content)
-    # The AI signals end of triage by including this marker in its response
-    content.downcase.include?("[triagem_concluida]")
+  # A IA sinaliza o fim da triagem de duas formas redundantes: o campo
+  # estruturado "finished" no JSON (principal — modelos seguem campos de
+  # schema de forma bem mais confiável que um marcador solto no meio do
+  # texto) e o marcador [triagem_concluida] embutido no content (fallback,
+  # para o caso raro do modelo esquecer o campo mas ainda assim encerrar).
+  def triage_finished?(content, finished_field:)
+    finished_field || content.downcase.include?("[triagem_concluida]")
   end
 
   def classification_system_prompt

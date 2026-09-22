@@ -24,6 +24,9 @@ class Validation::QueueEntriesController < Validation::BaseController
         channel: :websocket
       )
 
+      # Notify patient via SMS, se ele optou por isso no perfil e tem telefone
+      notify_via_sms
+
       ValidationPanelChannel.broadcast_update
 
       redirect_to validation_root_path,
@@ -52,6 +55,22 @@ class Validation::QueueEntriesController < Validation::BaseController
   end
 
   private
+
+  def notify_via_sms
+    patient = @queue_entry.user
+    return unless patient.sms_notifications_enabled? && patient.phone.present?
+
+    sms_notification = Notification.create!(
+      user: patient,
+      triage_session: @queue_entry.triage_session,
+      kind: :called_for_attendance,
+      title: t("app.triage.call.attention"),
+      body: "#{@queue_entry.ticket_number} — #{t('app.triage.call.go_to_office')}",
+      channel: :sms
+    )
+
+    NotificationDeliveryJob.perform_later(sms_notification.id)
+  end
 
   def set_queue_entry
     @queue_entry = QueueEntry

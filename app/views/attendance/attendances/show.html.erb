@@ -18,6 +18,12 @@
       <span class="urgency-badge" style="<%= urgency_badge_style(final_level) %>">
         <%= urgency_label(final_level) %>
       </span>
+      <% if @queue_entry.priority_tier > 0 %>
+        <% reason_labels = @queue_entry.priority_reasons.map { |r| User::PRIORITY_REASON_LABELS[r.to_sym] }.join(", ") %>
+        <span class="attendance-priority-badge <%= "attendance-priority-badge--super" if @queue_entry.priority_tier == 2 %>" title="<%= reason_labels %> (Lei 10.048/2000)">
+          ★ <%= reason_labels %>
+        </span>
+      <% end %>
       <% if @validation %>
         <% if @validation.final_urgency_level != ai_level %>
           <span class="attendance-adjusted-badge">

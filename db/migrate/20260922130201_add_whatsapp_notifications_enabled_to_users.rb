@@ -1,0 +1,5 @@
+class AddWhatsappNotificationsEnabledToUsers < ActiveRecord::Migration[8.1]
+  def change
+    add_column :users, :whatsapp_notifications_enabled, :boolean, default: false, null: false
+  end
+end

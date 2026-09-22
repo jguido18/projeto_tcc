@@ -21,6 +21,14 @@ class AiClassification < ApplicationRecord
     triage_validation.nil?
   end
 
+  # A IA não informou confiança, ou informou uma confiança abaixo do limite
+  # configurado pelo admin (TriageSetting#confidence_threshold) — sinaliza que o
+  # colaborador deve revisar esta classificação com atenção redobrada antes de
+  # confirmar ou ajustar.
+  def needs_review?
+    confidence_score.blank? || confidence_score < TriageSetting.current.confidence_threshold
+  end
+
   private
 
   def urgency_level_must_exist_in_settings

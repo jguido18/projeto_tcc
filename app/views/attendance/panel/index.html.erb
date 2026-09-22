@@ -38,6 +38,12 @@
         <div class="specialist-card__top">
           <span class="specialist-card__order">#<%= idx + 1 %></span>
           <span class="urgency-badge" style="<%= urgency_badge_style(final_level) %>"><%= final_label %></span>
+          <% if entry.priority_tier > 0 %>
+            <% reason_labels = entry.priority_reasons.map { |r| User::PRIORITY_REASON_LABELS[r.to_sym] }.join(", ") %>
+            <span class="attendance-priority-badge <%= "attendance-priority-badge--super" if entry.priority_tier == 2 %>" title="<%= reason_labels %> (Lei 10.048/2000)">
+              ★ <%= reason_labels %>
+            </span>
+          <% end %>
           <span class="specialist-card__ticket"><%= entry.ticket_number %></span>
           <span class="specialist-card__called-at">
             <%= t("app.attendance.called_at") %>: <%= l(entry.called_at, format: :short) %>

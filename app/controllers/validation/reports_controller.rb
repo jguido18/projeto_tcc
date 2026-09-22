@@ -19,6 +19,18 @@ class Validation::ReportsController < Validation::BaseController
     @ai_accuracy_pct = total_val > 0 ?
       ((total_val - adjusted_val).to_f / total_val * 100).round(1) : nil
 
+    # ── Direção dos erros da IA, entre os casos ajustados ───────────────
+    # Subtriagem = IA classificou como MENOS urgente do que o colaborador decidiu
+    # (peso final menor que o peso sugerido) — o erro clinicamente perigoso.
+    # Sobretriagem = IA classificou como MAIS urgente — erro do lado seguro.
+    adjusted = TriageValidation.adjusted.includes(:ai_classification)
+    @undertriage_count = adjusted.count do |v|
+      TriageSetting.current.urgency_weight_for(v.final_urgency_level) < v.ai_classification.urgency_weight
+    end
+    @overtriage_count = adjusted.count do |v|
+      TriageSetting.current.urgency_weight_for(v.final_urgency_level) > v.ai_classification.urgency_weight
+    end
+
     # ── Distribuição por urgência no período ──────────────────────────
     raw_urgency = QueueEntry.where(queued_at: @range).group(:urgency_level).count
     levels      = TriageSetting.current.urgency_levels

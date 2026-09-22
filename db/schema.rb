@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_21_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_22_184012) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -283,6 +283,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_120000) do
   end
 
   create_table "triage_settings", force: :cascade do |t|
+    t.integer "confidence_threshold", default: 70, null: false
     t.datetime "created_at", null: false
     t.string "hint_example"
     t.text "purpose"
@@ -321,6 +322,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_120000) do
     t.string "encrypted_password", default: "", null: false
     t.boolean "gestante", default: false, null: false
     t.date "gestante_valid_until"
+    t.integer "height_cm"
     t.string "job_title"
     t.boolean "lactante", default: false, null: false
     t.date "lactante_valid_until"
@@ -328,15 +330,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_120000) do
     t.string "last_sign_in_ip"
     t.boolean "mobilidade_reduzida", default: false, null: false
     t.string "name", null: false
-    t.boolean "obeso", default: false, null: false
     t.boolean "pcd", default: false, null: false
     t.string "phone"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.integer "sign_in_count", default: 0, null: false
+    t.boolean "sms_notifications_enabled", default: false, null: false
     t.boolean "specialist", default: false, null: false
     t.datetime "updated_at", null: false
+    t.decimal "weight_kg", precision: 5, scale: 2
     t.index ["admin"], name: "index_users_on_admin"
     t.index ["colaborador"], name: "index_users_on_colaborador"
     t.index ["cpf"], name: "index_users_on_cpf", unique: true, where: "(cpf IS NOT NULL)"

@@ -44,6 +44,7 @@
                 label="Telefone"
                 variant="outlined"
                 density="comfortable"
+                :rules="phoneRules"
                 :disabled="saving"
               />
             </v-col>
@@ -75,9 +76,39 @@
           <!-- Prioridade no atendimento -->
           <p class="section-label">Prioridade no atendimento</p>
           <p class="text-caption text-medium-emphasis mb-3">
-            Pessoas idosas (60+) já têm prioridade automática pela data de nascimento acima.
+            Pessoas idosas (60+) já têm prioridade automática pela data de nascimento acima, e
+            obesidade é calculada automaticamente pelo IMC a partir da altura e peso abaixo.
           </p>
           <v-row dense>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                v-model.number="profile.height_cm"
+                label="Altura (cm)"
+                type="number"
+                variant="outlined"
+                density="comfortable"
+                :disabled="saving"
+              />
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                v-model.number="profile.weight_kg"
+                label="Peso (kg)"
+                type="number"
+                step="0.1"
+                variant="outlined"
+                density="comfortable"
+                :disabled="saving"
+              />
+            </v-col>
+            <v-col v-if="bmi" cols="12">
+              <p class="text-caption text-medium-emphasis">
+                IMC calculado: <strong>{{ bmi }}</strong>
+                <span v-if="isObese"> — dentro da faixa de obesidade (prioridade ativada automaticamente)</span>
+                <span v-else> — fora da faixa de obesidade</span>
+              </p>
+            </v-col>
+
             <v-col cols="12" sm="6">
               <v-switch
                 v-model="profile.pcd"
@@ -90,17 +121,6 @@
               />
             </v-col>
             <v-col cols="12" sm="6">
-              <v-switch
-                v-model="profile.obeso"
-                label="Obesidade"
-                color="success"
-                density="comfortable"
-                inset
-                hide-details
-                :disabled="saving"
-              />
-            </v-col>
-            <v-col cols="12">
               <v-switch
                 v-model="profile.mobilidade_reduzida"
                 label="Mobilidade reduzida"
@@ -185,6 +205,27 @@
                   :disabled="saving"
                 />
               </v-expand-transition>
+            </v-col>
+          </v-row>
+
+          <v-divider class="my-4" />
+
+          <!-- Notificações -->
+          <p class="section-label">Notificações</p>
+          <v-row dense>
+            <v-col cols="12">
+              <v-switch
+                v-model="profile.sms_notifications_enabled"
+                label="Avisar por SMS quando eu for chamado"
+                color="success"
+                density="comfortable"
+                inset
+                hide-details
+                :disabled="saving"
+              />
+              <p v-if="profile.sms_notifications_enabled" class="text-caption text-medium-emphasis mt-1">
+                Telefone obrigatório para receber o aviso.
+              </p>
             </v-col>
           </v-row>
 
@@ -282,10 +323,12 @@ import { apiFetch } from "../../composables/useApi"
 
 const profile = ref({
   name: "", email: "", phone: "", birth_date: "", cpf: "", avatar_url: null,
-  pcd: false, obeso: false, mobilidade_reduzida: false,
+  pcd: false, mobilidade_reduzida: false,
+  height_cm: null, weight_kg: null,
   gestante: false, gestante_valid_until: "",
   lactante: false, lactante_valid_until: "",
   crianca_de_colo: false, crianca_de_colo_valid_until: "",
+  sms_notifications_enabled: false,
 })
 const originalEmail = ref("")
 const avatarPreview = ref(null)
@@ -299,11 +342,30 @@ const passwords = ref({ new: "", confirmation: "", current: "" })
 const emailChanged = computed(() => profile.value.email !== originalEmail.value)
 const requiresCurrentPassword = computed(() => emailChanged.value || !!passwords.value.new)
 
+// IMC = peso (kg) / altura (m)² — mesma fórmula do backend (User#bmi), só
+// para feedback imediato; quem decide de fato é sempre o servidor.
+const OBESITY_BMI_THRESHOLD = 30
+const bmi = computed(() => {
+  const height = Number(profile.value.height_cm)
+  const weight = Number(profile.value.weight_kg)
+  if (!height || !weight) return null
+
+  const heightM = height / 100
+  return Math.round((weight / heightM ** 2) * 10) / 10
+})
+const isObese = computed(() => bmi.value !== null && bmi.value >= OBESITY_BMI_THRESHOLD)
+
 const todayIso = new Date().toISOString().slice(0, 10)
 const validUntilRules = [
   (v) => !!v || "Informe até quando a prioridade vale",
   (v) => !v || v >= todayIso || "Não pode ser uma data no passado",
 ]
+
+// Telefone só é obrigatório se o aviso por SMS estiver ativado — mesma
+// regra validada no backend (User#phone), aqui só para feedback imediato.
+const phoneRules = computed(() => [
+  (v) => !profile.value.sms_notifications_enabled || !!v || "Obrigatório para receber o aviso por SMS",
+])
 
 // Limpa a data de validade quando a condição é desmarcada
 watch(() => profile.value.gestante, (v) => { if (!v) profile.value.gestante_valid_until = "" })
@@ -370,7 +432,8 @@ async function save() {
     formData.append("user[birth_date]", profile.value.birth_date || "")
     formData.append("user[email]", profile.value.email)
     formData.append("user[pcd]", profile.value.pcd ? "1" : "0")
-    formData.append("user[obeso]", profile.value.obeso ? "1" : "0")
+    formData.append("user[height_cm]", profile.value.height_cm || "")
+    formData.append("user[weight_kg]", profile.value.weight_kg || "")
     formData.append("user[mobilidade_reduzida]", profile.value.mobilidade_reduzida ? "1" : "0")
     formData.append("user[gestante]", profile.value.gestante ? "1" : "0")
     formData.append("user[gestante_valid_until]", profile.value.gestante_valid_until || "")
@@ -378,6 +441,7 @@ async function save() {
     formData.append("user[lactante_valid_until]", profile.value.lactante_valid_until || "")
     formData.append("user[crianca_de_colo]", profile.value.crianca_de_colo ? "1" : "0")
     formData.append("user[crianca_de_colo_valid_until]", profile.value.crianca_de_colo_valid_until || "")
+    formData.append("user[sms_notifications_enabled]", profile.value.sms_notifications_enabled ? "1" : "0")
     if (avatarFile.value) formData.append("user[avatar]", avatarFile.value)
     if (passwords.value.new) {
       formData.append("user[password]", passwords.value.new)

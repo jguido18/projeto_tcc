@@ -13,8 +13,18 @@ class User < ApplicationRecord
   validates :cpf, presence: true, if: :patient?
   validates :cpf, uniqueness: { allow_blank: true }
 
+  # Telefone só é obrigatório se o paciente ativar o aviso por SMS — sem
+  # número não tem para onde mandar a mensagem quando ele for chamado.
+  validates :phone, presence: { message: "é obrigatório para ativar o aviso por SMS" },
+                     if: :sms_notifications_enabled?
+
   # Staff-only: job_title is required when user is colaborador or specialist
   validates :job_title, presence: true, if: -> { colaborador? || specialist? }
+
+  # Altura/peso são opcionais (nem todo paciente informa), mas quando
+  # informados precisam estar numa faixa humana plausível.
+  validates :height_cm, numericality: { only_integer: true, greater_than: 50, less_than: 250 }, allow_nil: true
+  validates :weight_kg, numericality: { greater_than: 1, less_than: 400 }, allow_nil: true
 
   # Admin can only be set by another admin — enforced at controller level
   # Only one role should be primary; a user can be colaborador + admin, or specialist + admin
@@ -22,6 +32,10 @@ class User < ApplicationRecord
 
   ELDERLY_AGE       = 60 # Estatuto do Idoso (Lei 10.741/2003)
   SUPER_ELDERLY_AGE = 80 # Subprioridade do próprio Estatuto do Idoso, art. 3º §2º
+
+  # IMC ≥ 30 = obesidade (classificação padrão da OMS/Ministério da Saúde,
+  # que engloba os graus I, II e III).
+  OBESITY_BMI_THRESHOLD = 30
 
   # Condições temporárias: o paciente marca a caixa e informa até quando ela
   # vale. Passado esse prazo, a prioridade deixa de contar automaticamente.
@@ -67,6 +81,21 @@ class User < ApplicationRecord
 
   def super_elderly?
     age.present? && age >= SUPER_ELDERLY_AGE
+  end
+
+  # IMC = peso (kg) / altura (m)². nil quando falta altura ou peso — não dá
+  # pra calcular, e não presumimos nada nesse caso.
+  def bmi
+    return nil if height_cm.blank? || weight_kg.blank?
+
+    height_m = height_cm.to_f / 100
+    (weight_kg.to_f / height_m**2).round(1)
+  end
+
+  # Obesidade não é mais autodeclarada — é calculada a partir do IMC, igual
+  # ao idoso ser calculado a partir da data de nascimento (User#elderly?).
+  def obeso?
+    bmi.present? && bmi >= OBESITY_BMI_THRESHOLD
   end
 
   def gestante_ativa?

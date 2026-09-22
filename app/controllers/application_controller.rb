@@ -27,12 +27,13 @@ class ApplicationController < ActionController::Base
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [
       :name, :cpf, :birth_date, :phone,
-      :pcd, :obeso, :mobilidade_reduzida,
+      :pcd, :mobilidade_reduzida, :height_cm, :weight_kg,
       :gestante, :gestante_valid_until,
       :lactante, :lactante_valid_until,
-      :crianca_de_colo, :crianca_de_colo_valid_until
+      :crianca_de_colo, :crianca_de_colo_valid_until,
+      :sms_notifications_enabled
     ])
-    devise_parameter_sanitizer.permit(:account_update, keys: [ :name, :phone, :birth_date, :avatar ])
+    devise_parameter_sanitizer.permit(:account_update, keys: [ :name, :phone, :birth_date, :avatar, :sms_notifications_enabled ])
   end
 
   def require_staff!

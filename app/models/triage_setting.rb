@@ -20,16 +20,19 @@ class TriageSetting < ApplicationRecord
   PROMPT
 
   DEFAULT_URGENCY_LEVELS = [
-    { "key" => "red", "label" => "Emergência", "color" => "#E53E3E", "weight" => 1 },
-    { "key" => "orange", "label" => "Muito Urgente", "color" => "#DD6B20", "weight" => 2 },
-    { "key" => "yellow", "label" => "Urgente", "color" => "#D69E2E", "weight" => 3 },
-    { "key" => "green", "label" => "Pouco Urgente", "color" => "#38A169", "weight" => 4 },
-    { "key" => "blue", "label" => "Não Urgente", "color" => "#3182CE", "weight" => 5 }
+    { "key" => "red", "label" => "Emergência", "color" => "#E53E3E", "weight" => 1, "sla_minutes" => 10 },
+    { "key" => "orange", "label" => "Muito Urgente", "color" => "#DD6B20", "weight" => 2, "sla_minutes" => 30 },
+    { "key" => "yellow", "label" => "Urgente", "color" => "#D69E2E", "weight" => 3, "sla_minutes" => 60 },
+    { "key" => "green", "label" => "Pouco Urgente", "color" => "#38A169", "weight" => 4, "sla_minutes" => 120 },
+    { "key" => "blue", "label" => "Não Urgente", "color" => "#3182CE", "weight" => 5, "sla_minutes" => 240 }
   ].freeze
+
+  DEFAULT_CONFIDENCE_THRESHOLD = 70
 
   HEX_COLOR_REGEX = /\A#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})\z/
 
   validates :system_prompt, presence: true
+  validates :confidence_threshold, numericality: { only_integer: true, in: 0..100 }
   validate :single_record_only
   validate :urgency_levels_shape
 
@@ -64,13 +67,24 @@ class TriageSetting < ApplicationRecord
     urgency_levels_hash.dig(level_key.to_s, "weight") || (urgency_levels.size + 1)
   end
 
+  # Minutos de SLA configurados para o nível (usado no envelhecimento da fila e no
+  # alerta de estouro). Se a config ainda não tiver essa chave (ex.: dado antigo salvo
+  # antes desse campo existir), cai num fallback proporcional ao peso do nível.
+  def sla_minutes_for(level_key)
+    stored = urgency_levels_hash.dig(level_key.to_s, "sla_minutes").to_i
+    return stored if stored > 0
+
+    urgency_weight_for(level_key) * 15
+  end
+
   private
 
   def set_defaults
-    self.purpose       = DEFAULT_PURPOSE      if purpose.blank?
-    self.system_prompt = DEFAULT_SYSTEM_PROMPT if system_prompt.blank?
-    self.urgency_levels = DEFAULT_URGENCY_LEVELS if urgency_levels.blank?
-    self.hint_example  = DEFAULT_HINT_EXAMPLE  if hint_example.blank?
+    self.purpose               = DEFAULT_PURPOSE               if purpose.blank?
+    self.system_prompt         = DEFAULT_SYSTEM_PROMPT         if system_prompt.blank?
+    self.urgency_levels        = DEFAULT_URGENCY_LEVELS        if urgency_levels.blank?
+    self.hint_example          = DEFAULT_HINT_EXAMPLE          if hint_example.blank?
+    self.confidence_threshold  = DEFAULT_CONFIDENCE_THRESHOLD  if confidence_threshold.blank?
   end
 
   def normalize_urgency_levels
@@ -87,12 +101,15 @@ class TriageSetting < ApplicationRecord
       weight = hash["weight"].to_i
       weight = idx + 1 if weight <= 0
       weight = 10 if weight > 10
+      sla_minutes = hash["sla_minutes"].to_i
+      sla_minutes = weight * 15 if sla_minutes <= 0
 
       {
         "key" => key,
         "label" => label,
         "color" => color.upcase,
-        "weight" => weight
+        "weight" => weight,
+        "sla_minutes" => sla_minutes
       }
     end
 

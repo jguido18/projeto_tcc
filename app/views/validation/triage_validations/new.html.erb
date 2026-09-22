@@ -12,6 +12,16 @@
     </div>
 
     <div class="validation-ai-panel__body">
+      <% if @ai_classification.needs_review? %>
+        <div class="validation-confidence-warning">
+          <span class="validation-confidence-warning__icon">⚠</span>
+          <div>
+            <strong>Confiança da IA baixa<%= " (#{@ai_classification.confidence_score.to_i}%)" if @ai_classification.confidence_score.present? %></strong>
+            <p>Revise a transcrição com atenção redobrada antes de confirmar ou ajustar a classificação.</p>
+          </div>
+        </div>
+      <% end %>
+
       <% priority_reasons = @triage_session.user.priority_reasons %>
       <% if priority_reasons.any? %>
         <div class="validation-section">

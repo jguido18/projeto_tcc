@@ -45,28 +45,42 @@
         </div>
       </div>
 
-      <div class="auth-field">
+      <div class="auth-field" data-controller="require-phone-for-sms">
         <%= f.label :phone, t("activerecord.attributes.user.phone"), class: "auth-label" %>
         <%= f.telephone_field :phone, autocomplete: "tel",
               class: "auth-input", placeholder: "(11) 99999-9999",
-              data: { controller: "mask", mask_type_value: "phone" },
+              data: { controller: "mask", mask_type_value: "phone", require_phone_for_sms_target: "phone" },
               maxlength: 15, inputmode: "numeric" %>
+
+        <label class="priority-switch">
+          <%= f.check_box :sms_notifications_enabled,
+                data: { require_phone_for_sms_target: "checkbox", action: "change->require-phone-for-sms#sync" } %>
+          <span class="priority-switch__label">Avisar por SMS quando eu for chamado</span>
+        </label>
       </div>
 
       <%# ── Prioridade no atendimento (Lei 10.048/2000) ── %>
       <div class="auth-section-label auth-section-label--mt">Prioridade no atendimento (opcional)</div>
-      <p class="auth-hint">Pessoas idosas (60+) são identificadas automaticamente pela data de nascimento.</p>
+      <p class="auth-hint">
+        Pessoas idosas (60+) são identificadas automaticamente pela data de nascimento, e obesidade
+        é calculada automaticamente pelo IMC a partir da altura e peso informados abaixo.
+      </p>
 
       <div class="auth-row">
-        <label class="priority-switch">
-          <%= f.check_box :pcd %>
-          <span class="priority-switch__label">Pessoa com deficiência (inclui TEA)</span>
-        </label>
-        <label class="priority-switch">
-          <%= f.check_box :obeso %>
-          <span class="priority-switch__label">Obesidade</span>
-        </label>
+        <div class="auth-field">
+          <%= f.label :height_cm, t("activerecord.attributes.user.height_cm"), class: "auth-label" %>
+          <%= f.number_field :height_cm, class: "auth-input", placeholder: "170", min: 50, max: 250 %>
+        </div>
+        <div class="auth-field">
+          <%= f.label :weight_kg, t("activerecord.attributes.user.weight_kg"), class: "auth-label" %>
+          <%= f.number_field :weight_kg, class: "auth-input", placeholder: "70", min: 1, max: 400, step: "0.1" %>
+        </div>
       </div>
+
+      <label class="priority-switch">
+        <%= f.check_box :pcd %>
+        <span class="priority-switch__label">Pessoa com deficiência (inclui TEA)</span>
+      </label>
 
       <label class="priority-switch">
         <%= f.check_box :mobilidade_reduzida %>

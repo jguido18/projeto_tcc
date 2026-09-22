@@ -10,14 +10,18 @@ class Api::ProfileController < Api::BaseController
       cpf: current_user.cpf,
       avatar_url: avatar_url,
       pcd: current_user.pcd,
-      obeso: current_user.obeso,
+      height_cm: current_user.height_cm,
+      weight_kg: current_user.weight_kg,
+      bmi: current_user.bmi,
+      obeso: current_user.obeso?,
       mobilidade_reduzida: current_user.mobilidade_reduzida,
       gestante: current_user.gestante,
       gestante_valid_until: current_user.gestante_valid_until,
       lactante: current_user.lactante,
       lactante_valid_until: current_user.lactante_valid_until,
       crianca_de_colo: current_user.crianca_de_colo,
-      crianca_de_colo_valid_until: current_user.crianca_de_colo_valid_until
+      crianca_de_colo_valid_until: current_user.crianca_de_colo_valid_until,
+      sms_notifications_enabled: current_user.sms_notifications_enabled
     }
   end
 
@@ -45,10 +49,11 @@ class Api::ProfileController < Api::BaseController
   def profile_params
     params.require(:user).permit(
       :name, :phone, :birth_date, :avatar, :email, :password, :password_confirmation, :current_password,
-      :pcd, :obeso, :mobilidade_reduzida,
+      :pcd, :mobilidade_reduzida, :height_cm, :weight_kg,
       :gestante, :gestante_valid_until,
       :lactante, :lactante_valid_until,
-      :crianca_de_colo, :crianca_de_colo_valid_until
+      :crianca_de_colo, :crianca_de_colo_valid_until,
+      :sms_notifications_enabled
     )
   end
 end

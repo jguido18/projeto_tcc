@@ -379,6 +379,23 @@
   font-weight: 600;
 }
 
+.attendance-priority-badge {
+  background: #fefcbf;
+  color: #975a16;
+  border: 1px solid #f6e05e;
+  border-radius: 999px;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.attendance-priority-badge--super {
+  color: #742a2a;
+  background: #fed7d7;
+  border-color: #fc8181;
+}
+
 /* ─── Two-column body ────────────────────────────────────────────────── */
 
 .attendance-body {

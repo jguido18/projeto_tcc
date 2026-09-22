@@ -5,10 +5,9 @@ class Api::QueueController < Api::BaseController
   def index
     minutes_per_service = QueueEntry.average_service_minutes
 
-    ordered = QueueEntry
-      .includes(triage_session: :user)
-      .where(status: :waiting)
-      .ordered_for_queue
+    ordered = QueueEntry.waiting_ordered_with_aging(
+      QueueEntry.includes(triage_session: :user).waiting
+    )
 
     entries = ordered.each_with_index.map do |entry, idx|
       position = idx + 1  # posição real na fila ordenada

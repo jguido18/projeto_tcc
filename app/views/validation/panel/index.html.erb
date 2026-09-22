@@ -56,6 +56,11 @@
               <div class="colaborador-card__urgency-badge" style="<%= urgency_badge_style(level) %>">
                 <%= urgency_label(level) %>
               </div>
+              <% if classification&.needs_review? %>
+                <span class="colaborador-card__confidence-badge" title="Confiança da IA baixa — revise com atenção">
+                  ⚠ Confiança baixa
+                </span>
+              <% end %>
               <span class="colaborador-card__time">
                 <%= l(session.created_at, format: :short) %>
               </span>
@@ -121,6 +126,11 @@
                   ★ <%= reason_labels %>
                 </span>
               <% end %>
+              <% if entry.sla_breached? %>
+                <span class="colaborador-card__sla-badge" title="Aguardando há mais tempo do que o SLA configurado para este nível de urgência (<%= entry.sla_minutes %> min)">
+                  ⏱ SLA estourado
+                </span>
+              <% end %>
               <span class="colaborador-card__ticket"><%= entry.ticket_number %></span>
             </div>
 
@@ -129,6 +139,7 @@
 
             <div class="colaborador-card__meta">
               <%= t("app.validation.arrived_at") %>: <%= l(entry.queued_at, format: :short) %>
+              · aguardando há <%= entry.waiting_minutes.round %> min
             </div>
 
             <%= button_to t("app.validation.call_button"),

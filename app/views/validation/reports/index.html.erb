@@ -85,6 +85,16 @@
         <div class="rpt-kpi__body">
           <div class="rpt-kpi__value"><%= @ai_accuracy_pct %>%</div>
           <div class="rpt-kpi__label">Precisão da IA</div>
+          <% if @undertriage_count > 0 || @overtriage_count > 0 %>
+            <div class="rpt-kpi__breakdown">
+              <span class="rpt-kpi__breakdown-item rpt-kpi__breakdown-item--danger" title="A IA classificou como menos urgente do que o colaborador decidiu — erro do lado perigoso">
+                ⚠ Subtriagem: <%= @undertriage_count %>
+              </span>
+              <span class="rpt-kpi__breakdown-item" title="A IA classificou como mais urgente do que o colaborador decidiu — erro do lado seguro">
+                Sobretriagem: <%= @overtriage_count %>
+              </span>
+            </div>
+          <% end %>
         </div>
       </div>
     <% end %>

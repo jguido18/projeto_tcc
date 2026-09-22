@@ -19,12 +19,26 @@ class QueueEntry < ApplicationRecord
 
   before_validation :set_urgency_weight, if: -> { urgency_level.present? && urgency_weight.blank? }
 
-  # Ordenação oficial da fila: urgência clínica > prioridade legal (idoso/PCD/...) > ordem de chegada
-  scope :ordered_for_queue, -> { order(:urgency_weight).order(priority_tier: :desc).order(:queued_at) }
-
   # Cada atendimento dura, em média, isso — usado como fallback quando não há histórico
   DEFAULT_SERVICE_MINUTES = 15
   RECENT_SERVICE_SAMPLE_SIZE = 50
+
+  # Peso mínimo que o envelhecimento pode atingir (1 = nível mais urgente configurado).
+  # O envelhecimento nunca "ultrapassa" um paciente que é vermelho de verdade — no
+  # máximo empata com ele.
+  MIN_EFFECTIVE_WEIGHT = 1
+
+  # Ordenação oficial da fila, com envelhecimento dinâmico de prioridade: urgência
+  # clínica efetiva (já considerando o tempo de espera) > prioridade legal
+  # (idoso/PCD/...) > ordem de chegada. `relation` já deve vir filtrado por
+  # status: :waiting (normalmente via QueueEntry.waiting) e com os includes que o
+  # chamador precisar — a ordenação em si é feita em Ruby, não em SQL, porque a fila
+  # de um atendimento real é pequena (dezenas, não milhares de pessoas) e assim a
+  # fórmula de envelhecimento fica simples de ler e de testar.
+  def self.waiting_ordered_with_aging(relation = waiting)
+    now = Time.current
+    relation.to_a.sort_by { |entry| [ entry.effective_urgency_weight(at: now), -entry.priority_tier, entry.queued_at ] }
+  end
 
   # Média (em minutos) dos atendimentos concluídos recentemente, do momento em
   # que o paciente foi chamado até o encerramento. Cai no valor padrão quando
@@ -43,17 +57,40 @@ class QueueEntry < ApplicationRecord
     (durations.sum / durations.size).round
   end
 
-  # Returns position in queue (1-based) calculated dynamically
+  # Returns position in queue (1-based) calculated dynamically, já considerando o
+  # envelhecimento de prioridade (ver .waiting_ordered_with_aging).
   def queue_position
-    QueueEntry
-      .where(status: :waiting)
-      .where(
-        "urgency_weight < :uw
-         OR (urgency_weight = :uw AND priority_tier > :tier)
-         OR (urgency_weight = :uw AND priority_tier = :tier AND queued_at < :qat)",
-        uw: urgency_weight, tier: priority_tier, qat: queued_at
-      )
-      .count + 1
+    return nil unless waiting?
+
+    self.class.waiting_ordered_with_aging.index(self).to_i + 1
+  end
+
+  # Minutos configurados de SLA para o nível de urgência desta entrada.
+  def sla_minutes
+    TriageSetting.current.sla_minutes_for(urgency_level)
+  end
+
+  # Minutos que o paciente já está esperando desde que entrou na fila.
+  def waiting_minutes(at: Time.current)
+    (at - queued_at) / 60.0
+  end
+
+  # Estourou o SLA do próprio nível de urgência sem ser chamado ainda?
+  def sla_breached?(at: Time.current)
+    waiting? && waiting_minutes(at: at) > sla_minutes
+  end
+
+  # Peso de urgência "efetivo" para fins de ordenação: a cada janela cheia de SLA
+  # estourada sem atendimento, o peso sobe um nível (número menor = mais urgente),
+  # até no máximo empatar com o nível mais urgente configurado. É uma técnica
+  # clássica de "aging" de escalonamento aplicada à fila, para evitar que alguém de
+  # baixa urgência espere indefinidamente enquanto casos mais graves continuam
+  # chegando — sem nunca alterar a classificação clínica registrada.
+  def effective_urgency_weight(at: Time.current)
+    return urgency_weight unless waiting?
+
+    aging_steps = (waiting_minutes(at: at) / sla_minutes).floor
+    [ urgency_weight - aging_steps, MIN_EFFECTIVE_WEIGHT ].max
   end
 
   def urgency_label

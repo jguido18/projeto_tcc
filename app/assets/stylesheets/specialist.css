@@ -449,6 +449,26 @@
   font-size: 0.875rem;
 }
 
+.attendance-section--review {
+  background: #f7fafc;
+  border: 1px solid #bee3f8;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.attendance-review__hint {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  color: #4a5568;
+  line-height: 1.45;
+}
+
+.attendance-review__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
 .attendance-section--colaborador {
   background: #fffff0;
   border: 1px solid #ecc94b;

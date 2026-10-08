@@ -21,7 +21,11 @@ class Admin::TriageSettingsController < Admin::BaseController
   end
 
   def triage_setting_params
-    base = params.require(:triage_setting).permit(:purpose, :system_prompt, :hint_example, :confidence_threshold)
+    base = params.require(:triage_setting).permit(
+      :purpose, :system_prompt, :hint_example, :confidence_threshold,
+      :require_staff_validation, :specialist_review_enabled,
+      :require_checkin, :checkin_expiration_hours
+    )
 
     raw_levels = params.dig(:triage_setting, :urgency_levels)
     urgency_levels = case raw_levels
@@ -52,6 +56,7 @@ class Admin::TriageSettingsController < Admin::BaseController
       hint_example:          base[:hint_example],
       confidence_threshold:  base[:confidence_threshold],
       urgency_levels:        cleaned
-    }
+    }.merge(base.slice(:require_staff_validation, :specialist_review_enabled,
+                       :require_checkin, :checkin_expiration_hours).to_h.symbolize_keys)
   end
 end

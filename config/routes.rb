@@ -28,6 +28,7 @@ Rails.application.routes.draw do
     post "triage/message",   to: "triage#send_message"
     post "triage/finish",    to: "triage#finish"
     post "triage/restart",   to: "triage#restart"
+    post "triage/checkin",   to: "triage#checkin"
     get  "queue",            to: "queue#index"
     get  "profile",          to: "profile#show"
     patch "profile",         to: "profile#update"
@@ -46,6 +47,7 @@ Rails.application.routes.draw do
   namespace :validation do
     root to: "panel#index"
     resources :triage_validations, only: [ :new, :create ]
+    post "triage_sessions/:id/check_in", to: "checkins#create", as: :triage_session_check_in
     resources :queue_entries, only: [] do
       member do
         patch :call
@@ -63,7 +65,10 @@ Rails.application.routes.draw do
   end
 
   # TV pública de fila — sem autenticação
-  get "tv", to: "tv#show", as: :queue_tv
+  get  "tv",              to: "tv#show",         as: :queue_tv
+  get  "tv/checkin_code", to: "tv#checkin_code", as: :tv_checkin_code
+  post "tv/activate",     to: "tv#activate",     as: :tv_activate
+  post "tv/deactivate",   to: "tv#deactivate",   as: :tv_deactivate
 
   # Attendance flow — staff only
   namespace :attendance do
@@ -71,6 +76,7 @@ Rails.application.routes.draw do
     resources :attendances, only: [ :show ] do
       member do
         patch :finish
+        post :review_classification
       end
     end
     get "history", to: "history#index", as: :history

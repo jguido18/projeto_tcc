@@ -1,13 +1,15 @@
 class QueueEntryService
   def initialize(triage_session)
     @session = triage_session
-    @validation = triage_session.ai_classification.triage_validation
+    @classification = triage_session.ai_classification
+    @validation = @classification.triage_validation
   end
 
-  # Creates the QueueEntry after the colaborador validates the triage.
-  # Returns the created QueueEntry.
+  # Creates the QueueEntry after the triage is concluded — either validated by
+  # a colaborador or, when TriageSetting#require_staff_validation is off,
+  # straight from the AI classification. Returns the created QueueEntry.
   def enqueue
-    urgency = @validation.final_urgency_level
+    urgency = @validation&.final_urgency_level || @classification.urgency_level
 
     patient = @session.user
 
@@ -33,8 +35,8 @@ class QueueEntryService
       user: @session.user,
       triage_session: @session,
       kind: :triage_validated,
-      title: "Triagem validada",
-      body: "Sua triagem foi validada. Sua senha é #{entry.ticket_number}. Urgência: #{entry.urgency_label}.",
+      title: @validation ? "Triagem validada" : "Triagem concluída",
+      body: "Sua triagem foi #{@validation ? "validada" : "concluída"}. Sua senha é #{entry.ticket_number}. Urgência: #{entry.urgency_label}.",
       channel: :websocket
     )
 

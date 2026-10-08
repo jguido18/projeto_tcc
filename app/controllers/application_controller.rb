@@ -60,7 +60,10 @@ class ApplicationController < ActionController::Base
   # Após o login, direciona para o destino correto conforme perfil
   def after_sign_in_path_for(resource)
     if resource.patient?
-      patient_app_path
+      # Volta para onde ia (ex.: link do QR de check-in /app/queue?checkin=...),
+      # desde que seja uma tela do app do paciente.
+      stored = stored_location_for(resource)
+      stored&.start_with?("/app") ? stored : patient_app_path
     elsif resource.admin?
       edit_admin_triage_setting_path
     elsif resource.colaborador?

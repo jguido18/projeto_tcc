@@ -20,8 +20,22 @@
     <div class="tv-spotlight__instruction"><%= t("app.tv.go_to_office") %></div>
   </div>
 
-  <%# ── Lista da fila ── %>
-  <main class="tv-main">
+  <%# ── Lista da fila (+ check-in, na TV autorizada) ── %>
+  <main class="tv-main <%= "tv-main--with-checkin" if @show_checkin %>">
+    <% if @show_checkin %>
+      <aside class="tv-checkin"
+        data-controller="tv-checkin"
+        data-tv-checkin-url-value="<%= tv_checkin_code_path %>">
+        <div class="tv-checkin__title">Chegou? Faça seu check-in</div>
+        <div class="tv-checkin__qr" data-tv-checkin-target="qr"></div>
+        <div class="tv-checkin__hint">Escaneie o QR com a câmera do celular<br>ou digite o código no app:</div>
+        <div class="tv-checkin__code" data-tv-checkin-target="code">······</div>
+        <div class="tv-checkin__countdown">Novo código em <span data-tv-checkin-target="countdown">--</span>s</div>
+        <div class="tv-checkin__help">Sem celular? Fale com a recepção.</div>
+      </aside>
+    <% end %>
+
+    <div class="tv-main__queue">
     <div class="tv-queue-header">
       <span class="tv-queue-header__label"><%= t("app.tv.queue_label") %></span>
       <span class="tv-queue-header__count">
@@ -60,6 +74,7 @@
           <% end %>
         </tbody>
       </table>
+    </div>
     </div>
   </main>
 

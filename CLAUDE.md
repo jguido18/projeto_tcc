@@ -94,7 +94,9 @@ devise :database_authenticatable, :registerable, :recoverable, :rememberable, :v
 
 ### TriageSession
 ```ruby
-# status enum: in_triage, awaiting_validation, validated, in_queue, in_attendance, completed, cancelled
+# status enum: in_triage, awaiting_checkin, awaiting_validation, validated, in_queue, in_attendance,
+#              completed, cancelled, expired (triagem sem check-in no prazo)
+# checked_in_at / #checkin_deadline — check-in presencial (TriageSetting#require_checkin)
 belongs_to :user
 has_one :ai_classification
 has_one :queue_entry
@@ -132,10 +134,16 @@ has_many :chat_messages
 
 ### TriageService
 - `TriageService.new(session).process_message(content)` → processa mensagem do usuário, salva chat, retorna resposta IA
-- `TriageService.new(session).finalize_triage` → classifica, cria AiClassification, muda status para `awaiting_validation`
+- `TriageService.new(session).finalize_triage` → classifica, cria AiClassification e avança conforme `TriageSetting#require_staff_validation`:
+  `true` (padrão) → status `awaiting_validation`, espera o colaborador validar; `false` → já chama `QueueEntryService#enqueue`
+  com a urgência da IA (status `in_queue`). Com `TriageSetting#require_checkin`, para antes em `awaiting_checkin`
+  e só avança em `TriageService#check_in!` (código de `CheckinCode` digitado no app via `POST /api/triage/checkin`,
+  ou recepção via `Validation::CheckinsController`). O código rotativo só aparece na `/tv` de um navegador
+  autorizado pela equipe (`POST /tv/activate`, cookie assinado `tv_device`). `TriageSetting#specialist_review_enabled` permite ao especialista criar a
+  `TriageValidation` depois, na tela de atendimento (`Attendance::AttendancesController#review_classification`)
 
 ### QueueEntryService
-- `QueueEntryService.new(triage_session).enqueue` → gera ticket, tira snapshot de `priority_tier`/`priority_reasons` do paciente, cria QueueEntry, broadcast via QueueChannel
+- `QueueEntryService.new(triage_session).enqueue` → gera ticket, tira snapshot de `priority_tier`/`priority_reasons` do paciente, cria QueueEntry, broadcast via QueueChannel. Urgência = `validation.final_urgency_level` se houver validação, senão a da `AiClassification`
 
 ## Fila Prioritária (Lei 10.048/2000 + Estatuto do Idoso)
 

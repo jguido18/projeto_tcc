@@ -114,7 +114,9 @@ class TriageService
 
   public
 
-  # Generates the AI classification and transitions session to awaiting_validation.
+  # Generates the AI classification and moves the session forward: to
+  # awaiting_validation (a colaborador validates before the queue) or, when
+  # TriageSetting#require_staff_validation is off, straight into the queue.
   def finalize_triage
     # Idempotent: if already classified, only ensures state transition and broadcasts.
     classification = @session.ai_classification
@@ -138,10 +140,60 @@ class TriageService
     end
 
     if @session.in_triage?
-      @session.update!(status: :awaiting_validation, finished_at: Time.current)
-      TriageChannel.broadcast_status(@session, :awaiting_validation)
+      @session.update!(finished_at: Time.current)
+
+      if TriageSetting.current.require_checkin?
+        # A triagem pode ser feita de casa, mas só segue para validação/fila
+        # quando o solicitante confirmar presença no local (ver #check_in!).
+        @session.update!(status: :awaiting_checkin)
+        TriageChannel.broadcast_status(@session, :awaiting_checkin)
+        ValidationPanelChannel.broadcast_update
+      else
+        advance_past_checkin
+      end
     end
 
     classification
+  end
+
+  # Confirma a presença do solicitante no local (código da TV da recepção ou
+  # check-in feito pelo colaborador) e segue para a validação/fila. Retorna
+  # false se a sessão não estava aguardando check-in (já fez, expirou...).
+  def check_in!
+    checked_in = false
+
+    # Lock + checked_in_at evitam que dois check-ins simultâneos (ex.: paciente
+    # e recepção ao mesmo tempo) coloquem a pessoa duas vezes na fila.
+    @session.with_lock do
+      next unless @session.awaiting_checkin? && @session.checked_in_at.nil?
+
+      @session.update!(checked_in_at: Time.current)
+      checked_in = true
+    end
+    return false unless checked_in
+
+    advance_past_checkin
+    true
+  end
+
+  private
+
+  # Próximo passo depois da triagem (e do check-in, quando exigido): validação
+  # pela equipe ou, sem ela, direto para a fila. É no enqueue que nasce o
+  # queued_at — então quem triou em casa só começa a contar tempo de espera
+  # (e a "envelhecer" pelo SLA) a partir do check-in, não da triagem.
+  def advance_past_checkin
+    @session.update!(status: :awaiting_validation)
+
+    if TriageSetting.current.require_staff_validation?
+      TriageChannel.broadcast_status(@session, :awaiting_validation)
+    else
+      # Sem validação humana (ex.: secretaria): a classificação da IA já vale
+      # e o solicitante entra direto na fila.
+      QueueEntryService.new(@session).enqueue
+      TriageChannel.broadcast_status(@session, :in_queue)
+    end
+
+    ValidationPanelChannel.broadcast_update
   end
 end

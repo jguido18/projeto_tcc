@@ -131,6 +131,84 @@
   padding: 1.5rem 2rem;
 }
 
+/* TV autorizada: coluna de check-in fixa à esquerda + lista de chamadas */
+.tv-main--with-checkin {
+  display: grid;
+  grid-template-columns: minmax(360px, 30%) 1fr;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.tv-main__queue {
+  min-width: 0;
+}
+
+.tv-checkin {
+  background: #111821;
+  border: 1px solid #21262d;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  /* ocupa a altura útil da tela e não rola junto com a lista */
+  position: sticky;
+  top: 1.5rem;
+  min-height: calc(100vh - 11rem);
+}
+
+.tv-checkin__title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.tv-checkin__qr {
+  /* QR grande: leitura fácil mesmo com a câmera a alguns metros da TV */
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.tv-checkin__qr svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tv-checkin__hint {
+  font-size: 1.05rem;
+  color: #b1bccb;
+  line-height: 1.4;
+}
+
+.tv-checkin__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 4.2rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: #63b3ed;
+  line-height: 1;
+}
+
+.tv-checkin__countdown {
+  font-size: 1rem;
+  color: #8b97a8;
+}
+
+.tv-checkin__help {
+  font-size: 0.85rem;
+  color: #b1bccb;
+  border-top: 1px solid #21262d;
+  padding-top: 0.75rem;
+  width: 100%;
+}
+
 .tv-queue-header {
   display: flex;
   align-items: center;
@@ -445,4 +523,16 @@
 
 .reports-footer {
   padding-top: 0.5rem;
+}
+
+/* TVs/telas menores: empilha (check-in em cima) em vez de lado a lado */
+@media (max-width: 1000px) {
+  .tv-main--with-checkin {
+    grid-template-columns: 1fr;
+  }
+
+  .tv-checkin {
+    position: static;
+    min-height: 0;
+  }
 }

@@ -7,10 +7,12 @@
     <p class="panel-page-header__subtitle"><%= t("app.validation.subtitle") %></p>
   </div>
   <div class="panel-page-header__stats">
-    <div class="panel-stat panel-stat--yellow">
-      <span class="panel-stat__value" data-validation-panel-target="awaitingCount"><%= @awaiting_validation.count %></span>
-      <span class="panel-stat__label">Aguardando validação</span>
-    </div>
+    <% if @show_validation_column %>
+      <div class="panel-stat panel-stat--yellow">
+        <span class="panel-stat__value" data-validation-panel-target="awaitingCount"><%= @awaiting_validation.count %></span>
+        <span class="panel-stat__label">Aguardando validação</span>
+      </div>
+    <% end %>
     <div class="panel-stat panel-stat--green">
       <span class="panel-stat__value" data-validation-panel-target="queueCount"><%= @total_waiting %></span>
       <span class="panel-stat__label">Na fila</span>
@@ -20,9 +22,53 @@
   </div>
 </div>
 
-<div class="colaborador-panel"
+<% if @show_checkin_section %>
+  <%# ── Triagens aguardando a pessoa chegar no local ── %>
+  <section class="checkin-section" data-controller="list-filter">
+    <div class="checkin-section__header">
+      <div>
+        <h2 class="checkin-section__title">Aguardando check-in <span class="colaborador-column__badge"><%= @awaiting_checkin.size %></span></h2>
+        <p class="checkin-section__subtitle">Triagem já feita (às vezes de casa). Confirme a presença de quem chegou sem fazer o check-in pelo app.</p>
+      </div>
+      <input type="search" class="validation-textarea checkin-section__search" placeholder="Buscar por nome ou CPF"
+        data-list-filter-target="input" data-action="input->list-filter#filter">
+    </div>
+
+    <% if @awaiting_checkin.empty? %>
+      <p class="checkin-section__empty">Ninguém aguardando check-in no momento.</p>
+    <% else %>
+      <div class="checkin-list">
+        <% @awaiting_checkin.each do |session| %>
+          <% level = session.ai_classification&.urgency_level %>
+          <div class="checkin-item" data-list-filter-target="item"
+            data-filter-text="<%= session.user.name %> <%= session.user.cpf.to_s.gsub(/\D/, "") %>"
+            style="border-left: 4px solid <%= urgency_color(level) %>;">
+            <div class="checkin-item__info">
+              <div class="checkin-item__name"><%= session.user.name %></div>
+              <div class="checkin-item__meta">
+                CPF <%= masked_cpf(session.user.cpf) %> · triagem às <%= l(session.finished_at, format: :short) %>
+                <% if (deadline = session.checkin_deadline) %>
+                  · expira às <%= l(deadline, format: :short) %>
+                <% end %>
+              </div>
+            </div>
+            <% if level %>
+              <span class="colaborador-card__urgency-badge" style="<%= urgency_badge_style(level) %>"><%= urgency_label(level) %></span>
+            <% end %>
+            <%= button_to "Confirmar presença", validation_triage_session_check_in_path(session),
+                  method: :post, class: "colaborador-card__action colaborador-card__action--call checkin-item__action" %>
+          </div>
+        <% end %>
+        <p class="checkin-section__empty" data-list-filter-target="empty" hidden>Nenhum resultado para a busca.</p>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
+<div class="colaborador-panel <%= "colaborador-panel--single" unless @show_validation_column %>"
   data-controller="validation-panel">
 
+  <% if @show_validation_column %>
   <%# ── Left column: awaiting colaborador validation ── %>
   <section class="colaborador-column colaborador-column--validation">
     <div class="colaborador-column__header colaborador-column__header--yellow">
@@ -81,6 +127,7 @@
       <% end %>
     </div>
   </section>
+  <% end %>
 
   <%# ── Right column: validated sessions waiting in queue ── %>
   <section class="colaborador-column colaborador-column--queue">

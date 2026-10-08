@@ -297,10 +297,38 @@ class AiService
       setting.purpose.presence,
       setting.system_prompt,
       user_context,
+      validation_flow_instruction(setting),
       reply_format_instruction
     ]
     parts << document_instruction if document_present
     parts.compact.join("\n\n")
+  end
+
+  # O prompt do admin costuma dizer "aguarde a validação da equipe" no
+  # encerramento. Quando o fluxo configurado é outro (sem validação, ou com
+  # check-in presencial), isso seria mentira para o solicitante — então
+  # descrevemos o fluxo real, acima do prompt do admin.
+  def validation_flow_instruction(setting)
+    return nil if setting.require_staff_validation? && !setting.require_checkin?
+
+    next_step = if setting.require_checkin?
+      after_checkin = setting.require_staff_validation? ? "passa pela validação da equipe e entra" : "entra"
+      "O solicitante pode estar fazendo a triagem de casa. No encerramento, diga que ele deve vir até o " \
+        "local e, ao chegar, fazer o CHECK-IN digitando o código de 6 dígitos exibido na TV da recepção " \
+        "(ou pedir ajuda à recepção) — só depois do check-in ele #{after_checkin} na fila. Se a sua " \
+        "classificação preliminar indicar EMERGÊNCIA com risco à saúde, NÃO peça para ele vir com calma " \
+        "fazer check-in: oriente a procurar atendimento imediatamente ou ligar 192 (SAMU)."
+    else
+      "Neste atendimento NÃO existe validação pela equipe: assim que você encerrar, o solicitante entra " \
+        "direto na fila. No encerramento, NÃO diga para aguardar validação — diga apenas que ele já está na " \
+        "fila e deve aguardar ser chamado."
+    end
+
+    <<~INSTRUCTION
+      ## FLUXO APÓS A TRIAGEM
+      #{next_step}
+      Esta regra prevalece sobre qualquer instrução anterior em contrário.
+    INSTRUCTION
   end
 
   def reply_format_instruction
@@ -324,8 +352,8 @@ class AiService
 
       Regras para o campo finished (booleano, obrigatório em toda resposta):
       - Marque finished como true SOMENTE na mensagem que encerra a triagem — aquela que informa a
-        classificação de risco preliminar e orienta o paciente a aguardar a validação da equipe e a
-        chamada pela fila.
+        classificação de risco preliminar e orienta o paciente sobre o próximo passo (aguardar a
+        chamada pela fila).
       - Em qualquer outra mensagem (perguntas, esclarecimentos, agradecimentos intermediários), finished
         deve ser false.
       - Quando finished for true, mantenha também o marcador [triagem_concluida] dentro de content, como

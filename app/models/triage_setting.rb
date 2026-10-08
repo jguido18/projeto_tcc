@@ -33,6 +33,7 @@ class TriageSetting < ApplicationRecord
 
   validates :system_prompt, presence: true
   validates :confidence_threshold, numericality: { only_integer: true, in: 0..100 }
+  validates :checkin_expiration_hours, numericality: { only_integer: true, in: 1..72 }
   validate :single_record_only
   validate :urgency_levels_shape
 
@@ -65,6 +66,13 @@ class TriageSetting < ApplicationRecord
 
   def urgency_weight_for(level_key)
     urgency_levels_hash.dig(level_key.to_s, "weight") || (urgency_levels.size + 1)
+  end
+
+  # O nível mais urgente configurado (menor peso) — ex.: "Emergência".
+  def most_urgent_level?(level_key)
+    return false if level_key.blank? || urgency_levels.blank?
+
+    urgency_weight_for(level_key) == urgency_levels.map { |level| level["weight"].to_i }.min
   end
 
   # Minutos de SLA configurados para o nível (usado no envelhecimento da fila e no

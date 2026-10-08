@@ -20,7 +20,7 @@ class Validation::QueueEntriesController < Validation::BaseController
         triage_session: @queue_entry.triage_session,
         kind: :called_for_attendance,
         title: t("app.triage.call.attention"),
-        body: "#{@queue_entry.ticket_number} — #{t('app.triage.call.go_to_office')}",
+        body: call_notification_body,
         channel: :websocket
       )
 
@@ -65,11 +65,20 @@ class Validation::QueueEntriesController < Validation::BaseController
       triage_session: @queue_entry.triage_session,
       kind: :called_for_attendance,
       title: t("app.triage.call.attention"),
-      body: "#{@queue_entry.ticket_number} — #{t('app.triage.call.go_to_office')}",
+      body: call_notification_body,
       channel: :sms
     )
 
     NotificationDeliveryJob.perform_later(sms_notification.id)
+  end
+
+  # "José, sua senha ABC123 foi chamada. Dirija-se ao ponto de atendimento."
+  # Usado tanto na notificação in-app quanto no SMS — só o primeiro nome,
+  # pra ficar pessoal sem deixar o SMS longo.
+  def call_notification_body
+    t("app.triage.call.notification_body",
+      name: @queue_entry.user.name.to_s.split.first,
+      ticket: @queue_entry.ticket_number)
   end
 
   def set_queue_entry

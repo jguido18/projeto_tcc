@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_22_184012) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_175805) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -270,6 +270,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_184012) do
 
   create_table "triage_sessions", force: :cascade do |t|
     t.jsonb "ai_metadata"
+    t.datetime "checked_in_at"
     t.datetime "created_at", null: false
     t.datetime "finished_at"
     t.text "initial_demand"
@@ -283,10 +284,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_184012) do
   end
 
   create_table "triage_settings", force: :cascade do |t|
+    t.integer "checkin_expiration_hours", default: 6, null: false
     t.integer "confidence_threshold", default: 70, null: false
     t.datetime "created_at", null: false
     t.string "hint_example"
     t.text "purpose"
+    t.boolean "require_checkin", default: false, null: false
+    t.boolean "require_staff_validation", default: true, null: false
+    t.boolean "specialist_review_enabled", default: false, null: false
     t.text "system_prompt", null: false
     t.datetime "updated_at", null: false
     t.jsonb "urgency_levels", default: [], null: false

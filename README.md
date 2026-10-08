@@ -133,6 +133,15 @@ O sistema é totalmente configurável: o administrador define o prompt da IA, os
 
 ### Painel Administrativo (`/admin`)
 - [x] Configuração do sistema de triagem (prompt da IA, nome, níveis de urgência)
+- [x] **Fluxo de validação configurável**: o admin decide se a triagem da IA precisa ser validada por um colaborador antes da fila (padrão, recomendado em saúde) ou se o solicitante entra direto na fila com a classificação da IA (ex.: secretaria). O prompt da IA se adapta para não prometer uma validação que não existe
+- [x] **Avaliação pelo especialista** (opcional): quando a triagem não passou pela validação da equipe, o especialista pode confirmar ou ajustar a classificação da IA na tela de atendimento — alimenta o relatório de precisão da IA sem mexer na fila
+- [x] **Check-in presencial** (opcional): o solicitante pode fazer a triagem de casa, mas só segue para validação/fila quando confirmar presença no local — digitando um código de 6 dígitos (ou lendo o QR code) exibido na TV da recepção. O código muda a cada minuto (mesmo princípio do código de autenticação em dois fatores), então uma foto compartilhada não funciona de longe
+  - O código só aparece numa TV autorizada pela equipe (cookie assinado no navegador da recepção) — a `/tv` pública não o exibe
+  - Check-in também pela recepção, no painel de validação (busca por nome/CPF), para quem não tem celular
+  - O tempo de fila (e o envelhecimento por SLA) começa a contar no check-in, não na triagem
+  - Triagem sem check-in expira após o prazo configurado (job recorrente a cada 15 min)
+  - Se a IA classificar como emergência alguém que ainda não está no local, o app orienta a procurar atendimento imediato ou ligar 192 (SAMU)
+  - Tentativas de código limitadas por minuto (contra força bruta)
 - [x] Cadastro, edição e remoção de membros da equipe (colaboradores e especialistas)
 - [x] Paginação da listagem de equipe via Pagy
 

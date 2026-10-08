@@ -45,6 +45,41 @@
     </section>
 
     <section class="triage-settings-card">
+      <h2>Fluxo de atendimento</h2>
+      <p class="triage-settings-help">Defina por quantas etapas de validação o solicitante passa antes de ser chamado. Ajuste conforme o negócio: em saúde a validação humana é recomendada; numa secretaria, a triagem da IA pode bastar.</p>
+
+      <div class="validation-field">
+        <label class="priority-switch">
+          <%= f.check_box :require_staff_validation %>
+          <span class="priority-switch__label">Exigir validação da equipe antes da fila</span>
+        </label>
+        <p class="validation-hint">Ligado: um colaborador confirma ou ajusta a classificação da IA no painel de validação, e só então o solicitante entra na fila. Desligado: ao terminar a conversa com a IA, o solicitante entra direto na fila com a classificação da IA.</p>
+      </div>
+
+      <div class="validation-field">
+        <label class="priority-switch">
+          <%= f.check_box :specialist_review_enabled %>
+          <span class="priority-switch__label">Especialista avalia a classificação da IA no atendimento</span>
+        </label>
+        <p class="validation-hint">Quando a triagem não passou pela validação da equipe, o especialista pode confirmar ou ajustar a classificação da IA na tela de atendimento. Não muda a fila (o paciente já foi chamado), mas alimenta o relatório de precisão da IA.</p>
+      </div>
+
+      <div class="validation-field">
+        <label class="priority-switch">
+          <%= f.check_box :require_checkin %>
+          <span class="priority-switch__label">Exigir check-in presencial</span>
+        </label>
+        <p class="validation-hint">O solicitante pode fazer a triagem de casa, mas só segue para a validação/fila quando confirmar presença no local — digitando o código de 6 dígitos (ou lendo o QR code) exibido na TV da recepção, ou pela recepção no painel de validação. O tempo de espera na fila só começa a contar no check-in. Requer uma TV autorizada (veja abaixo).</p>
+      </div>
+
+      <div class="validation-field">
+        <%= f.label :checkin_expiration_hours, "Prazo para o check-in (horas)", class: "validation-label" %>
+        <p class="validation-hint">Triagem feita e sem check-in depois desse prazo expira sozinha.</p>
+        <%= f.number_field :checkin_expiration_hours, min: 1, max: 72, step: 1, class: "validation-textarea" %>
+      </div>
+    </section>
+
+    <section class="triage-settings-card">
       <div class="triage-settings-levels-header">
         <h2>Níveis de urgência</h2>
         <button type="button" class="btn btn--secondary" data-action="triage-settings-form#addLevel">Adicionar nível</button>
@@ -94,6 +129,18 @@
       <%= f.submit "Salvar configuração", class: "btn btn--primary" %>
     </div>
   <% end %>
+
+  <section class="triage-settings-card">
+    <h2>TV da recepção (check-in)</h2>
+    <p class="triage-settings-help">
+      O código de check-in só aparece numa TV autorizada — quem abrir <code>/tv</code> de casa vê a lista de chamadas, mas não o código.
+      Para autorizar: abra esta página <strong>no navegador da TV da recepção</strong> (logado como equipe) e clique abaixo. Depois pode sair da conta; a autorização fica salva nesse navegador.
+    </p>
+    <div class="validation-actions">
+      <%= button_to "Ativar este navegador como TV da recepção", tv_activate_path, method: :post, class: "btn btn--primary" %>
+      <%= button_to "Desativar neste navegador", tv_deactivate_path, method: :post, class: "btn btn--secondary" %>
+    </div>
+  </section>
 
   <template data-triage-settings-form-target="levelTemplate">
     <div class="urgency-level-row" data-triage-settings-form-target="levelRow">

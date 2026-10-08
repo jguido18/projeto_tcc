@@ -37,9 +37,12 @@ export function useTriageChannel(sessionId) {
 
           case "status_change":
             store.applyStatusChange(data.status)
-            if (data.status === "awaiting_validation" ||
+            if (data.status === "awaiting_checkin" ||
+                data.status === "awaiting_validation" ||
                 data.status === "in_queue") {
               store.fetchStatus().then(() => router.push("/app/queue"))
+            } else if (data.status === "expired") {
+              store.fetchStatus().then(() => router.push("/app"))
             }
             break
 

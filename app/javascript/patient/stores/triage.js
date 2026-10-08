@@ -125,6 +125,17 @@ export const useTriageStore = defineStore("triage", () => {
     }
   }
 
+  // Check-in presencial com o código da TV da recepção. Lança erro com a
+  // mensagem do servidor se o código estiver errado ou expirado.
+  async function checkIn(code) {
+    const data = await apiFetch("/api/triage/checkin", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    })
+    if (data.session) session.value = data.session
+    return data
+  }
+
   function applyRealtimeMessage(msg) {
     // Evita duplicata
     if (messages.value.find((m) => m.id === msg.id)) return
@@ -162,7 +173,7 @@ export const useTriageStore = defineStore("triage", () => {
     urgencyColor, urgencyMap,
     documentValidations,
     fetchStatus, fetchMessages, startTriage, sendMessage,
-    finishTriage, restartTriage,
+    finishTriage, restartTriage, checkIn,
     applyRealtimeMessage, applyStatusChange, applyQueueEntry, applyDocumentValidation,
   }
 })

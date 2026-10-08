@@ -289,6 +289,7 @@ pt-BR:
       call:
         attention: "ATENÇÃO"
         go_to_office: "DIRIJA-SE AO PONTO DE ATENDIMENTO"
+        notification_body: "%{name}, sua senha %{ticket} foi chamada. Dirija-se ao ponto de atendimento."
         calling_now: "● CHAMANDO AGORA"
 
     colaborador:

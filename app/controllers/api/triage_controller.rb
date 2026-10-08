@@ -1,5 +1,10 @@
 class Api::TriageController < Api::BaseController
-  before_action :set_session, only: %i[status messages send_message finish restart]
+  before_action :set_session, only: %i[status messages send_message finish restart checkin]
+
+  # O código de check-in tem 6 dígitos e vale ~3 min: poucas tentativas por
+  # minuto tornam inviável adivinhar o código de casa por força bruta.
+  rate_limit to: 5, within: 1.minute, only: :checkin, by: -> { current_user.id },
+             with: -> { render json: { error: "Muitas tentativas. Aguarde um minuto e tente de novo." }, status: :too_many_requests }
 
   # GET /api/triage/status
   # Retorna o estado atual da triagem do paciente logado.
@@ -97,6 +102,25 @@ class Api::TriageController < Api::BaseController
     }
   end
 
+  # POST /api/triage/checkin
+  # Confirma a presença no local com o código de 6 dígitos exibido na TV da
+  # recepção (digitado ou lido pelo QR code da TV).
+  def checkin
+    unless @triage_session&.awaiting_checkin?
+      render json: { error: "Não há triagem aguardando check-in." }, status: :unprocessable_entity
+      return
+    end
+
+    unless CheckinCode.valid?(params[:code])
+      render json: { error: "Código inválido ou expirado. Confira o código exibido na TV da recepção." },
+             status: :unprocessable_entity
+      return
+    end
+
+    TriageService.new(@triage_session).check_in!
+    render json: { checked_in: true, session: session_json(@triage_session.reload) }
+  end
+
   # POST /api/triage/restart
   # Encerra a sessão ativa para permitir uma nova triagem.
   def restart
@@ -123,7 +147,7 @@ class Api::TriageController < Api::BaseController
 
   def set_session
     @triage_session = current_user.triage_sessions
-      .where.not(status: %w[completed cancelled])
+      .where.not(status: %w[completed cancelled expired])
       .order(created_at: :desc)
       .first
   end
@@ -148,7 +172,10 @@ class Api::TriageController < Api::BaseController
       ai_summary:      ai&.summary,
       urgency_level:   effective_urgency,
       urgency_label:   TriageSetting.current.urgency_label_for(effective_urgency),
-      urgency_levels:  TriageSetting.current.urgency_levels
+      urgency_levels:  TriageSetting.current.urgency_levels,
+      emergency:       TriageSetting.current.most_urgent_level?(effective_urgency),
+      checked_in_at:    session.checked_in_at&.iso8601,
+      checkin_deadline: session.checkin_deadline&.iso8601
     }
   end
 

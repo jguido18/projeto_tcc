@@ -12,5 +12,17 @@ class Validation::PanelController < Validation::BaseController
     )
 
     @total_waiting = @priority_queue.count
+
+    # Sem validação da equipe a coluna da esquerda fica sempre vazia — mas se
+    # ainda sobrou triagem pendente de antes da mudança, ela continua visível
+    # para ninguém ficar preso nela.
+    @show_validation_column = TriageSetting.current.require_staff_validation? || @awaiting_validation.any?
+
+    # Triagens feitas (às vezes de casa) esperando a pessoa chegar no local.
+    @awaiting_checkin = TriageSession
+      .includes(:user, :ai_classification)
+      .where(status: :awaiting_checkin)
+      .order(finished_at: :asc)
+    @show_checkin_section = TriageSetting.current.require_checkin? || @awaiting_checkin.any?
   end
 end

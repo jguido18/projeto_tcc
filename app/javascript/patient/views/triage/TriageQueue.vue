@@ -48,6 +48,44 @@
           </v-chip>
         </div>
 
+        <!-- triagem indicou emergência e a pessoa ainda não está no local -->
+        <div v-if="awaitingCheckin && session?.emergency" class="ticket-emergency">
+          <v-icon color="#feb2b2" size="28">mdi-alert-octagon</v-icon>
+          <div class="ticket-emergency__title">PROCURE ATENDIMENTO IMEDIATAMENTE</div>
+          <div class="ticket-emergency__sub">
+            Sua triagem indicou emergência. Venha agora ou, se não puder, ligue <strong>192 (SAMU)</strong>.
+          </div>
+        </div>
+
+        <!-- check-in presencial: só entra na validação/fila ao chegar no local -->
+        <div v-if="awaitingCheckin" class="ticket-checkin">
+          <div class="ticket-checkin__title">Faça o check-in ao chegar</div>
+          <div class="ticket-checkin__sub">Digite o código de 6 dígitos exibido na TV da recepção.</div>
+          <input
+            v-model="checkinCode"
+            class="ticket-checkin__input"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="7"
+            placeholder="000000"
+            aria-label="Código de check-in"
+            @keyup.enter="submitCheckin"
+          />
+          <v-btn
+            block
+            color="#38a169"
+            class="text-white"
+            :loading="checkingIn"
+            :disabled="checkinDigits.length !== 6"
+            @click="submitCheckin"
+          >
+            Fazer check-in
+          </v-btn>
+          <div v-if="checkinError" class="ticket-checkin__error">{{ checkinError }}</div>
+          <div v-if="checkinDeadline" class="ticket-checkin__deadline">Prazo para o check-in: até {{ checkinDeadline }}</div>
+          <div class="ticket-checkin__help">Sem celular ou com dificuldade? Fale com a recepção.</div>
+        </div>
+
         <!-- notificação de chamada (âncora no rodapé do painel) -->
         <div v-if="entry?.status === 'called'" class="ticket-called">
           <v-icon color="#81e6b5" size="28">mdi-bell-ring</v-icon>
@@ -128,11 +166,14 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue"
+import { useRoute, useRouter } from "vue-router"
 import { useTriageStore } from "../../stores/triage"
 import { useQueueChannel } from "../../composables/useCable"
 import { apiFetch } from "../../composables/useApi"
 
 const store = useTriageStore()
+const route = useRoute()
+const router = useRouter()
 
 const session = computed(() => store.session)
 const entry   = computed(() => store.session?.queue_entry)
@@ -168,8 +209,36 @@ const urgencyIcon = computed(() => {
   return icons[level] || "mdi-help-circle-outline"
 })
 
+// ── Check-in presencial ──
+const awaitingCheckin = computed(() => session.value?.status === "awaiting_checkin")
+const checkinCode = ref("")
+const checkingIn = ref(false)
+const checkinError = ref("")
+const checkinDigits = computed(() => checkinCode.value.replace(/\D/g, ""))
+const checkinDeadline = computed(() => {
+  const deadline = session.value?.checkin_deadline
+  if (!deadline) return null
+  return new Date(deadline).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+})
+
+async function submitCheckin() {
+  if (checkingIn.value || checkinDigits.value.length !== 6) return
+  checkingIn.value = true
+  checkinError.value = ""
+  try {
+    await store.checkIn(checkinDigits.value)
+    checkinCode.value = ""
+    await loadQueue()
+  } catch (error) {
+    checkinError.value = error.message
+  } finally {
+    checkingIn.value = false
+  }
+}
+
 const statusChipColor = computed(() => {
   const s = session.value?.status
+  if (s === "awaiting_checkin") return "orange"
   if (s === "awaiting_validation") return "warning"
   if (s === "in_queue") return "#90CDF4"
   if (s === "in_attendance" || entry.value?.status === "called") return "success"
@@ -178,6 +247,7 @@ const statusChipColor = computed(() => {
 
 const statusChipIcon = computed(() => {
   const s = session.value?.status
+  if (s === "awaiting_checkin") return "mdi-map-marker-check-outline"
   if (s === "awaiting_validation") return "mdi-clock-outline"
   if (s === "in_queue") return "mdi-format-list-numbered"
   if (s === "in_attendance" || entry.value?.status === "called") return "mdi-bell"
@@ -186,6 +256,7 @@ const statusChipIcon = computed(() => {
 
 const statusChipLabel = computed(() => {
   const s = session.value?.status
+  if (s === "awaiting_checkin") return "Aguardando check-in no local"
   if (s === "awaiting_validation") return "Aguardando validação da equipe"
   if (s === "in_queue") return "Na fila de espera"
   if (entry.value?.status === "called") return "● CHAMANDO AGORA"
@@ -220,6 +291,16 @@ onMounted(async () => {
   if (session.value?.id) {
     unsubscribe = useQueueChannel(session.value.id, { onQueueUpdate: loadQueue })
   }
+
+  // Veio pelo QR code da TV (/app/queue?checkin=123456): faz o check-in direto
+  const qrCode = route.query.checkin
+  if (qrCode) {
+    router.replace({ query: {} })
+    if (awaitingCheckin.value) {
+      checkinCode.value = String(qrCode)
+      await submitCheckin()
+    }
+  }
 })
 
 onUnmounted(() => unsubscribe?.())
@@ -240,7 +321,7 @@ onUnmounted(() => unsubscribe?.())
   flex-shrink: 0;
   background: linear-gradient(170deg, #0d1b35 0%, #10213e 40%, #18345f 100%);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  overflow: hidden; /* sem scrollbar */
+  overflow-y: auto; /* rola só se o card de check-in não couber */
   display: flex;
   flex-direction: column;
 }
@@ -337,6 +418,82 @@ onUnmounted(() => unsubscribe?.())
 
 .ticket-chip {
   align-self: center;
+}
+
+/* ── Check-in presencial ── */
+.ticket-checkin {
+  border-radius: 12px;
+  padding: 0.85rem 0.9rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(144, 205, 244, 0.35);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ticket-checkin__title {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.ticket-checkin__sub,
+.ticket-checkin__help,
+.ticket-checkin__deadline {
+  font-size: 0.75rem;
+  color: #b8cde3;
+  line-height: 1.35;
+}
+
+.ticket-checkin__input {
+  width: 100%;
+  padding: 0.55rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-align: center;
+  outline: none;
+}
+
+.ticket-checkin__input:focus {
+  border-color: #63b3ed;
+}
+
+.ticket-checkin__error {
+  font-size: 0.8rem;
+  color: #feb2b2;
+  font-weight: 600;
+}
+
+/* ── Emergência fora do local ── */
+.ticket-emergency {
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  background: rgba(229, 62, 62, 0.18);
+  border: 1px solid rgba(252, 129, 129, 0.7);
+  text-align: center;
+  width: 100%;
+}
+
+.ticket-emergency__title {
+  margin-top: 0.3rem;
+  font-weight: 800;
+  color: #feb2b2;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.ticket-emergency__sub {
+  margin-top: 0.2rem;
+  color: #fed7d7;
+  font-size: 0.75rem;
+  line-height: 1.35;
 }
 
 /* ── Notificação de chamada ── */

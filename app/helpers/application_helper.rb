@@ -45,4 +45,13 @@ module ApplicationHelper
     b = raw[4..5].to_i(16)
     "rgba(#{r}, #{g}, #{b}, #{alpha})"
   end
+
+  # "***.456.789-**" — o suficiente para a recepção confirmar a identidade sem
+  # expor o CPF inteiro na tela.
+  def masked_cpf(cpf)
+    digits = cpf.to_s.gsub(/\D/, "")
+    return "—" unless digits.length == 11
+
+    "***.#{digits[3, 3]}.#{digits[6, 3]}-**"
+  end
 end

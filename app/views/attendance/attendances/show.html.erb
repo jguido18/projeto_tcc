@@ -103,6 +103,29 @@
         <% end %>
       <% end %>
 
+      <% if @can_review_classification %>
+        <div class="attendance-section attendance-section--review">
+          <div class="attendance-section__title">Avaliar classificação da IA</div>
+          <p class="attendance-review__hint">
+            Esta triagem entrou na fila sem validação da equipe. Confirme ou ajuste a classificação da IA —
+            não muda a fila, mas alimenta o relatório de precisão da IA.
+          </p>
+
+          <%= form_with url: review_classification_attendance_attendance_path(@queue_entry), scope: :triage_validation, method: :post, class: "attendance-review__form" do |f| %>
+            <div class="urgency-selector">
+              <% @urgency_levels.each do |level| %>
+                <label class="urgency-option" style="border-color:<%= level['color'] %>;">
+                  <%= f.radio_button :final_urgency_level, level["key"], checked: level["key"] == @ai.urgency_level %>
+                  <span class="urgency-option__label" style="color:<%= level['color'] %>"><%= level["label"] %></span>
+                </label>
+              <% end %>
+            </div>
+            <%= f.text_area :notes, rows: 2, class: "validation-textarea", placeholder: "Observação (obrigatória se ajustar a classificação)" %>
+            <%= f.submit "Registrar avaliação", class: "btn btn--primary btn--full" %>
+          <% end %>
+        </div>
+      <% end %>
+
       <% if @validation&.notes.present? %>
         <div class="attendance-section attendance-section--colaborador">
           <div class="attendance-section__title">

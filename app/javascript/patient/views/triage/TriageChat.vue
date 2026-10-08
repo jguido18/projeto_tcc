@@ -274,13 +274,16 @@ const fileValidationColor = computed(() => {
 })
 
 const isAwaitingValidation = computed(() =>
-  ["awaiting_validation", "validated", "in_queue", "in_attendance", "completed"]
+  ["awaiting_checkin", "awaiting_validation", "validated", "in_queue", "in_attendance", "completed"]
     .includes(store.session?.status)
 )
 
-const statusLabel = computed(() =>
-  isAwaitingValidation.value ? "Aguardando validação da equipe" : "Em triagem"
-)
+const statusLabel = computed(() => {
+  const status = store.session?.status
+  if (status === "awaiting_checkin") return "Aguardando check-in no local"
+  if (status === "awaiting_validation") return "Aguardando validação da equipe"
+  return isAwaitingValidation.value ? "Triagem concluída" : "Em triagem"
+})
 
 const lastAiMessage = computed(() => {
   for (let i = store.messages.length - 1; i >= 0; i -= 1) {

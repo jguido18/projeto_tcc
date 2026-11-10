@@ -945,3 +945,52 @@
   color: #4a5568;
   margin-top: 0.15rem;
 }
+
+/* Histórico recolhível: cabeçalho clicável (<summary>) */
+.attendance-history__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.attendance-history__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.attendance-history__toggle .attendance-section__title {
+  margin-bottom: 0;
+}
+
+.attendance-history__count {
+  font-size: 0.75rem;
+  color: #718096;
+  background: #edf2f7;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+}
+
+/* seta à direita: aponta para baixo fechado, para cima aberto */
+.attendance-history__chevron {
+  margin-left: auto;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #718096;
+  border-bottom: 2px solid #718096;
+  transform: rotate(45deg);
+  transition: transform 0.2s;
+}
+
+.attendance-history[open] .attendance-history__chevron {
+  transform: rotate(-135deg);
+}
+
+.attendance-history__toggle:hover .attendance-section__title {
+  color: #2b6cb0;
+}
+
+.attendance-history[open] .attendance-history__hint {
+  margin-top: 0.75rem;
+}

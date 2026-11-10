@@ -24,6 +24,7 @@ class AttendanceHistoryAndReportsTest < ActionDispatch::IntegrationTest
     get attendance_attendance_path(@entry)
 
     assert_response :success
+    assert_select "details.attendance-history:not([open])" # recolhido até clicar
     assert_select ".attendance-history__item", minimum: 5
     assert_select ".attendance-history__title", text: "Classificação validada pela equipe"
     assert_select ".attendance-history__title", text: "Paciente chamado"
@@ -105,6 +106,23 @@ class AttendanceHistoryAndReportsTest < ActionDispatch::IntegrationTest
     assert_equal "Carla Colaboradora", rows.first["Validado por"]
     assert_equal "Carla Colaboradora", rows.first["Chamado por"]
     assert_equal "Sérgio Especialista", rows.first["Finalizado por"]
+  end
+
+  test "AI accuracy compares the AI level with the final level, not the decision field" do
+    # Registro antigo: gravado como "confirmado", mas com o nível alterado.
+    legacy = completed_attendance(validator: @colaborador, caller: @colaborador, finisher: @specialist)
+    legacy.triage_session.ai_classification.triage_validation.update_column(:decision, "confirmed")
+    # Concordância real: IA e equipe no mesmo nível.
+    agreed = completed_attendance(validator: @colaborador, caller: @colaborador, finisher: @specialist)
+    agreed.triage_session.ai_classification.triage_validation.update_columns(decision: "confirmed",
+                                                                             final_urgency_level: "green")
+    sign_in @admin
+
+    get validation_reports_path(period: "today")
+
+    # 3 validações hoje (setup + 2), só 1 concorda com a IA → 33,3%; 2 subtriagens
+    assert_select ".rpt-kpi__value", text: "33.3%"
+    assert_select ".rpt-kpi__breakdown-item--danger", text: /Subtriagem: 2/
   end
 
   test "invalid dates fall back to the default period instead of erroring" do

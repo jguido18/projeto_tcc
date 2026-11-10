@@ -91,6 +91,13 @@ class QueueEntryTest < ActiveSupport::TestCase
     assert_equal 20, QueueEntry.average_service_minutes
   end
 
+  test "average_service_minutes ignores attendances left open for days" do
+    2.times { build_completed_entry(duration_minutes: 20) }
+    build_completed_entry(duration_minutes: 3 * 24 * 60) # esquecido aberto por 3 dias
+
+    assert_equal 20, QueueEntry.average_service_minutes
+  end
+
   private
 
   def build_completed_entry(duration_minutes:)

@@ -22,19 +22,22 @@ class Validation::ReportsController < Validation::BaseController
     # ── Precisão da IA: validações feitas no período (e pelo colaborador) ─
     validations  = TriageValidation.where(validated_at: @range)
     validations  = validations.where(user_id: @staff_member.id) if @staff_member
-    total_val    = validations.count
-    adjusted_val = validations.adjusted.count
-    @ai_accuracy_pct = total_val > 0 ?
-      ((total_val - adjusted_val).to_f / total_val * 100).round(1) : nil
+    # A concordância compara o nível sugerido pela IA com o nível final da equipe
+    # (e não o campo `decision`, que em registros antigos podia vir "confirmado"
+    # mesmo com o nível alterado).
+    compared = validations.includes(:ai_classification).reject { |v| v.rejected? || v.ai_classification.nil? }
+    total_val = compared.size
+    agreed    = compared.count { |v| v.final_urgency_level == v.ai_classification.urgency_level }
+    @ai_accuracy_pct = total_val > 0 ? (agreed.to_f / total_val * 100).round(1) : nil
 
     # Subtriagem = IA classificou como MENOS urgente do que a equipe decidiu
     # (o erro clinicamente perigoso). Sobretriagem = MAIS urgente (lado seguro).
-    adjusted = validations.adjusted.includes(:ai_classification)
-    @undertriage_count = adjusted.count do |v|
-      TriageSetting.current.urgency_weight_for(v.final_urgency_level) < v.ai_classification.urgency_weight
+    setting = TriageSetting.current
+    @undertriage_count = compared.count do |v|
+      setting.urgency_weight_for(v.final_urgency_level) < setting.urgency_weight_for(v.ai_classification.urgency_level)
     end
-    @overtriage_count = adjusted.count do |v|
-      TriageSetting.current.urgency_weight_for(v.final_urgency_level) > v.ai_classification.urgency_weight
+    @overtriage_count = compared.count do |v|
+      setting.urgency_weight_for(v.final_urgency_level) > setting.urgency_weight_for(v.ai_classification.urgency_level)
     end
 
     # ── Distribuição por urgência no período ──────────────────────────

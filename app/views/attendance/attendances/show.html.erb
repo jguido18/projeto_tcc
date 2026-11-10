@@ -214,9 +214,14 @@
 
   </div>
 
-  <%# ── Histórico: quem fez cada etapa deste atendimento ── %>
-  <section class="attendance-history">
-    <div class="attendance-section__title">Histórico do atendimento</div>
+  <%# ── Histórico: quem fez cada etapa — fechado por padrão, abre ao clicar ── %>
+  <details class="attendance-history">
+    <summary class="attendance-history__toggle">
+      <span class="attendance-section__title">Histórico do atendimento</span>
+      <span class="attendance-history__count"><%= @timeline.size %> etapas</span>
+      <span class="attendance-history__chevron" aria-hidden="true"></span>
+    </summary>
+
     <p class="attendance-history__hint">Cada etapa, quando aconteceu e quem da equipe a realizou.</p>
 
     <ol class="attendance-history__list">
@@ -235,5 +240,5 @@
         </li>
       <% end %>
     </ol>
-  </section>
+  </details>
 </div>

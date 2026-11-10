@@ -316,8 +316,11 @@ class AiService
       "O solicitante pode estar fazendo a triagem de casa. No encerramento, diga que ele deve vir até o " \
         "local e, ao chegar, fazer o CHECK-IN digitando o código de 6 dígitos exibido na TV da recepção " \
         "(ou pedir ajuda à recepção) — só depois do check-in ele #{after_checkin} na fila. Se a sua " \
-        "classificação preliminar indicar EMERGÊNCIA com risco à saúde, NÃO peça para ele vir com calma " \
-        "fazer check-in: oriente a procurar atendimento imediatamente ou ligar 192 (SAMU)."
+        "classificação preliminar indicar EMERGÊNCIA, encerre a triagem na mesma mensagem e NÃO peça check-in: " \
+        "nesse caso a triagem já segue direto para a equipe#{setting.require_staff_validation? ? ' validar com prioridade' : ' e entra na fila'}. " \
+        "Diga isso ao solicitante e oriente que vá imediatamente à recepção deste local (ou, se já estiver aqui, " \
+        "que avise agora qualquer pessoa da equipe) dizendo que é uma emergência. Nunca o direcione para outro " \
+        "hospital, pronto-socorro ou serviço: o atendimento é feito aqui."
     else
       "Neste atendimento NÃO existe validação pela equipe: assim que você encerrar, o solicitante entra " \
         "direto na fila. No encerramento, NÃO diga para aguardar validação — diga apenas que ele já está na " \

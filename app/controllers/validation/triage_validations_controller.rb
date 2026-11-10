@@ -1,5 +1,6 @@
 class Validation::TriageValidationsController < Validation::BaseController
   before_action :set_triage_session
+  before_action :require_awaiting_validation
 
   # GET /validation/triage_validations/new?triage_session_id=X
   def new
@@ -17,6 +18,11 @@ class Validation::TriageValidationsController < Validation::BaseController
     @validation.ai_classification = @ai_classification
     @validation.user = current_user
     @validation.validated_at = Time.current
+    # A decisão é derivada no servidor: não confiar no campo oculto do formulário.
+    unless @validation.rejected?
+      @validation.decision =
+        @validation.final_urgency_level == @ai_classification&.urgency_level ? :confirmed : :adjusted
+    end
 
     if @validation.save
       # enqueue handles the status transition to :in_queue internally
@@ -40,6 +46,13 @@ class Validation::TriageValidationsController < Validation::BaseController
       .find(params[:triage_session_id] || params.dig(:triage_validation, :triage_session_id))
   rescue ActiveRecord::RecordNotFound
     redirect_to validation_root_path, alert: t("app.flash.session_not_found")
+  end
+
+  # Evita validar duas vezes a mesma triagem (ex.: dois colaboradores ao mesmo tempo).
+  def require_awaiting_validation
+    return if @triage_session.awaiting_validation?
+
+    redirect_to validation_root_path, alert: "Esta triagem já foi validada ou não está aguardando validação."
   end
 
   def validation_params

@@ -31,6 +31,11 @@ class QueueEntry < ApplicationRecord
   # puxariam a média real pra baixo de forma irreal para o paciente.
   MIN_SERVICE_MINUTES = 5
 
+  # Teto para considerar um atendimento na média — atendimentos esquecidos abertos
+  # (chamado hoje, finalizado dias depois) são descartados para não inflar a
+  # estimativa exibida ao paciente.
+  MAX_SERVICE_MINUTES = 240
+
   # Peso mínimo que o envelhecimento pode atingir (1 = nível mais urgente configurado).
   # O envelhecimento nunca "ultrapassa" um paciente que é vermelho de verdade — no
   # máximo empata com ele.
@@ -62,6 +67,7 @@ class QueueEntry < ApplicationRecord
       .limit(RECENT_SERVICE_SAMPLE_SIZE)
       .pluck(:called_at, :service_finished_at)
       .map { |called_at, finished_at| (finished_at - called_at) / 60.0 }
+      .select { |minutes| minutes <= MAX_SERVICE_MINUTES }
 
     return DEFAULT_SERVICE_MINUTES if durations.empty?
 

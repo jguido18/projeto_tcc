@@ -54,6 +54,27 @@ class TriageServiceTest < ActiveSupport::TestCase
     assert_nil @session.queue_entry
   end
 
+  test "an emergency skips check-in and goes straight to staff validation" do
+    @setting.update!(require_checkin: true, require_staff_validation: true)
+    @session.ai_classification.update!(urgency_level: "red")
+
+    TriageService.new(@session).finalize_triage
+
+    assert @session.reload.awaiting_validation?
+    assert_nil @session.checked_in_at
+    assert_nil @session.queue_entry
+  end
+
+  test "an emergency without staff validation enters the queue right away" do
+    @setting.update!(require_checkin: true, require_staff_validation: false)
+    @session.ai_classification.update!(urgency_level: "red")
+
+    TriageService.new(@session).finalize_triage
+
+    assert @session.reload.in_queue?
+    assert_equal "red", @session.queue_entry.urgency_level
+  end
+
   test "check_in! moves on to the queue, and the wait time starts at check-in, not at triage" do
     @setting.update!(require_checkin: true, require_staff_validation: false)
     TriageService.new(@session).finalize_triage # triagem "de casa"

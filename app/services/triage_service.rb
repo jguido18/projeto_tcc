@@ -142,9 +142,11 @@ class TriageService
     if @session.in_triage?
       @session.update!(finished_at: Time.current)
 
-      if TriageSetting.current.require_checkin?
+      if TriageSetting.current.require_checkin? && !emergency?(classification)
         # A triagem pode ser feita de casa, mas só segue para validação/fila
         # quando o solicitante confirmar presença no local (ver #check_in!).
+        # Emergência não espera check-in: a IA já orientou ir direto à recepção,
+        # então a triagem segue para a validação/fila na hora.
         @session.update!(status: :awaiting_checkin)
         TriageChannel.broadcast_status(@session, :awaiting_checkin)
         ValidationPanelChannel.broadcast_update
@@ -178,6 +180,11 @@ class TriageService
   end
 
   private
+
+  # Classificação no nível mais urgente configurado (ex.: "Emergência").
+  def emergency?(classification)
+    TriageSetting.current.most_urgent_level?(classification&.urgency_level)
+  end
 
   # Próximo passo depois da triagem (e do check-in, quando exigido): validação
   # pela equipe ou, sem ela, direto para a fila. É no enqueue que nasce o

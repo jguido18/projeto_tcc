@@ -45,6 +45,13 @@ pt-BR:
         other: "Notificações"
 
     attributes:
+      triage_setting:
+        purpose: "Propósito da IA"
+        system_prompt: "Prompt do sistema"
+        hint_example: "Exemplo de demanda inicial"
+        confidence_threshold: "Limite de confiança da IA"
+        checkin_expiration_hours: "Prazo para o check-in"
+        urgency_levels: "Níveis de urgência"
       establishment:
         name: "Nome"
         kind: "Tipo"

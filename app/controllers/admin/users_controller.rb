@@ -27,6 +27,16 @@ class Admin::UsersController < Admin::BaseController
     @limit = limit
     @pagy  = Pagy::Offset.new(count: collection.count, page: params[:page], limit: @limit, request: request)
     @staff = @pagy.records(collection)
+
+    # Quem desta página já participou de algum atendimento (não pode ser
+    # excluído) — calculado em lote para não fazer consultas por linha.
+    ids = @staff.map(&:id)
+    @participant_ids = Set.new(
+      TriageValidation.where(user_id: ids).distinct.pluck(:user_id) +
+      TriageSession.where(checked_in_by_id: ids).distinct.pluck(:checked_in_by_id) +
+      QueueEntry.where(called_by_id: ids).distinct.pluck(:called_by_id) +
+      QueueEntry.where(finished_by_id: ids).distinct.pluck(:finished_by_id)
+    )
   end
 
   def new
@@ -64,11 +74,22 @@ class Admin::UsersController < Admin::BaseController
     end
   end
 
+  # Quem já participou de qualquer etapa de um atendimento (validou, fez
+  # check-in, chamou ou finalizou) não pode ser excluído: o histórico precisa
+  # continuar mostrando quem fez cada coisa. Nesse caso o caminho é desativar.
   def destroy
-    @user.destroy!
-    redirect_to admin_users_path, notice: "Usuário removido."
-  rescue ActiveRecord::DeleteRestrictionError
-    redirect_to admin_users_path, alert: "Não é possível remover este usuário pois ele possui registros associados."
+    if @user.participated_in_attendance?
+      redirect_to admin_users_path,
+        alert: "#{@user.name} já participou de atendimentos e não pode ser excluído(a), para preservar o histórico. Para remover o acesso, edite o usuário e desative-o."
+      return
+    end
+
+    if @user.destroy
+      redirect_to admin_users_path, notice: "#{@user.name} foi removido(a)."
+    else
+      redirect_to admin_users_path,
+        alert: "Não foi possível remover #{@user.name}: #{@user.errors.full_messages.to_sentence}"
+    end
   end
 
   private

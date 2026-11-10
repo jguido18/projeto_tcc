@@ -34,17 +34,28 @@ class QueueEntryTest < ActiveSupport::TestCase
     assert overdue.sla_breached?
   end
 
-  test "waiting_ordered_with_aging lets an aged low-urgency entry catch up to a fresher higher one" do
-    # Verde parado há 3h (SLA 120min => 1 janela estourada => peso efetivo 3, empata com amarelo)
-    aged_green = build_waiting_entry(urgency_level: "green", minutes_ago: 180)
+  test "waiting_ordered_with_aging lets an aged low-urgency entry overtake a fresher higher one" do
+    # Verde parado há 4h (SLA 120min => 2 janelas estouradas => peso efetivo 2)
+    aged_green = build_waiting_entry(urgency_level: "green", minutes_ago: 240)
     # Amarelo (peso 3) que acabou de chegar
     fresh_yellow = build_waiting_entry(urgency_level: "yellow", minutes_ago: 0)
 
     ordered = QueueEntry.waiting_ordered_with_aging
 
-    # Empate de peso efetivo (3) é desempatado por ordem de chegada -> o verde envelhecido,
-    # que chegou primeiro, vem antes do amarelo recém-chegado.
+    # Peso efetivo 2 < 3 -> o verde envelhecido passa na frente do amarelo recém-chegado.
     assert_equal [ aged_green, fresh_yellow ], ordered
+  end
+
+  test "waiting_ordered_with_aging keeps a tied aged entry behind the level it caught up with" do
+    # Verde parado há 3h (1 janela estourada => peso efetivo 3, empata com amarelo)
+    aged_green = build_waiting_entry(urgency_level: "green", minutes_ago: 180)
+    fresh_yellow = build_waiting_entry(urgency_level: "yellow", minutes_ago: 0)
+
+    ordered = QueueEntry.waiting_ordered_with_aging
+
+    # Empate de peso efetivo -> desempata pela urgência original: o amarelo de verdade vem
+    # antes, mesmo tendo chegado depois.
+    assert_equal [ fresh_yellow, aged_green ], ordered
   end
 
   test "waiting_ordered_with_aging never lets aging overtake a genuinely more urgent case" do
@@ -53,9 +64,19 @@ class QueueEntryTest < ActiveSupport::TestCase
 
     ordered = QueueEntry.waiting_ordered_with_aging
 
-    # Peso efetivo empata (1), mas o vermelho chegou depois -> desempate por chegada:
-    # o verde envelhecido só empata, nunca ultrapassa quem é vermelho de verdade.
-    assert_equal [ aged_green, fresh_red ], ordered
+    # Peso efetivo empata (1) -> desempata pela urgência original: o vermelho de verdade
+    # vem antes, mesmo tendo chegado depois. O verde envelhecido só empata, nunca passa.
+    assert_equal [ fresh_red, aged_green ], ordered
+  end
+
+  test "within the same original level, legal priority still beats arrival order" do
+    early_adult = build_waiting_entry(urgency_level: "yellow", minutes_ago: 10)
+    late_priority = build_waiting_entry(urgency_level: "yellow", minutes_ago: 5)
+    late_priority.update!(priority_tier: 2)
+
+    ordered = QueueEntry.waiting_ordered_with_aging
+
+    assert_equal [ late_priority, early_adult ], ordered
   end
 
   test "average_service_minutes floors unrealistically short durations (test/demo data)" do

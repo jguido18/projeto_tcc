@@ -11,29 +11,59 @@
     <div>
       <h1 class="rpt-header__title">Relatórios</h1>
       <p class="rpt-header__subtitle">
-        <% if @period == "today" %>Dados de hoje, <%= l(Date.today, format: :long) %>
-        <% elsif @period == "week" %>Últimos 7 dias
-        <% else %>Últimos 30 dias
-        <% end %>
+        <%= @period_label %>
+        <% if @staff_member %> · atendimentos com participação de <strong><%= @staff_member.name %></strong><% end %>
       </p>
     </div>
     <div class="rpt-header__actions">
       <%# Filtro de período %>
       <div class="rpt-period-tabs">
-        <%= link_to validation_reports_path(period: "today"),
+        <%= link_to validation_reports_path({ period: "today" }.merge({ staff_id: @staff_member&.id }.compact)),
               class: "rpt-period-tab #{"rpt-period-tab--active" if @period == "today"}" do %>Hoje<% end %>
-        <%= link_to validation_reports_path(period: "week"),
+        <%= link_to validation_reports_path({ period: "week" }.merge({ staff_id: @staff_member&.id }.compact)),
               class: "rpt-period-tab #{"rpt-period-tab--active" if @period == "week"}" do %>7 dias<% end %>
-        <%= link_to validation_reports_path(period: "month"),
+        <%= link_to validation_reports_path({ period: "month" }.merge({ staff_id: @staff_member&.id }.compact)),
               class: "rpt-period-tab #{"rpt-period-tab--active" if @period == "month"}" do %>30 dias<% end %>
       </div>
       <%# Exportar CSV %>
-      <%= link_to validation_reports_export_path, class: "btn btn--secondary rpt-export-btn" do %>
+      <%= link_to validation_reports_export_path(request.query_parameters.slice("period", "date_from", "date_to", "staff_id")),
+            class: "btn btn--secondary rpt-export-btn" do %>
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
         Exportar CSV
       <% end %>
     </div>
   </div>
+
+  <%# ── Filtros: data específica / período e colaborador ── %>
+  <%= form_with url: validation_reports_path, method: :get, class: "rpt-filters", local: true do %>
+    <div class="rpt-filters__field">
+      <label for="date_from" class="rpt-filters__label">De</label>
+      <input type="date" id="date_from" name="date_from" value="<%= @date_from&.iso8601 %>" class="rpt-filters__input">
+    </div>
+    <div class="rpt-filters__field">
+      <label for="date_to" class="rpt-filters__label">Até</label>
+      <input type="date" id="date_to" name="date_to" value="<%= @date_to&.iso8601 %>" class="rpt-filters__input">
+    </div>
+    <div class="rpt-filters__field rpt-filters__field--wide">
+      <label for="staff_id" class="rpt-filters__label">Colaborador</label>
+      <select id="staff_id" name="staff_id" class="rpt-filters__input">
+        <option value="">Toda a equipe</option>
+        <% @staff_options.each do |member| %>
+          <option value="<%= member.id %>" <%= "selected" if member == @staff_member %>>
+            <%= member.name %><%= " (inativo)" unless member.active? %>
+          </option>
+        <% end %>
+      </select>
+    </div>
+    <% if @period != "custom" %>
+      <input type="hidden" name="period" value="<%= @period %>">
+    <% end %>
+    <div class="rpt-filters__actions">
+      <button type="submit" class="btn btn--primary">Aplicar</button>
+      <%= link_to "Limpar", validation_reports_path, class: "btn btn--secondary" %>
+    </div>
+    <p class="rpt-filters__hint">Preencha só "De" para ver um dia específico, ou "De" e "Até" para um período.</p>
+  <% end %>
 
   <%# ── KPI Cards ── %>
   <div class="rpt-kpis">
@@ -84,7 +114,7 @@
         </div>
         <div class="rpt-kpi__body">
           <div class="rpt-kpi__value"><%= @ai_accuracy_pct %>%</div>
-          <div class="rpt-kpi__label">Precisão da IA</div>
+          <div class="rpt-kpi__label">Precisão da IA no período</div>
           <% if @undertriage_count > 0 || @overtriage_count > 0 %>
             <div class="rpt-kpi__breakdown">
               <span class="rpt-kpi__breakdown-item rpt-kpi__breakdown-item--danger" title="A IA classificou como menos urgente do que o colaborador decidiu — erro do lado perigoso">
@@ -107,7 +137,7 @@
     <div class="rpt-chart-card">
       <div class="rpt-chart-card__header">
         <h2 class="rpt-chart-card__title">Distribuição por Urgência</h2>
-        <span class="rpt-chart-card__period"><%= @period == "today" ? "Hoje" : @period == "week" ? "7 dias" : "30 dias" %></span>
+        <span class="rpt-chart-card__period"><%= @period_label %></span>
       </div>
       <% if @urgency_chart_data[:values].sum == 0 %>
         <div class="rpt-chart-empty">Nenhum dado no período</div>
@@ -132,7 +162,7 @@
     <div class="rpt-chart-card">
       <div class="rpt-chart-card__header">
         <h2 class="rpt-chart-card__title">Atendimentos por Dia</h2>
-        <span class="rpt-chart-card__period">Últimos 7 dias</span>
+        <span class="rpt-chart-card__period"><%= @trend_label %></span>
       </div>
       <canvas id="trendChart" height="220"></canvas>
     </div>
@@ -142,14 +172,16 @@
   <%# ── Últimos atendimentos ── %>
   <div class="rpt-section">
     <div class="rpt-section__header">
-      <h2 class="rpt-section__title">Últimos Atendimentos</h2>
-      <span class="rpt-section__count"><%= @recent.size %> registros</span>
+      <h2 class="rpt-section__title">Atendimentos concluídos no período</h2>
+      <span class="rpt-section__count">
+        <%= @recent.size %> registros<%= " (mostrando os #{@recent.size} mais recentes — exporte o CSV para ver todos)" if @recent.size >= Validation::ReportsController::RECENT_LIMIT %>
+      </span>
     </div>
 
     <% if @recent.empty? %>
       <div class="rpt-empty">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#cbd5e0" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        <p>Nenhum atendimento concluído ainda.</p>
+        <p>Nenhum atendimento concluído com esses filtros.</p>
       </div>
     <% else %>
       <div class="rpt-table-wrap">
@@ -161,6 +193,8 @@
               <th>Urgência Final</th>
               <th>Decisão IA</th>
               <th>Status</th>
+              <th>Equipe envolvida</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -197,6 +231,15 @@
                 </td>
                 <td>
                   <span class="rpt-badge rpt-badge--completed">Concluído</span>
+                </td>
+                <td class="rpt-table__staff">
+                  <% staff = session.staff_involved %>
+                  <%= staff.any? ? staff.map(&:name).join(", ") : "—" %>
+                </td>
+                <td>
+                  <% if session.queue_entry %>
+                    <%= link_to "Ver histórico", attendance_attendance_path(session.queue_entry), class: "rpt-table__link" %>
+                  <% end %>
                 </td>
               </tr>
             <% end %>

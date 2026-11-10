@@ -213,4 +213,27 @@
     </main>
 
   </div>
+
+  <%# ── Histórico: quem fez cada etapa deste atendimento ── %>
+  <section class="attendance-history">
+    <div class="attendance-section__title">Histórico do atendimento</div>
+    <p class="attendance-history__hint">Cada etapa, quando aconteceu e quem da equipe a realizou.</p>
+
+    <ol class="attendance-history__list">
+      <% @timeline.each do |event| %>
+        <li class="attendance-history__item attendance-history__item--<%= event.kind %>">
+          <div class="attendance-history__time"><%= l(event.at, format: :short) %></div>
+          <div class="attendance-history__body">
+            <div class="attendance-history__title"><%= event.title %></div>
+            <% if event.actor %>
+              <div class="attendance-history__actor"><%= event.actor %></div>
+            <% end %>
+            <% if event.detail.present? %>
+              <div class="attendance-history__detail"><%= event.detail %></div>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ol>
+  </section>
 </div>

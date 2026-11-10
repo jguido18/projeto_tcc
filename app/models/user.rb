@@ -9,6 +9,16 @@ class User < ApplicationRecord
   has_many :notifications, dependent: :destroy
   has_many :triage_validations, dependent: :restrict_with_error
 
+  # Participação da equipe nos atendimentos. Quem já participou de qualquer
+  # etapa não pode ser excluído (o histórico precisa mostrar quem fez cada
+  # coisa) — só desativado. Ver #participated_in_attendance?.
+  has_many :called_queue_entries, class_name: "QueueEntry", foreign_key: :called_by_id,
+                                  inverse_of: :called_by, dependent: :restrict_with_error
+  has_many :finished_queue_entries, class_name: "QueueEntry", foreign_key: :finished_by_id,
+                                    inverse_of: :finished_by, dependent: :restrict_with_error
+  has_many :checked_in_triage_sessions, class_name: "TriageSession", foreign_key: :checked_in_by_id,
+                                        inverse_of: :checked_in_by, dependent: :restrict_with_error
+
   validates :name, presence: true
   validates :cpf, presence: true, if: :patient?
   validates :cpf, uniqueness: { allow_blank: true }
@@ -64,6 +74,15 @@ class User < ApplicationRecord
 
   def patient?
     !staff?
+  end
+
+  # Validou/avaliou uma triagem, fez check-in pela recepção, chamou um paciente
+  # ou finalizou um atendimento.
+  def participated_in_attendance?
+    triage_validations.exists? ||
+      checked_in_triage_sessions.exists? ||
+      called_queue_entries.exists? ||
+      finished_queue_entries.exists?
   end
 
   def age
@@ -143,7 +162,7 @@ class User < ApplicationRecord
 
   def staff_roles_consistency
     if specialist? && colaborador?
-      errors.add(:base, "A user cannot be both specialist and colaborador")
+      errors.add(:base, "Um membro da equipe não pode ser especialista e colaborador ao mesmo tempo. Escolha apenas um desses perfis.")
     end
   end
 

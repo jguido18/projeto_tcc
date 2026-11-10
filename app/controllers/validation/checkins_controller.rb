@@ -5,7 +5,7 @@ class Validation::CheckinsController < Validation::BaseController
   def create
     session = TriageSession.find_by(id: params[:id])
 
-    if session && TriageService.new(session).check_in!
+    if session && TriageService.new(session).check_in!(by: current_user)
       redirect_to validation_root_path, notice: "Check-in de #{session.user.name} confirmado."
     else
       redirect_to validation_root_path, alert: "Esta triagem não está mais aguardando check-in."

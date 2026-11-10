@@ -1,5 +1,7 @@
 class TriageSession < ApplicationRecord
   belongs_to :user
+  # Recepção que confirmou a presença (nil = o próprio paciente pelo app)
+  belongs_to :checked_in_by, class_name: "User", optional: true
   has_many :chat_messages, dependent: :destroy
   has_many :triage_documents, dependent: :destroy
   has_one :ai_classification, dependent: :destroy
@@ -27,6 +29,24 @@ class TriageSession < ApplicationRecord
 
   scope :active, -> { where(status: ACTIVE_STATUSES) }
 
+  # Atendimentos em que o membro da equipe participou de alguma etapa:
+  # validou/avaliou, fez check-in pela recepção, chamou ou finalizou.
+  scope :with_staff_participation, ->(user_id) {
+    left_joins(:queue_entry, ai_classification: :triage_validation)
+      .where("triage_sessions.checked_in_by_id = :id OR queue_entries.called_by_id = :id " \
+             "OR queue_entries.finished_by_id = :id OR triage_validations.user_id = :id", id: user_id)
+  }
+
+  # Membros da equipe que participaram deste atendimento (sem repetição).
+  def staff_involved
+    [
+      ai_classification&.triage_validation&.user,
+      checked_in_by,
+      queue_entry&.called_by,
+      queue_entry&.finished_by
+    ].compact.uniq
+  end
+
   # Até quando quem triou (de casa) pode fazer o check-in no local antes da
   # triagem expirar — ver TriageSetting#checkin_expiration_hours.
   def checkin_deadline
@@ -39,7 +59,7 @@ class TriageSession < ApplicationRecord
 
   def no_active_session_for_user
     if TriageSession.where(user: user, status: ACTIVE_STATUSES).exists?
-      errors.add(:base, "User already has an active triage session")
+      errors.add(:base, "Você já possui uma triagem em andamento.")
     end
   end
 end

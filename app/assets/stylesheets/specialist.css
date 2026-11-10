@@ -857,3 +857,91 @@
 
 .btn--doc-download:hover { background: #2b6cb0; }
 .btn--doc-view:hover     { background: #cbd5e0; }
+
+/* ─── Histórico do atendimento (linha do tempo) ──────────────────────── */
+
+.attendance-history {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.attendance-history__hint {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.attendance-history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* linha vertical ligando as etapas */
+.attendance-history__list::before {
+  content: "";
+  position: absolute;
+  left: 117px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.attendance-history__item {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 2rem;
+  padding: 0.5rem 0;
+  position: relative;
+}
+
+/* marcador na linha, colorido por quem fez a etapa */
+.attendance-history__item::before {
+  content: "";
+  position: absolute;
+  left: 112px;
+  top: 0.85rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #a0aec0;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #e2e8f0;
+}
+
+.attendance-history__item--patient::before { background: #3182ce; }
+.attendance-history__item--ai::before      { background: #805ad5; }
+.attendance-history__item--staff::before   { background: #38a169; }
+
+.attendance-history__time {
+  font-size: 0.8rem;
+  color: #718096;
+  text-align: right;
+  padding-top: 0.2rem;
+}
+
+.attendance-history__title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #2d3748;
+}
+
+.attendance-history__actor {
+  font-size: 0.85rem;
+  color: #2f855a;
+  font-weight: 600;
+}
+
+.attendance-history__item--patient .attendance-history__actor { color: #2b6cb0; }
+.attendance-history__item--ai .attendance-history__actor      { color: #6b46c1; }
+
+.attendance-history__detail {
+  font-size: 0.85rem;
+  color: #4a5568;
+  margin-top: 0.15rem;
+}

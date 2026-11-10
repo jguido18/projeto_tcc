@@ -9,6 +9,8 @@ class Attendance::AttendancesController < Attendance::BaseController
     @validation  = @ai&.triage_validation
     @messages    = @session.chat_messages
     @documents   = @session.triage_documents.with_attached_file.order(:created_at)
+    # Quem fez cada etapa deste atendimento (solicitante, IA, equipe)
+    @timeline    = AttendanceTimeline.new(@session).events
 
     # Triagem que entrou na fila sem validação da equipe: o especialista pode
     # confirmar/ajustar a classificação da IA (se o admin habilitou).
@@ -21,7 +23,8 @@ class Attendance::AttendancesController < Attendance::BaseController
   def finish
     @queue_entry.update!(
       status: :completed,
-      service_finished_at: Time.current
+      service_finished_at: Time.current,
+      finished_by: current_user
     )
     @queue_entry.triage_session.update!(
       status: :completed,
@@ -68,7 +71,8 @@ class Attendance::AttendancesController < Attendance::BaseController
 
   def set_queue_entry
     @queue_entry = QueueEntry
-      .includes(triage_session: [ :user, { ai_classification: :triage_validation }, :chat_messages ])
+      .includes(:called_by, :finished_by,
+                triage_session: [ :user, :checked_in_by, { ai_classification: { triage_validation: :user } }, :chat_messages ])
       .where(status: [ :called, :completed ])
       .find(params[:id])
   rescue ActiveRecord::RecordNotFound

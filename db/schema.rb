@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_175805) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_121847) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,7 +91,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_175805) do
 
   create_table "queue_entries", force: :cascade do |t|
     t.datetime "called_at"
+    t.bigint "called_by_id"
     t.datetime "created_at", null: false
+    t.bigint "finished_by_id"
     t.string "priority_reasons", default: [], null: false, array: true
     t.integer "priority_tier", default: 0, null: false
     t.datetime "queued_at", null: false
@@ -104,6 +106,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_175805) do
     t.string "urgency_level", null: false
     t.integer "urgency_weight", null: false
     t.bigint "user_id", null: false
+    t.index ["called_by_id"], name: "index_queue_entries_on_called_by_id"
+    t.index ["finished_by_id"], name: "index_queue_entries_on_finished_by_id"
     t.index ["ticket_number"], name: "index_queue_entries_on_ticket_number", unique: true
     t.index ["triage_session_id"], name: "index_queue_entries_on_triage_session_id", unique: true
     t.index ["urgency_weight", "priority_tier", "queued_at"], name: "index_queue_entries_on_urgency_priority_queued_at"
@@ -271,6 +275,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_175805) do
   create_table "triage_sessions", force: :cascade do |t|
     t.jsonb "ai_metadata"
     t.datetime "checked_in_at"
+    t.bigint "checked_in_by_id"
     t.datetime "created_at", null: false
     t.datetime "finished_at"
     t.text "initial_demand"
@@ -278,6 +283,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_175805) do
     t.string "status", default: "in_triage", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["checked_in_by_id"], name: "index_triage_sessions_on_checked_in_by_id"
     t.index ["status"], name: "index_triage_sessions_on_status"
     t.index ["user_id", "status"], name: "index_triage_sessions_on_user_id_and_status"
     t.index ["user_id"], name: "index_triage_sessions_on_user_id"
@@ -360,6 +366,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_175805) do
   add_foreign_key "notifications", "triage_sessions", on_delete: :nullify
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "queue_entries", "triage_sessions", on_delete: :restrict
+  add_foreign_key "queue_entries", "users", column: "called_by_id"
+  add_foreign_key "queue_entries", "users", column: "finished_by_id"
   add_foreign_key "queue_entries", "users", on_delete: :restrict
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -369,6 +377,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_175805) do
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "triage_documents", "chat_messages", on_delete: :nullify
   add_foreign_key "triage_documents", "triage_sessions", on_delete: :cascade
+  add_foreign_key "triage_sessions", "users", column: "checked_in_by_id"
   add_foreign_key "triage_sessions", "users", on_delete: :restrict
   add_foreign_key "triage_validations", "ai_classifications", on_delete: :restrict
   add_foreign_key "triage_validations", "users", on_delete: :restrict

@@ -284,6 +284,11 @@ Devise.setup do |config|
   #   warden_config.intercept_401 = false
   #   warden_config.default_strategies(scope: :user).unshift :some_external_strategy
   # end
+  config.warden do |manager|
+    # Falhas na área da equipe voltam para /staff/login (ver lib/staff_aware_failure_app.rb).
+    # Lambda: a classe é resolvida a cada requisição, compatível com o autoload de lib/.
+    manager.failure_app = ->(env) { StaffAwareFailureApp.call(env) }
+  end
 
   # ==> Mountable engine configurations
   # When using Devise inside an engine, let's call it `MyEngine`, and this engine

@@ -31,7 +31,7 @@ class TriageSetting < ApplicationRecord
 
   HEX_COLOR_REGEX = /\A#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})\z/
 
-  validates :system_prompt, presence: true
+  validates :system_prompt, presence: { message: "não pode ficar em branco — descreva como a IA deve conduzir a triagem" }
   validates :confidence_threshold, numericality: { only_integer: true, in: 0..100 }
   validates :checkin_expiration_hours, numericality: { only_integer: true, in: 1..72 }
   validate :single_record_only
@@ -89,7 +89,10 @@ class TriageSetting < ApplicationRecord
 
   def set_defaults
     self.purpose               = DEFAULT_PURPOSE               if purpose.blank?
-    self.system_prompt         = DEFAULT_SYSTEM_PROMPT         if system_prompt.blank?
+    # O prompt padrão só preenche a configuração recém-criada. Se o admin apagar
+    # o prompt e salvar, a validação de presença tem que avisar — não restaurar
+    # o prompt de triagem médica em silêncio.
+    self.system_prompt         = DEFAULT_SYSTEM_PROMPT         if system_prompt.blank? && new_record?
     self.urgency_levels        = DEFAULT_URGENCY_LEVELS        if urgency_levels.blank?
     self.hint_example          = DEFAULT_HINT_EXAMPLE          if hint_example.blank?
     self.confidence_threshold  = DEFAULT_CONFIDENCE_THRESHOLD  if confidence_threshold.blank?

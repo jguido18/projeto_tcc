@@ -1,6 +1,9 @@
 class QueueEntry < ApplicationRecord
   belongs_to :triage_session
   belongs_to :user
+  # Membro da equipe que chamou o paciente / que finalizou o atendimento
+  belongs_to :called_by, class_name: "User", optional: true
+  belongs_to :finished_by, class_name: "User", optional: true
 
   enum :status, {
     waiting:       "waiting",
@@ -34,15 +37,18 @@ class QueueEntry < ApplicationRecord
   MIN_EFFECTIVE_WEIGHT = 1
 
   # Ordenação oficial da fila, com envelhecimento dinâmico de prioridade: urgência
-  # clínica efetiva (já considerando o tempo de espera) > prioridade legal
-  # (idoso/PCD/...) > ordem de chegada. `relation` já deve vir filtrado por
+  # clínica efetiva (já considerando o tempo de espera) > urgência clínica original
+  # > prioridade legal (idoso/PCD/...) > ordem de chegada. A urgência original como
+  # desempate garante que quem envelheceu até empatar com um nível mais grave fica
+  # atrás de quem é desse nível de verdade (ex.: um verde parado há horas empata com
+  # o vermelho, mas nunca passa na frente dele). `relation` já deve vir filtrado por
   # status: :waiting (normalmente via QueueEntry.waiting) e com os includes que o
   # chamador precisar — a ordenação em si é feita em Ruby, não em SQL, porque a fila
   # de um atendimento real é pequena (dezenas, não milhares de pessoas) e assim a
   # fórmula de envelhecimento fica simples de ler e de testar.
   def self.waiting_ordered_with_aging(relation = waiting)
     now = Time.current
-    relation.to_a.sort_by { |entry| [ entry.effective_urgency_weight(at: now), -entry.priority_tier, entry.queued_at ] }
+    relation.to_a.sort_by { |entry| [ entry.effective_urgency_weight(at: now), entry.urgency_weight, -entry.priority_tier, entry.queued_at ] }
   end
 
   # Média (em minutos) dos atendimentos concluídos recentemente, do momento em

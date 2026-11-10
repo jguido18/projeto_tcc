@@ -22,7 +22,7 @@ class TriageValidation < ApplicationRecord
 
   def validator_must_be_staff
     unless user&.staff?
-      errors.add(:user, "must be a colaborador or specialist to validate")
+      errors.add(:base, "Somente colaboradores ou especialistas podem validar uma triagem.")
     end
   end
 

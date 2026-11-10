@@ -21,6 +21,11 @@
 - **Solicitante:** login em `/login`, rota Devise padrão. `user.patient?` → `!staff?`
 - **Equipe:** login em `/staff/login` → `Staff::SessionsController` bloqueia não-staff
 - **Perfis:** `user.colaborador?`, `user.specialist?`, `user.admin?`, `user.staff?`
+- **Falhas de login na área da equipe** (`/staff`, `/validation`, `/attendance`, `/admin` — ex.: conta inativa)
+  voltam para `/staff/login` via `StaffAwareFailureApp` (`lib/`, registrado no `config.warden` do Devise)
+- **Exclusão de equipe:** quem participou de qualquer etapa de atendimento (`User#participated_in_attendance?`:
+  validou, fez check-in pela recepção, chamou ou finalizou) não pode ser excluído — só desativado.
+  Registrado em `queue_entries.called_by_id/finished_by_id`, `triage_sessions.checked_in_by_id` e `triage_validations.user_id`
 - **Redirecionamento pós-login:** `after_sign_in_path_for` em `ApplicationController`
   - `patient?` → `/app`
   - `admin?` → `edit_admin_triage_setting_path`
@@ -59,11 +64,11 @@ PATCH /api/profile           ← atualiza perfil do paciente (nome, contato, pri
 /validation/triage_validations/new
 /validation/queue_entries/:id/call
 /validation/queue_entries/:id/finish
-/validation/reports
+/validation/reports  ← filtros: period (today/week/month) ou date_from/date_to (só date_from = dia específico), staff_id
 
 # Atendimento (especialista)
 /attendance      → attendance/panel#index
-/attendance/attendances/:id
+/attendance/attendances/:id   ← inclui "Histórico do atendimento" (AttendanceTimeline: quem fez cada etapa)
 /attendance/attendances/:id/finish
 
 # Admin
@@ -167,8 +172,10 @@ Urgência sempre manda primeiro; prioridade só desempata dentro do mesmo nível
 - **Snapshot no enqueue:** `QueueEntryService#enqueue` grava `priority_tier`/`priority_reasons`
   na `QueueEntry` no momento em que o paciente entra na fila — mudanças posteriores no perfil não
   reordenam quem já está esperando.
-- **Ordenação:** `QueueEntry.ordered_for_queue` e `QueueEntry#queue_position` — ambos usam
-  `urgency_weight ASC, priority_tier DESC, queued_at ASC`.
+- **Ordenação:** `QueueEntry.waiting_ordered_with_aging` (usado também por `QueueEntry#queue_position`)
+  ordena em Ruby por `effective_urgency_weight ASC, urgency_weight ASC, priority_tier DESC, queued_at ASC`.
+  O peso efetivo sobe um nível a cada janela de SLA estourada (até o nível mais urgente); a urgência
+  original no desempate garante que um caso envelhecido nunca passe na frente de quem é daquele nível de verdade.
 - **Tempo estimado:** `QueueEntry.average_service_minutes` — média real dos atendimentos recentes
   (`called_at` → `service_finished_at`), não mais um valor fixo.
 - **Exibição:** `Api::QueueController#index` (fila do paciente) e `Validation::PanelController`

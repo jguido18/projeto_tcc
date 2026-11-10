@@ -4,7 +4,7 @@ class Validation::QueueEntriesController < Validation::BaseController
   # PATCH /validation/queue_entries/:id/call
   def call
     if @queue_entry.waiting?
-      @queue_entry.update!(status: :called, called_at: Time.current)
+      @queue_entry.update!(status: :called, called_at: Time.current, called_by: current_user)
       @queue_entry.triage_session.update!(status: :in_attendance)
 
       # Notifica o solicitante via ActionCable (app do solicitante)
@@ -41,7 +41,8 @@ class Validation::QueueEntriesController < Validation::BaseController
   def finish
     @queue_entry.update!(
       status: :completed,
-      service_finished_at: Time.current
+      service_finished_at: Time.current,
+      finished_by: current_user
     )
     @queue_entry.triage_session.update!(
       status: :completed,

@@ -159,7 +159,8 @@ class TriageService
   # Confirma a presença do solicitante no local (código da TV da recepção ou
   # check-in feito pelo colaborador) e segue para a validação/fila. Retorna
   # false se a sessão não estava aguardando check-in (já fez, expirou...).
-  def check_in!
+  # by: membro da equipe que confirmou a presença (nil = o próprio paciente).
+  def check_in!(by: nil)
     checked_in = false
 
     # Lock + checked_in_at evitam que dois check-ins simultâneos (ex.: paciente
@@ -167,7 +168,7 @@ class TriageService
     @session.with_lock do
       next unless @session.awaiting_checkin? && @session.checked_in_at.nil?
 
-      @session.update!(checked_in_at: Time.current)
+      @session.update!(checked_in_at: Time.current, checked_in_by: by)
       checked_in = true
     end
     return false unless checked_in

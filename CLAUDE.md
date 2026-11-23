@@ -243,6 +243,9 @@ Todos delegam para `TriageSetting.current`.
 - Controllers de equipe herdam de `Admin::BaseController`, `Validation::BaseController` ou `Attendance::BaseController` — cada um chama o `require_*!` correspondente
 - `Api::BaseController` autentica via sessão Devise (`before_action :authenticate_user!`)
 - Urgência nunca é hardcoded — sempre via `TriageSetting.current`
+- Cobertura de testes: `COVERAGE=1 bin/rails test` (SimpleCov, relatório em `coverage/index.html`, ignorado pelo git)
+- O indicador do relatório chama-se "Concordância IA × equipe" (não "precisão"): mede concordância, não acurácia clínica.
+  O `confidence_score` da IA é autoavaliação do modelo — não pôr valor numérico de exemplo no prompt de classificação (o modelo copia)
 - Paginação: **sempre** usar `Pagy::Offset.new(count:, page:, limit:, request:)` + `@pagy.records(collection)` — **nunca** `include Pagy::Backend` ou `pagy()` helper
 - Prioridade da fila é *snapshot* na `QueueEntry` no momento do enqueue (`QueueEntryService`), nunca recalculada a partir do `User` depois — se for tocar em ordenação de fila, mexer em `QueueEntry.ordered_for_queue`/`queue_position`, não recalcular `priority_tier` do usuário em tempo real
 

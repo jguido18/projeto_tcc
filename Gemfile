@@ -77,6 +77,8 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+  # Cobertura de código da suíte (relatório em coverage/index.html)
+  gem "simplecov", require: false
 end
 
 gem "rqrcode", "~> 3.2"

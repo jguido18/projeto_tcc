@@ -414,7 +414,7 @@ pt-BR:
       total_attended: "Atendimentos Concluídos"
       waiting_in_queue: "Aguardando na Fila"
       called_now: "Em Atendimento"
-      ai_accuracy: "Precisão da IA"
+      ai_accuracy: "Concordância IA × equipe"
       ai_accuracy_hint: "validações sem ajuste"
       ai_confirmed: "IA confirmada"
       ai_adjusted: "IA ajustada"

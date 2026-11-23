@@ -486,8 +486,12 @@ class AiService
         "ai_suggestion": "ação sugerida para o atendente",
         "classification_reasoning": "justificativa detalhada para o nível de prioridade escolhido",
         "routing_suggestion": "setor ou fila de destino recomendada",
-        "confidence_score": 85.0
+        "confidence_score": "número de 0 a 100"
       }
+      Sobre confidence_score: é a sua autoavaliação de quanto a transcrição sustenta o nível escolhido.
+      Não copie um valor fixo. Use valores baixos (abaixo de 60) quando faltarem informações, o relato for
+      ambíguo ou contraditório, ou quando dois níveis vizinhos forem igualmente plausíveis; use valores altos
+      (acima de 85) apenas quando os sinais descritos apontarem claramente para um único nível.
       Nota: o campo "identified_symptoms" deve listar os principais tópicos ou pontos identificados na conversa
       (ex: para secretaria acadêmica, pode ser "matrícula inicial", "curso de Sistemas de Informação";
       para saúde, pode ser "dor abdominal", "febre há 2 dias").

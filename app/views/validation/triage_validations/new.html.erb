@@ -18,6 +18,7 @@
           <div>
             <strong>Confiança da IA baixa<%= " (#{@ai_classification.confidence_score.to_i}%)" if @ai_classification.confidence_score.present? %></strong>
             <p>Revise a transcrição com atenção redobrada antes de confirmar ou ajustar a classificação.</p>
+            <p class="validation-hint">O percentual é uma autoavaliação do próprio modelo, não uma probabilidade calibrada de acerto.</p>
           </div>
         </div>
       <% end %>

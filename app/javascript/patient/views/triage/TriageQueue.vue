@@ -32,8 +32,9 @@
               </div>
             </div>
             <div class="ticket-stat">
-              <div class="ticket-stat__label">ESPERA</div>
+              <div class="ticket-stat__label">ESPERA ESTIMADA</div>
               <div class="ticket-stat__value">{{ estimatedWait ? `~${estimatedWait} min` : "-" }}</div>
+              <div class="ticket-stat__hint">Pode mudar se chegarem casos mais urgentes</div>
             </div>
           </div>
 
@@ -193,7 +194,8 @@ function urgencyLabel(level) {
   return store.urgencyMap[level]?.label || "Sem classificação"
 }
 
-// Tempo estimado baseado na posição real do paciente na fila (15 min/pessoa).
+// Tempo estimado = posição real na fila × média dos atendimentos recentes (não é promessa:
+// muda quando entra alguém mais urgente). Atualizado ao recarregar queueRows via ActionCable.
 // Atualizado automaticamente ao recarregar queueRows via ActionCable.
 const estimatedWait = computed(() => {
   const mine = queueRows.value.find((r) => r.isMine)
@@ -414,6 +416,13 @@ onUnmounted(() => unsubscribe?.())
   margin-top: 0.1rem;
   font-size: 1rem;
   font-weight: 800;
+}
+
+.ticket-stat__hint {
+  margin-top: 0.15rem;
+  font-size: 0.62rem;
+  opacity: 0.8;
+  line-height: 1.2;
 }
 
 .ticket-chip {

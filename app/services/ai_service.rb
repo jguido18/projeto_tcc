@@ -1,5 +1,7 @@
 class AiService
-  OPENAI_DEFAULT_MODEL = "gpt-4o-mini"
+  # Versão fixa (snapshot) para reprodutibilidade: o alias "gpt-4o-mini" pode mudar de versão
+  # sem aviso. Em 25/11/2026 o alias apontava para este mesmo snapshot.
+  OPENAI_DEFAULT_MODEL = "gpt-4o-mini-2024-07-18"
   ANTHROPIC_DEFAULT_MODEL = "claude-opus-4-6"
   MAX_TOKENS = 1024
 

@@ -122,6 +122,22 @@ class SpecialistReviewTest < ActionDispatch::IntegrationTest
     assert_nil @classification.reload.triage_validation
   end
 
+  # UC15 passo 05: a revisão do especialista entra no indicador do relatório.
+  test "specialist review feeds the AI × team agreement indicator in the report" do
+    post review_classification_attendance_attendance_path(@entry),
+         params: { triage_validation: { final_urgency_level: "orange", notes: "Dor torácica não relatada à IA" } }
+    sign_out @specialist
+    sign_in User.create!(name: "Admin", email: "admin-#{SecureRandom.hex(4)}@example.com",
+                         password: "password123", admin: true)
+
+    get validation_reports_path(period: "today")
+
+    assert_response :success
+    assert_select ".rpt-kpi__label", text: /Concordância IA × equipe/
+    assert_select ".rpt-kpi__value", text: "0.0%" # 1 revisão, nível ajustado → 0% de concordância
+    assert_select ".rpt-kpi__breakdown-item--danger", text: /Subtriagem: 1/
+  end
+
   test "review is refused when the admin disabled it" do
     @setting.update!(specialist_review_enabled: false)
 
